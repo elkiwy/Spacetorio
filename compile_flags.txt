@@ -1,0 +1,6 @@
+-IC:\Program Files\SDL2\SDL2-2.26.1\include
+-IC:\Program Files\SDL2\SDL2_ttf-2.20.1\include
+-IC:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.34.31933\include
+-ISpacetorio\vendor\entt\include
+-ISpacetorio\vendor\imgui
+-std=c++20

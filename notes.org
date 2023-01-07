@@ -1,0 +1,9 @@
+#+title: Spacetorio Notes
+
+
+* Next steps
+- Add Entt to the project
+- Create Entity Class wrapping all entt methods
+- Create the TransformComponent and recreate the planet entities into the spaceScene
+- render a basic universe view with a moving camera
+- add zoom to camera
