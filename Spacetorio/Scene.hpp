@@ -2,7 +2,9 @@
 #define SCENE_H_
 
 #include "Camera.hpp"
+#include "SDL_stdinc.h"
 #include "entt.hpp"
+#include "SDL.h"
 
 class Entity;
 
@@ -12,11 +14,15 @@ class Scene {
         Scene(const Scene& other) = delete;
         virtual ~Scene();
 
-        Entity createEntity(const std::string& name = "");
-
+        void update();
 
         void render() const;
-        void renderGUI() const;
+        void renderGUI();
+
+        void onKeyDown(const Uint8* keyState);
+        void onMouseWheel(float dy);
+
+        const Camera& getCamera() const{ return cam; }
 
     private:
         Camera cam;

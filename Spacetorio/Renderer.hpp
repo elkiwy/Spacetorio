@@ -18,7 +18,7 @@ class Renderer {
         //Render Events
         void renderFrameBegin();
         void renderScene(const Scene& s);
-        void renderGUI(const Scene& s);
+        void renderGUI(Scene& s);
         void renderFrameEnd();
 
         //Drawing operations

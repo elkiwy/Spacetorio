@@ -8,9 +8,9 @@
 class Entity {
     public:
         Entity() = default;
-        Entity(entt::entity handle, Scene* scene);
+        Entity(entt::entity handle, Scene* scene) : enttHandle(handle), scene(scene){ }
         Entity(const Entity& other) = default;
-        virtual ~Entity();
+        virtual ~Entity(){}
 
         template<typename T>
         bool hasComponent(){
@@ -35,7 +35,6 @@ class Entity {
             return scene->registry.remove<T>(enttHandle);
         }
 
-    private:
         entt::entity enttHandle { 0 };
         Scene* scene = nullptr;
 };

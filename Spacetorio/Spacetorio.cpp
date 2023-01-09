@@ -3,12 +3,15 @@
 
 //Using SDL and standard IO
 #include <SDL.h>
+#include <iostream>
+#include <ostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 
 #include "GameController.hpp"
+#include "SDL_keyboard.h"
 #include "SDL_video.h"
 #include "Utils_time.hpp"
 
@@ -30,6 +33,8 @@ int main(int argc, char* args[]) {
     }
 
     //Create window
+    const int TARGET_FPS = 60;
+    const int TARGET_TICKS_PER_FRAME = 1000/TARGET_FPS;
     iSize screenRes = {1280, 720};
     SDL_WindowFlags wf = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN);
     SDL_Window* window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenRes.w, screenRes.h, wf);
@@ -55,10 +60,11 @@ int main(int argc, char* args[]) {
     //Hack to get window to stay up
     Uint32 startTime = 0;
     bool quit = false;
+    Timer capTimer;
     int countedFrames = 0;
-    Timer fpsTimer;
-    fpsTimer.start();
+    Timer fpsTimer; fpsTimer.start();
     while (quit == false) {
+        capTimer.start();
         //Process all the event queue
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
@@ -66,10 +72,16 @@ int main(int argc, char* args[]) {
             if (e.type == SDL_QUIT) {
                 quit = true;
                 gc.quit();
-            }else if(e.type == SDL_KEYDOWN){
-                gc.onKeyDown(e.key.keysym.sym);
+            }else if(e.type == SDL_KEYDOWN && e.key.repeat == 0){
+                gc.onKeyPressed(e.key.keysym.sym);
+            }else if(e.type == SDL_MOUSEWHEEL){
+                gc.onMouseWheel(e.wheel.y);
             }
         }
+
+        //Get the state of the key pressed
+        const Uint8* keyState = SDL_GetKeyboardState(NULL);
+        gc.onKeyDown(keyState);
 
         //Calculate avg fps so far
         float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
@@ -88,6 +100,12 @@ int main(int argc, char* args[]) {
         //Update frame counter
         ++countedFrames;
 
+        // If frame finished early
+        int frameTicks = capTimer.getTicks();
+        if (frameTicks < TARGET_TICKS_PER_FRAME) {
+            // Wait remaining time
+            SDL_Delay(TARGET_TICKS_PER_FRAME - frameTicks);
+        }
     }
 
     //Destroy window

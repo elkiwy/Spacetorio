@@ -9,7 +9,7 @@ class Universe {
         Universe();
         virtual ~Universe();
 
-        const Scene& getCurrentScene();
+        Scene& getCurrentScene();
 
     private:
         std::vector<Planet> planets = {};

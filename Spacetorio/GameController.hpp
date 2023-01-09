@@ -4,6 +4,7 @@
 #include "SDL_keycode.h"
 
 #include "Renderer.hpp"
+#include "SDL_stdinc.h"
 #include "Universe.hpp"
 
 class GameController {
@@ -21,7 +22,9 @@ class GameController {
         void quit();
 
         //User events
-        void onKeyDown(SDL_Keycode key);
+        void onKeyPressed(SDL_Keycode key);
+        void onKeyDown(const Uint8* keyState);
+        void onMouseWheel(float dy);
 
 
     private:
