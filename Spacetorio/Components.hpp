@@ -1,7 +1,9 @@
 #ifndef COMPONENTS_H_
 #define COMPONENTS_H_
 
+#include <array>
 #include <string>
+#include <vcruntime.h>
 #include "SDL_pixels.h"
 #include "Utils_geometry.hpp"
 
@@ -30,11 +32,29 @@ struct PositionComponent{
 struct PlanetComponent{
     float planetSize = 0.0f;
     bool hasAtmosphere = false;
+    entt::entity starSytem{entt::null};
 
     PlanetComponent() = default;
     PlanetComponent(const PlanetComponent&) = default;
     PlanetComponent(float s, bool atm) : planetSize(s), hasAtmosphere(atm) {}
 };
+
+struct StarSystemComponent{
+    size_t nPlanets = 0;
+    std::array<entt::entity, 10> planets = { entt::null };
+
+    StarSystemComponent() = default;
+    StarSystemComponent(const StarSystemComponent&) = default;
+
+    void addPlanet(entt::entity e){
+        for (int p = 0; p < 10; p++) {
+            if (planets[p] == entt::null) {
+                planets[p] = e;
+            }
+        }
+    }
+};
+
 
 struct RenderableCircleComponent{
     float s = 0.0f;

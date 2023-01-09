@@ -37,6 +37,8 @@ class Entity {
 
         entt::entity enttHandle { 0 };
         Scene* scene = nullptr;
+
+        entt::registry& getMyRegistry(){return scene->registry;}
 };
 
 

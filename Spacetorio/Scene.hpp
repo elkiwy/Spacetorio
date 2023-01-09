@@ -6,6 +6,9 @@
 #include "entt.hpp"
 #include "SDL.h"
 
+class Renderer;
+extern Renderer* global_renderer;
+
 class Entity;
 
 class Scene {
@@ -23,6 +26,7 @@ class Scene {
         void onMouseWheel(float dy);
 
         const Camera& getCamera() const{ return cam; }
+        entt::registry& getRegistry(){ return registry; }
 
     private:
         Camera cam;

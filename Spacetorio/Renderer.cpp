@@ -50,17 +50,17 @@ void renderTest(SDL_Renderer* sdlRenderer, int SCREEN_WIDTH, int SCREEN_HEIGHT){
     //SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0x00, 0x00, 0xFF);
     //SDL_RenderFillRect(sdlRenderer, &fillRect);
     // Render green outlined quad
-    SDL_Rect outlineRect = {SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3};
-    SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawRect(sdlRenderer, &outlineRect);
-    // Draw blue horizontal line
-    SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0x00, 0xFF, 0xFF);
-    SDL_RenderDrawLine(sdlRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
-    // Draw vertical line of yellow dots
-    SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0x00, 0xFF);
-    for (int i = 0; i < SCREEN_HEIGHT; i += 4) {
-        SDL_RenderDrawPoint(sdlRenderer, SCREEN_WIDTH / 2, i);
-    }
+    //SDL_Rect outlineRect = {SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3};
+    //SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0xFF, 0x00, 0xFF);
+    //SDL_RenderDrawRect(sdlRenderer, &outlineRect);
+    //// Draw blue horizontal line
+    //SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0x00, 0xFF, 0xFF);
+    //SDL_RenderDrawLine(sdlRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+    //// Draw vertical line of yellow dots
+    //SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0x00, 0xFF);
+    //for (int i = 0; i < SCREEN_HEIGHT; i += 4) {
+    //    SDL_RenderDrawPoint(sdlRenderer, SCREEN_WIDTH / 2, i);
+    //}
 }
 
 
@@ -114,6 +114,14 @@ void Renderer::renderFrameEnd(){
 ** Drawing operations
  */
 
+void Renderer::drawLine(int x1, int y1, int x2, int y2, SDL_Color col){
+    Uint8 prevR; Uint8 prevG; Uint8 prevB; Uint8 prevA;
+    SDL_GetRenderDrawColor(sdlRenderer, &prevR, &prevG, &prevB, &prevA);
+    SDL_SetRenderDrawColor(sdlRenderer, col.r, col.g, col.b, col.a);
+    SDL_RenderDrawLine(sdlRenderer, x1, y1, x2, y2);
+    SDL_SetRenderDrawColor(sdlRenderer, prevR, prevG, prevB, prevA);
+}
+
 void Renderer::drawText(int x, int y, std::string text, SDL_Color col){
     SDL_Surface* textSurf = TTF_RenderText_Solid(currentFont, text.c_str(), col);
 
@@ -125,6 +133,8 @@ void Renderer::drawText(int x, int y, std::string text, SDL_Color col){
     SDL_RenderCopyEx(sdlRenderer, textTexture, NULL, &dstRect, 0, NULL, SDL_FLIP_NONE);
     SDL_DestroyTexture(textTexture);
 }
+
+
 
 void Renderer::drawCircle(int cx, int cy, int radius, SDL_Color col){
     const int32_t diameter = (radius * 2);

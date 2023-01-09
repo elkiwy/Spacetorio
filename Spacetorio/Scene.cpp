@@ -1,29 +1,20 @@
 #include "Scene.hpp"
 #include "Entity.hpp"
+#include "Renderer.hpp"
 #include <iostream>
 #include <ostream>
 #include <string>
 
 #include "SDL_keycode.h"
 #include "SDL_mouse.h"
+#include "SDL_render.h"
 #include "imgui.h"
 
-#include "Planet.hpp"
+#include "Universe.hpp"
 #include "Utils_math.hpp"
 
 Scene::Scene(){
-    for(int i=0;i<10;i++){
-        fPoint pos = {
-            randFloat(300.0f, 700.0f),
-            randFloat(300.0f, 700.0f)
-        };
-        float size = randFloat(50.0f, 100.0f);
-        Planet(registry, this, "Earth "+std::to_string(i), pos, size);
-    }
 
-
-    Planet(registry, this, "test origin", {0.0f, 0.0f}, 10.0f);
-    Planet(registry, this, "test center", {640.0f, 360.0f}, 20.0f);
 }
 
 Scene::~Scene(){
@@ -40,6 +31,15 @@ void Scene::render() const{
         auto [pos, rc] = view.get(entity);
         rc.render(pos, cam);
     }
+
+    //Draw camera crosshair and coordinates
+    int len = 10;
+    iPoint c = {640, 360};
+    global_renderer->drawLine(c.x, c.y-len, c.x, c.y+len, {0,0,0,255});
+    global_renderer->drawLine(c.x-len, c.y, c.x+len, c.y, {0,0,0,255});
+    fPoint worldPos = cam.screenToWorld({(float)c.x, (float)c.y});
+    global_renderer->drawText(c.x, c.y,    std::to_string(worldPos.x), {0,0,0,255});
+    global_renderer->drawText(c.x, c.y+16, std::to_string(worldPos.y), {0,0,0,255});
 }
 
 void Scene::renderGUI(){

@@ -1,9 +1,28 @@
 #+title: Spacetorio Notes
 
 
+* Past steps
+- [X] Add Entt to the project
+- [X] Create Entity Class wrapping all entt methods
+- [X] Create the TransformComponent and recreate the planet entities into the spaceScene
+- [X] render a basic universe view with a moving camera
+- [X] add zoom to camera
+
 * Next steps
-- Add Entt to the project
-- Create Entity Class wrapping all entt methods
-- Create the TransformComponent and recreate the planet entities into the spaceScene
-- render a basic universe view with a moving camera
-- add zoom to camera
+- [ ] Setup simple solar system
+  - SolarSystem class with Planets orbiting their Sun
+
+- [ ] Setup a simple spaceship player
+  - Must be able to land to a planet
+  - Must be influenced by gravity
+
+- [ ] Setup biomes on Planets
+  - Mountains, lakes, caves
+
+- [ ] Add Terraria-like detailed biome generation on landing
+  - 2D side view
+  - tile grid: Dirt, Rocks, Water
+
+
+* Side steps
+- [ ] Universe minimap

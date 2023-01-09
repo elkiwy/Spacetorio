@@ -22,6 +22,7 @@ class Renderer {
         void renderFrameEnd();
 
         //Drawing operations
+        void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
         void drawText(int x, int y, std::string text, SDL_Color col);
         void drawCircle(int cx, int cy, int radius, SDL_Color col);
 
