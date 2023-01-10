@@ -5,9 +5,9 @@
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "Utils_geometry.hpp"
-#include "Scene.hpp"
 #include "SDL_ttf.h"
 
+class Scene;
 extern float global_avgFPS;
 
 class Renderer {
@@ -17,12 +17,13 @@ class Renderer {
 
         //Render Events
         void renderFrameBegin();
-        void renderScene(const Scene& s);
+        void renderScene(Scene& s);
         void renderGUI(Scene& s);
         void renderFrameEnd();
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
+        void drawRect(int cx, int cy, int w, int h, SDL_Color col);
         void drawText(int x, int y, std::string text, SDL_Color col);
         void drawCircle(int cx, int cy, int radius, SDL_Color col);
 

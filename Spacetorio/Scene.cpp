@@ -13,24 +13,28 @@
 #include "Universe.hpp"
 #include "Utils_math.hpp"
 
-Scene::Scene(){
+#include "Components.hpp"
 
+
+Scene::Scene(){
+    registerRenderableComponent<RenderableCircleComponent>();
+    registerRenderableComponent<RenderableRectComponent>();
 }
+
 
 Scene::~Scene(){
 
 }
 
-void Scene::update(){
-    cam.update();
-}
-
-void Scene::render() const{
-    auto view = registry.view<PositionComponent,RenderableCircleComponent>();
+void Scene::render(){
+    //Render all the renderable entities
+    auto view = registry.view<PositionComponent,RenderableComponent>();
     for(auto entity: view){
-        auto [pos, rc] = view.get(entity);
-        rc.render(pos, cam);
+        auto& pos = view.get<PositionComponent>(entity);
+        auto&  rc = view.get<RenderableComponent>(entity);
+        rc.impl->render(pos, cam);
     }
+
 
     //Draw camera crosshair and coordinates
     int len = 10;
@@ -45,6 +49,7 @@ void Scene::render() const{
 void Scene::renderGUI(){
     ImGui::Begin("Active Scene GUI");
 
+    //
     ImGui::Text("Entities");
     ImGui::BeginChild("Scrolling");
     auto view = registry.view<TagComponent, PositionComponent>();
@@ -58,8 +63,7 @@ void Scene::renderGUI(){
     ImGui::EndChild();
     ImGui::End();
 
-
-
+    //Camera
     ImGui::Begin("Camera");
     ImGui::Text("Camera");
     ImGui::SliderFloat("Cam X:", &cam.pos.x, -900.0f, 900.0f);
@@ -69,7 +73,9 @@ void Scene::renderGUI(){
 }
 
 
-void Scene::onKeyDown(const Uint8* ks){
+void Scene::update(const Uint8* ks){
+    cam.update(ks);
+
     if (ks[SDL_SCANCODE_RIGHT] || ks[SDL_SCANCODE_LEFT] || ks[SDL_SCANCODE_DOWN] || ks[SDL_SCANCODE_UP]) {
         float camSpeedInc = 0.5f;
         float camSpdDx = 0.0f;

@@ -1,6 +1,7 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
+#include "SDL_stdinc.h"
 #include "Utils_geometry.hpp"
 #include <ostream>
 
@@ -11,15 +12,15 @@ class Camera {
         }
         virtual ~Camera(){}
 
-        void update() {
+        void update(const Uint8* ks) {
             spd.dampVector(0.95f);
 
             pos += spd;
         }
 
         void moveTo(float x, float y){
-            pos.x = 0;//-screen_size.w*0.5f;
-            pos.y = 0;//-screen_size.h*0.5f;
+            pos.x = 0-screen_size.w*0.5f;
+            pos.y = 0-screen_size.h*0.5f;
         }
 
         void moveBy(float dx, float dy){

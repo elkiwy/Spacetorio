@@ -14,7 +14,7 @@ class GameController {
         Renderer& getRenderer() { return renderer; }
 
         //Game events
-        void update();
+        void update(const Uint8* keyState);
         void renderBegin();
         void render();
         void renderGUI();
@@ -23,7 +23,6 @@ class GameController {
 
         //User events
         void onKeyPressed(SDL_Keycode key);
-        void onKeyDown(const Uint8* keyState);
         void onMouseWheel(float dy);
 
 

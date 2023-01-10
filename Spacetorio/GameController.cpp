@@ -12,9 +12,8 @@ GameController::~GameController(){
 
 }
 
-void GameController::update(){
-    Scene& activeScene = universe.getCurrentScene();
-    activeScene.update();
+void GameController::update(const Uint8* keyState){
+    universe.update(keyState);
 }
 
 void GameController::renderBegin(){
@@ -22,7 +21,7 @@ void GameController::renderBegin(){
 }
 
 void GameController::render(){
-    const Scene& sceneToRender = universe.getCurrentScene();
+    Scene& sceneToRender = universe.getCurrentScene();
     renderer.renderScene(sceneToRender);
 }
 
@@ -41,11 +40,6 @@ void GameController::quit(){
 
 void GameController::onKeyPressed(SDL_Keycode key){
     std::cout << "Key down: " << key << std::endl;
-}
-
-void GameController::onKeyDown(const Uint8* keyState){
-    Scene& activeScene = universe.getCurrentScene();
-    activeScene.onKeyDown(keyState);
 }
 
 void GameController::onMouseWheel(float dy){

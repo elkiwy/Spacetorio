@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string>
 
+#include "Scene.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_sdl.h"
@@ -75,7 +76,7 @@ void Renderer::renderFrameBegin(){
     SDL_RenderClear(sdlRenderer);
 }
 
-void Renderer::renderScene(const Scene& s){
+void Renderer::renderScene(Scene& s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
     s.render();
 
@@ -119,6 +120,15 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, SDL_Color col){
     SDL_GetRenderDrawColor(sdlRenderer, &prevR, &prevG, &prevB, &prevA);
     SDL_SetRenderDrawColor(sdlRenderer, col.r, col.g, col.b, col.a);
     SDL_RenderDrawLine(sdlRenderer, x1, y1, x2, y2);
+    SDL_SetRenderDrawColor(sdlRenderer, prevR, prevG, prevB, prevA);
+}
+
+void Renderer::drawRect(int cx, int cy, int w, int h, SDL_Color col){
+    Uint8 prevR; Uint8 prevG; Uint8 prevB; Uint8 prevA;
+    SDL_GetRenderDrawColor(sdlRenderer, &prevR, &prevG, &prevB, &prevA);
+    SDL_SetRenderDrawColor(sdlRenderer, col.r, col.g, col.b, col.a);
+    SDL_Rect fillRect = {cx-w/2, cy-h/2, w, h};
+    SDL_RenderFillRect(sdlRenderer, &fillRect);
     SDL_SetRenderDrawColor(sdlRenderer, prevR, prevG, prevB, prevA);
 }
 

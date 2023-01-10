@@ -79,17 +79,14 @@ int main(int argc, char* args[]) {
             }
         }
 
-        //Get the state of the key pressed
-        const Uint8* keyState = SDL_GetKeyboardState(NULL);
-        gc.onKeyDown(keyState);
-
         //Calculate avg fps so far
         float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
         if (avgFPS > 2000000){avgFPS = 0;}
         global_avgFPS = avgFPS;
 
-        //Update the game logic
-        gc.update();
+        //Update logic
+        const Uint8* keyState = SDL_GetKeyboardState(NULL);
+        gc.update(keyState);
 
         //Render updates on screen
         gc.renderBegin();
