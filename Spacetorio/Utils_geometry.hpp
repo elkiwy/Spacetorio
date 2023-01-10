@@ -1,11 +1,16 @@
 #ifndef UTILS_GEOMETRY_H_
 #define UTILS_GEOMETRY_H_
 
+#include "SDL_stdinc.h"
 #include <cstdlib>
 #include <deque>
 #include <ostream>
 #include <iostream>
 #include <xstring>
+
+inline float deg2rad(float d){
+    return d * (M_PI/180.0f);
+}
 
 class fPoint {
     public:
@@ -33,8 +38,18 @@ class fPoint {
             return *this;
         }
 
+        fPoint rotatedPoint(float ang, fPoint orig) const{
+            float s = sin(ang); float c = cos(ang);
+            fPoint pt = {this->x - orig.x, this->y - orig.y};
+            fPoint newPt = {pt.x*c - pt.y*s, pt.x*s + pt.y*c};
+            newPt += orig;
+            return newPt;
+        }
+
         fPoint operator+(fPoint& other){return {x+other.x, y+other.y};}
         fPoint operator-(fPoint& other){return {x-other.x, y-other.y};}
+        fPoint operator+(const fPoint& other) const{return {x+other.x, y+other.y};}
+        fPoint operator-(const fPoint& other) const{return {x-other.x, y-other.y};}
 
         float x;
         float y;

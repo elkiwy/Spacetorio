@@ -8,16 +8,15 @@
 - [X] render a basic universe view with a moving camera
 - [X] add zoom to camera
 
+- [X] Setup simple solar system
+
 * Next steps
-- [ ] Setup simple solar system
-  - SolarSystem class with Planets orbiting their Sun
+- [ ] Setup biomes on Planets
+  - Mountains, lakes, caves
 
 - [ ] Setup a simple spaceship player
   - Must be able to land to a planet
   - Must be influenced by gravity
-
-- [ ] Setup biomes on Planets
-  - Mountains, lakes, caves
 
 - [ ] Add Terraria-like detailed biome generation on landing
   - 2D side view
@@ -26,3 +25,4 @@
 
 * Side steps
 - [ ] Universe minimap
+- [ ] Planets orbiting their Sun in StarSystem

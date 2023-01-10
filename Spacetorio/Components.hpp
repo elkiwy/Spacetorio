@@ -1,21 +1,14 @@
 #ifndef COMPONENTS_H_
 #define COMPONENTS_H_
 
-#include <array>
-#include <iostream>
-#include <string>
-#include <vcruntime.h>
-#include "SDL_pixels.h"
-#include "SDL_stdinc.h"
-#include "Utils_geometry.hpp"
-#include "entt.hpp"
+#include "Entity.hpp"
 
-#include "Camera.hpp"
+#include "Components_updatable.hpp"
+#include "Components_position.hpp"
 
 #include "Renderer.hpp"
+#include <iostream>
 extern Renderer* global_renderer;
-
-struct PositionComponent;
 
 
 
@@ -28,30 +21,24 @@ struct TagComponent{
 };
 
 
-struct PositionComponent{
-    fPoint pos = {0.0f,0.0f};
-    fVec spd = {0.0f,0.0f};
 
-    PositionComponent() = default;
-    PositionComponent(const PositionComponent&) = default;
-    PositionComponent(const fPoint& p) : pos(p) {}
-    PositionComponent(float x, float y) : pos({x,y}) {}
 
-    void update(const Uint8* ks){
-        pos += spd;
+struct PlayerSpaceshipComponent : public UpdatableComponent {
+    PlayerSpaceshipComponent() = default;
+    PlayerSpaceshipComponent(const PlayerSpaceshipComponent &) = default;
+
+    void update(Entity& e, const Uint8 *ks) override {
+        float inc = 0.1f;
+        fVec acc = {0.0f, 0.0f};
+        if (ks[SDL_SCANCODE_D]) acc.x += inc;
+        if (ks[SDL_SCANCODE_A]) acc.x -= inc;
+        if (ks[SDL_SCANCODE_S]) acc.y += inc;
+        if (ks[SDL_SCANCODE_W]) acc.y -= inc;
+        auto& pos = e.getComponent<PositionComponent>();
+        pos.spd += acc;
     }
 };
 
-
-struct PlanetComponent{
-    float planetSize = 0.0f;
-    bool hasAtmosphere = false;
-    entt::entity starSytem{entt::null};
-
-    PlanetComponent() = default;
-    PlanetComponent(const PlanetComponent&) = default;
-    PlanetComponent(float s, bool atm) : planetSize(s), hasAtmosphere(atm) {}
-};
 
 struct StarSystemComponent{
     size_t nPlanets = 0;
@@ -71,57 +58,6 @@ struct StarSystemComponent{
 
 
 
-
-/*
-**
-** Renderable Components
-**
-*/
-
-//Base Component
-struct RenderableComponent{
-    RenderableComponent* impl = nullptr;
-
-    RenderableComponent() = default;
-    RenderableComponent(const RenderableComponent&) = default;
-    RenderableComponent(RenderableComponent* impl) : impl(impl) {}
-
-    virtual void render(const PositionComponent& posComp, const Camera& cam) const{
-        std::cout << "WARNING: Trying to render generic RenderableComponent! Use the impl instead." << std::endl;
-    }
-};
-
-//Circle Renderer
-struct RenderableCircleComponent : public RenderableComponent{
-    float s = 0.0f;
-    SDL_Color c = {255, 255, 255, 255};
-
-    RenderableCircleComponent() = default;
-    RenderableCircleComponent(const RenderableCircleComponent&) = default;
-    RenderableCircleComponent(float s, SDL_Color c = {255,255,255,255}) : s(s), c(c) {}
-
-    void render(const PositionComponent& posComp, const Camera& cam) const override{
-        auto& pos = posComp.pos;
-        const fPoint screenPos = cam.worldToScreen({pos.x, pos.y});
-        global_renderer->drawCircle(screenPos.x, screenPos.y, this->s * cam.zoom, this->c);
-    }
-};
-
-//Rect Renderer
-struct RenderableRectComponent : public RenderableComponent{
-    fSize size  = {0.0f, 0.0f};
-    SDL_Color c = {255, 255, 255, 255};
-
-    RenderableRectComponent() = default;
-    RenderableRectComponent(const RenderableRectComponent&) = default;
-    RenderableRectComponent(float w, float h, SDL_Color c = {255,255,255,255}) : size(w, h) {}
-
-    void render(const PositionComponent& posComp, const Camera& cam) const override{
-        auto& pos = posComp.pos;
-        const fPoint screenPos = cam.worldToScreen({pos.x, pos.y});
-        global_renderer->drawRect(screenPos.x, screenPos.y, size.w*cam.zoom, size.h*cam.zoom, this->c);
-    }
-};
 
 
 

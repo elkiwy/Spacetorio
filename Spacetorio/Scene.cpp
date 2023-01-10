@@ -14,11 +14,19 @@
 #include "Utils_math.hpp"
 
 #include "Components.hpp"
+#include "Components_updatable.hpp"
+#include "Components_position.hpp"
+#include "Components_renderables.hpp"
+#include "Components_planet.hpp"
 
 
 Scene::Scene(){
-    registerRenderableComponent<RenderableCircleComponent>();
-    registerRenderableComponent<RenderableRectComponent>();
+    registerGenericComponent<RenderableComponent, RenderableCircleComponent>();
+    registerGenericComponent<RenderableComponent, RenderableRectComponent>();
+    registerGenericComponent<RenderableComponent, PlanetComponent>();
+
+    registerGenericComponent<UpdatableComponent, PositionComponent>();
+    registerGenericComponent<UpdatableComponent, PlayerSpaceshipComponent>();
 }
 
 
@@ -31,10 +39,12 @@ void Scene::render(){
     auto view = registry.view<PositionComponent,RenderableComponent>();
     for(auto entity: view){
         auto& pos = view.get<PositionComponent>(entity);
-        auto&  rc = view.get<RenderableComponent>(entity);
-        rc.impl->render(pos, cam);
+        auto& renderable = view.get<RenderableComponent>(entity);
+        for(auto impl: renderable.impls){
+            if (impl == nullptr){break;}
+            ((RenderableComponent*)impl)->render(pos, cam);
+        }
     }
-
 
     //Draw camera crosshair and coordinates
     int len = 10;
@@ -52,11 +62,36 @@ void Scene::renderGUI(){
     //
     ImGui::Text("Entities");
     ImGui::BeginChild("Scrolling");
-    auto view = registry.view<TagComponent, PositionComponent>();
-    for(auto entity: view){
-        auto [tag, pos] = view.get<TagComponent, PositionComponent>(entity);
-        if (ImGui::TreeNode(tag.tag.c_str())){
-            ImGui::Text("Position:");
+    auto view = registry.view<TagComponent>();
+    for(auto e: view){
+        auto& tag  = view.get<TagComponent>(e);
+        std::string name = tag.tag + "("+std::to_string((int)e)+")";
+        if (ImGui::TreeNode(name.c_str())){
+
+            if (registry.any_of<UpdatableComponent>(e)){
+                ImGui::Text("UpdatableComponent : YES");
+            }
+
+            if (registry.any_of<PositionComponent>(e)){
+                auto& pos = registry.get<PositionComponent>(e);
+                ImGui::Text("Position:");
+                ImGui::SliderFloat("Pos X:", &pos.pos.x, -900.0f, 900.0f);
+                ImGui::SliderFloat("Pos Y:", &pos.pos.y, -900.0f, 900.0f);
+                ImGui::SliderFloat("Speed X:", &pos.spd.x, -10.0f, 10.0f);
+                ImGui::SliderFloat("Speed Y:", &pos.spd.y, -10.0f, 10.0f);
+            }
+
+            if (registry.any_of<RenderableComponent>(e)){
+                ImGui::Text("RenderableComponent : YES");
+            }
+
+            if (registry.any_of<RenderableCircleComponent>(e)){
+                auto& rc = registry.get<RenderableCircleComponent>(e);
+                ImGui::Text("Renderable Circle:");
+                ImGui::SliderFloat("Size", &rc.s, -900.0f, 900.0f);
+            }
+
+
             ImGui::TreePop();
         }
     }
@@ -74,8 +109,7 @@ void Scene::renderGUI(){
 
 
 void Scene::update(const Uint8* ks){
-    cam.update(ks);
-
+    //Process inputs
     if (ks[SDL_SCANCODE_RIGHT] || ks[SDL_SCANCODE_LEFT] || ks[SDL_SCANCODE_DOWN] || ks[SDL_SCANCODE_UP]) {
         float camSpeedInc = 0.5f;
         float camSpdDx = 0.0f;
@@ -86,6 +120,20 @@ void Scene::update(const Uint8* ks){
         if (ks[SDL_SCANCODE_UP]) camSpdDy -= camSpeedInc;
         cam.addSpd(camSpdDx, camSpdDy);
     }
+
+    //Update all the updatable entities
+    auto view = registry.view<UpdatableComponent, PositionComponent>();
+    for(auto entity: view){
+        auto& updatable = view.get<UpdatableComponent>(entity);
+        Entity e = {entity, this};
+        for(auto impl: updatable.impls){
+            if (impl == nullptr){break;}
+            ((UpdatableComponent*)impl)->update(e, ks);
+        }
+    }
+
+    //Update camera
+    cam.update(ks);
 }
 
 

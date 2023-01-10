@@ -43,7 +43,6 @@ void GameController::onKeyPressed(SDL_Keycode key){
 }
 
 void GameController::onMouseWheel(float dy){
-    std::cout << "Mouse wheel: " << dy << std::endl;
     Scene& activeScene = universe.getCurrentScene();
     activeScene.onMouseWheel(dy);
 }

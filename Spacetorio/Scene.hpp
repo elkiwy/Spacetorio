@@ -5,8 +5,8 @@
 #include "SDL_stdinc.h"
 #include "entt.hpp"
 #include "SDL.h"
+#include "Components_generic.hpp"
 
-#include "Components.hpp"
 
 class Renderer;
 extern Renderer* global_renderer;
@@ -14,11 +14,20 @@ extern Renderer* global_renderer;
 class Entity;
 
 
-// Attach a generic RenderableComponent too, so it's easier to do generic registry.view<RenderableComponent>()
-template <typename C>
-void attachBaseRenderable(entt::registry &reg, entt::entity ent) {
-    auto &derivedRenderComp = reg.get<C>(ent);
-    reg.emplace<RenderableComponent>(ent, &derivedRenderComp);
+// Attach a generic component, so it's easier to do generic queries for events
+// like registry.view<RenderableComponent>()
+template <typename B, typename D>
+void attachGenericComponent(entt::registry &reg, entt::entity ent) {
+    auto &derivedComp = reg.get<D>(ent);
+
+    if(reg.any_of<B>(ent)){
+        //Has already the base class, register the other derived component to it
+        GenericComponent& generic = reg.get<B>(ent);
+        generic.addImpl(&derivedComp);
+    }else{
+        //Create a new Generic component
+        reg.emplace<B>(ent, &derivedComp);
+    }
 }
 
 
@@ -28,9 +37,9 @@ class Scene {
         Scene(const Scene& other) = delete;
         virtual ~Scene();
 
-        template<typename C>
-        void registerRenderableComponent() {
-            registry.on_construct<C>().template connect<&attachBaseRenderable<C>>();
+        template<typename B, typename D>
+        void registerGenericComponent() {
+            registry.on_construct<D>().template connect<&attachGenericComponent<B, D>>();
         }
 
         void render();
@@ -39,7 +48,7 @@ class Scene {
         void update(const Uint8* keyState);
         void onMouseWheel(float dy);
 
-        const Camera& getCamera() const{ return cam; }
+        Camera& getCamera() { return cam; }
         entt::registry& getRegistry(){ return registry; }
 
     private:

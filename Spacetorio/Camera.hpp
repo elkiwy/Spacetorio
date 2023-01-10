@@ -3,69 +3,38 @@
 
 #include "SDL_stdinc.h"
 #include "Utils_geometry.hpp"
+#include "Entity.hpp"
 #include <ostream>
+
+class PositionComponent;
 
 class Camera {
     public:
-        Camera(){
-            moveTo(0, 0);
-        }
-        virtual ~Camera(){}
+        Camera();
+        virtual ~Camera();
 
-        void update(const Uint8* ks) {
-            spd.dampVector(0.95f);
+        void update(const Uint8* ks) ;
 
-            pos += spd;
-        }
+        void moveTo(float x, float y);
+        void moveBy(float dx, float dy);
+        void addSpd(float dx, float dy);
 
-        void moveTo(float x, float y){
-            pos.x = 0-screen_size.w*0.5f;
-            pos.y = 0-screen_size.h*0.5f;
-        }
+        void zoomBy(float dy, fPoint screenRef);
 
-        void moveBy(float dx, float dy){
-            pos.x += dx;
-            pos.y += dy;
-        }
+        fPoint screenToWorld(fPoint screenPos) const;
+        fPoint worldToScreen(fPoint worldPos) const;
 
-        void addSpd(float dx, float dy){
-            spd.x += dx;
-            spd.y += dy;
-        }
-
-        void zoomBy(float dy, fPoint screenRef){
-            fPoint worldRef = screenToWorld(screenRef);
-            zoom += dy;
-            fPoint movedScreenRef = worldToScreen(worldRef);
-
-            //screenRef should remain fixed, so we need the diff
-            //fVec diff = movedScreenRef - screenRef;
-            fVec diff = screenRef - movedScreenRef;
-            moveBy(-diff.x/zoom, -diff.y/zoom);
-        }
-
-        fPoint screenToWorld(fPoint screenPos) const{
-            return {
-                (screenPos.x/zoom) + pos.x,
-                (screenPos.y/zoom) + pos.y
-            };
-        }
-
-        fPoint worldToScreen(fPoint worldPos) const{
-            return {
-                (worldPos.x-pos.x)*zoom,
-                (worldPos.y-pos.y)*zoom
-            };
-        }
+        void setTarget(PositionComponent* p);
+        void setTarget(Entity e);
 
 
-
-        fVec spd   = fVec(0.0f, 0.0f);
+        fVec   spd = fVec(0.0f, 0.0f);
         fPoint pos = fPoint(0,0);
-        fSize size = fSize(100,100);
         float zoom = 1.0f;
         fSize screen_size = {1280.0f, 720.0f};
-        fSize viewport_size = {1280.0f, 720.0f};
+
+        PositionComponent* target = nullptr;
+
 };
 
 

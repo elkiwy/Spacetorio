@@ -79,11 +79,6 @@ void Renderer::renderFrameBegin(){
 void Renderer::renderScene(Scene& s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
     s.render();
-
-
-    ////Origin reference
-    //auto cam = s.getCamera();
-    //drawCircle(0-cam.pos.x*cam.zoom, 0-cam.pos.y*cam.zoom, 30.0f*cam.zoom, {255, 255, 0, 255});
 }
 
 void Renderer::renderGUI(Scene& s){
