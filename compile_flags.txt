@@ -3,4 +3,10 @@
 -IC:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.34.31933\include
 -ISpacetorio\vendor\entt\include
 -ISpacetorio\vendor\imgui
+
+-I/opt/homebrew/Cellar/sdl2/2.24.2/include/SDL2
+-I/opt/homebrew/Cellar/sdl2_ttf/2.20.1/include/SDL2
+-ISpacetorio/vendor/entt/include
+-ISpacetorio/vendor/imgui
+
 -std=c++20

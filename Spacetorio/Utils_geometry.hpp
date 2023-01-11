@@ -6,7 +6,11 @@
 #include <deque>
 #include <ostream>
 #include <iostream>
+
+#ifdef __APPLE__
+#else
 #include <xstring>
+#endif
 
 inline float deg2rad(float d){
     return d * (M_PI/180.0f);
