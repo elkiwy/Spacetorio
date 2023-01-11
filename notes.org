@@ -13,6 +13,9 @@
 * Next steps
 - [ ] Setup biomes on Planets
   - Mountains, lakes, caves
+  - PerlinNoise for generation
+  - Generate ground level
+  - Draw it warped to the planet circle
 
 - [ ] Setup a simple spaceship player
   - Must be able to land to a planet
@@ -26,3 +29,7 @@
 * Side steps
 - [ ] Universe minimap
 - [ ] Planets orbiting their Sun in StarSystem
+
+
+
+
