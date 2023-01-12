@@ -32,6 +32,7 @@ endif()
 
 
 # Cross platform paths
+set(SIVPERLIN_INCLUDE_DIRS "vendor/SivPerlinNoise/include")
 set(ENTT_INCLUDE_DIRS "vendor/entt/include")
 set(IMGUI_INCLUDE_DIRS "vendor/imgui")
 set(RES_FOLDER "res")
@@ -41,6 +42,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_TTF_INCLUDE_DIRS})
 include_directories(${ENTT_INCLUDE_DIRS})
 include_directories(${IMGUI_INCLUDE_DIRS})
+include_directories(${SIVPERLIN_INCLUDE_DIRS})
 
 # Add ImGui
 add_subdirectory ("vendor/imgui")

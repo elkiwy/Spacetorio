@@ -1,19 +1,26 @@
 #include "Renderer.hpp"
+#include "SDL_pixels.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include "SDL_surface.h"
 #include "SDL_ttf.h"
+#include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include <string>
 
 #include "Scene.hpp"
 
+#include "Utils_math.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_sdlrenderer.h"
 
+#include "PerlinNoise.hpp"
+
 Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
+    std::cout << "Renderer initializing..." << std::endl;
     sdlWindow = sdlWin;
     sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
     if (sdlRenderer == NULL){
@@ -31,9 +38,19 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(sdlWin, sdlRenderer);
     ImGui_ImplSDLRenderer_Init(sdlRenderer);
+
+
+    //DEBUG: cose
+    SDL_Surface* testSurf = createSurfaceFromNoise({500,500}, {0.01f,0.01f}, 4, 0.65f, time(NULL));
+    debugTexture = Texture(testSurf, sdlRenderer);
+    SDL_FreeSurface(testSurf);
+    std::cout << "Renderer Initialized." << std::endl;
 }
 
 Renderer::~Renderer(){
+    debugTexture.free();
+
+    std::cout << "Renderer destroying..." << std::endl;
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -42,8 +59,8 @@ Renderer::~Renderer(){
     SDL_DestroyRenderer(sdlRenderer);
     currentFont = NULL;
     sdlRenderer = NULL;
+    std::cout << "Renderer destroyed." << std::endl;
 }
-
 
 void renderTest(SDL_Renderer* sdlRenderer, int SCREEN_WIDTH, int SCREEN_HEIGHT){
     //// Render red filled quad
@@ -79,6 +96,8 @@ void Renderer::renderFrameBegin(){
 void Renderer::renderScene(Scene& s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
     s.render();
+
+    drawTexture(debugTexture, 10, 100);
 }
 
 void Renderer::renderGUI(Scene& s){
@@ -139,7 +158,10 @@ void Renderer::drawText(int x, int y, std::string text, SDL_Color col){
     SDL_DestroyTexture(textTexture);
 }
 
-
+void Renderer::drawTexture(const Texture& t, int x, int y){
+    SDL_Rect dstRect = {x, y, (int)t.w, (int)t.h};
+    SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, 0, NULL, SDL_FLIP_NONE);
+}
 
 void Renderer::drawCircle(int cx, int cy, int radius, SDL_Color col){
     const int32_t diameter = (radius * 2);
