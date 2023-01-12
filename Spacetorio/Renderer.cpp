@@ -38,14 +38,9 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(sdlWin, sdlRenderer);
     ImGui_ImplSDLRenderer_Init(sdlRenderer);
-
-
-    //DEBUG: cose
-    SDL_Surface* testSurf = createSurfaceFromNoise({500,500}, {0.01f,0.01f}, 4, 0.65f, time(NULL));
-    debugTexture = Texture(testSurf, sdlRenderer);
-    SDL_FreeSurface(testSurf);
     std::cout << "Renderer Initialized." << std::endl;
 }
+
 
 Renderer::~Renderer(){
     debugTexture.free();
@@ -97,7 +92,7 @@ void Renderer::renderScene(Scene& s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
     s.render();
 
-    drawTexture(debugTexture, 10, 100);
+    if (debugTexture.initialized){drawTexture(debugTexture, 10, 100);}
 }
 
 void Renderer::renderGUI(Scene& s){
@@ -110,6 +105,12 @@ void Renderer::renderGUI(Scene& s){
 
     //Scene GUI
     s.renderGUI();
+
+    if (gen.renderGUI()){
+        SDL_Surface *testSurf = gen.createSurfaceFromNoise();
+        debugTexture = Texture(testSurf, sdlRenderer);
+        SDL_FreeSurface(testSurf);
+    }
 
     //Rendere and complete ImGui
     ImGui::Render();

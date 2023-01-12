@@ -6,13 +6,16 @@
 #include <string>
 #include "SDL_pixels.h"
 #include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include "Utils_geometry.hpp"
+#include "Utils_math.hpp"
 #include "SDL_ttf.h"
 
 class Scene;
 extern float global_avgFPS;
 
 struct Texture{
+    bool initialized = false;
     SDL_Texture* sdlTexture = nullptr;
     size_t w = 0;
     size_t h = 0;
@@ -27,6 +30,7 @@ struct Texture{
       this->sdlTexture = SDL_CreateTextureFromSurface(sdlRenderer, s);
       this->w = s->w;
       this->h = s->h;
+      this->initialized = true;
       std::cout << "Creating texture with size: " << w << " " << h << std::endl;
     }
 };
@@ -55,6 +59,7 @@ class Renderer {
         SDL_Window* sdlWindow = nullptr;
         SDL_Renderer* sdlRenderer = nullptr;
 
+        NoiseSurfaceGenerator gen;
         Texture debugTexture;
 
         bool imgui_showDemo = true;

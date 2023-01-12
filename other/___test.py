@@ -41,7 +41,7 @@ def dstToSrc(dstX, dstY, Ro, Ri, srcWidth, srcHeight, angleRange):
 
 arcAngle = 120
 arcAngleRange = [m.radians(-(arcAngle/2)-90), m.radians((arcAngle/2)-90)]
-arcAngleRange = [m.radians(-180), m.radians(180)]
+#arcAngleRange = [m.radians(-180), m.radians(180)]
 
 #Cycle all the pixels in the destination image
 for i in range(int(Ro)): # 0-100
