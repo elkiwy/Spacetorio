@@ -12,6 +12,10 @@ GameController::~GameController(){
 
 }
 
+void GameController::init(){
+    universe.init();
+}
+
 void GameController::update(const Uint8* keyState){
     universe.update(keyState);
 }

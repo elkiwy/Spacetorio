@@ -16,7 +16,7 @@
 #include "PerlinNoise.hpp"
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
-#include "Utils_geometry.hpp"
+#include "Utils_points.hpp"
 #include "imgui.h"
 
 inline int randInt(int min, int max){
@@ -135,11 +135,8 @@ class NoiseSurfaceGenerator{
 
     SDL_Surface* createSurfaceFromNoise(){
         int imgW = floor(size.w); int imgH = floor(size.h);
-
-        std::vector<Uint8> pixelsData;
-        pixelsData.reserve(imgW*imgH*4);
-        std::fill(pixelsData.begin(), pixelsData.end(), 0);
-
+        SDL_Surface* s = SDL_CreateRGBSurface(0, imgW, imgH, 32, 0, 0, 0, 0);
+        Uint8* pixelsData = (Uint8*)s->pixels;
         std::cout << "using " << imgW << " " << imgH << std::endl;
 
         const siv::PerlinNoise perlin{(siv::PerlinNoise::seed_type)seed};
@@ -184,19 +181,38 @@ class NoiseSurfaceGenerator{
                 //pixelsData[(i+(imgW*j))*4 + 3] = 255;
             }
         }
-        SDL_Surface* s = SDL_CreateRGBSurfaceFrom(&pixelsData[0], imgW, imgH, 32, imgW*4, 0, 0, 0, 0);
-
 
         //void* pixelsData = &chunkData_lowRes[0];
         //int imgW = size.w; int imgH = size.h;
         //SDL_Surface* s = SDL_CreateRGBSurfaceFrom(pixelsData, imgW, imgH, 32, imgW*4, 0, 0, 0, 0);
-        SDL_SaveBMP(s, "testone.bmp");
+        //SDL_SaveBMP(s, "testone.bmp");
         //SDL_FreeSurface(s);
 
 
         return s;
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

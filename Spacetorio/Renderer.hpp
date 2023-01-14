@@ -7,33 +7,15 @@
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
-#include "Utils_geometry.hpp"
+#include "Utils_points.hpp"
 #include "Utils_math.hpp"
 #include "SDL_ttf.h"
+
+#include "Texture.hpp"
 
 class Scene;
 extern float global_avgFPS;
 
-struct Texture{
-    bool initialized = false;
-    SDL_Texture* sdlTexture = nullptr;
-    size_t w = 0;
-    size_t h = 0;
-
-    Texture() = default;
-    void free(){
-        SDL_DestroyTexture(this->sdlTexture);
-        w = 0; h = 0;
-    }
-
-    Texture(SDL_Surface *s, SDL_Renderer* sdlRenderer) {
-      this->sdlTexture = SDL_CreateTextureFromSurface(sdlRenderer, s);
-      this->w = s->w;
-      this->h = s->h;
-      this->initialized = true;
-      std::cout << "Creating texture with size: " << w << " " << h << std::endl;
-    }
-};
 
 class Renderer {
     public:
@@ -51,7 +33,9 @@ class Renderer {
         void drawRect(int cx, int cy, int w, int h, SDL_Color col);
         void drawText(int x, int y, std::string text, SDL_Color col);
         void drawCircle(int cx, int cy, int radius, SDL_Color col);
-        void drawTexture(const Texture& tex, int x, int y);
+        void drawTexture(const Texture& tex, int cx, int cy, float angle = 0.0f, float scale = 1.0f);
+
+        SDL_Renderer* getSdlRenderer(){return sdlRenderer;};
 
     private:
         iSize screenRes;

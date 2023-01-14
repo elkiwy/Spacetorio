@@ -2,99 +2,99 @@
 #define UTILS_GEOMETRY_H_
 
 #include "SDL_stdinc.h"
+#include "Utils_points.hpp"
 #include <cstdlib>
 #include <deque>
 #include <ostream>
 #include <iostream>
 
-#ifdef __APPLE__
-#else
-#include <xstring>
-#endif
+inline float deg2rad(float d);
+inline float rad2deg(float r);
 
-inline float deg2rad(float d){
-    return d * (M_PI/180.0f);
-}
 
-class fPoint {
+class ShapeLine;
+class ShapeCircle;
+class ShapeRectangle;
+
+/*
+** Shape
+*/
+
+class Shape{
     public:
-        fPoint(float x, float y) : x(x), y(y) {}
-        virtual ~fPoint() = default;
-
-        void dampVector(float factor, float zeroThreshold = 0.01f){
-            x *= factor;
-            y *= factor;
-
-            //checks for zero correction
-            if (abs(x) < zeroThreshold){x = 0.0f;}
-            if (abs(y) < zeroThreshold){y = 0.0f;}
-        }
-
-        fPoint& operator+=(const fPoint& other){
-            x += other.x;
-            y += other.y;
-            return *this;
-        }
-
-        fPoint& operator-=(const fPoint& other){
-            x -= other.x;
-            y -= other.y;
-            return *this;
-        }
-
-        fPoint rotatedPoint(float ang, fPoint orig) const{
-            float s = sin(ang); float c = cos(ang);
-            fPoint pt = {this->x - orig.x, this->y - orig.y};
-            fPoint newPt = {pt.x*c - pt.y*s, pt.x*s + pt.y*c};
-            newPt += orig;
-            return newPt;
-        }
-
-        fPoint operator+(fPoint& other){return {x+other.x, y+other.y};}
-        fPoint operator-(fPoint& other){return {x-other.x, y-other.y};}
-        fPoint operator+(const fPoint& other) const{return {x+other.x, y+other.y};}
-        fPoint operator-(const fPoint& other) const{return {x-other.x, y-other.y};}
-
-        float x;
-        float y;
-};
-
-class iPoint {
-    public:
-        iPoint(int x, int y) : x(x), y(y) {}
-        virtual ~iPoint() = default;
-
-        int x;
-        int y;
-};
-
-class fSize {
-    public:
-        fSize(float w, float h) : w(w), h(h) {}
-        virtual ~fSize() = default;
-
-        fSize operator+(fSize& other){return {w+other.w, h+other.h};}
-        fSize operator-(fSize& other){return {w-other.w, h-other.h};}
-        fSize operator+(const fSize& other){return {w+other.w, h+other.h};}
-        fSize operator-(const fSize& other){return {w-other.w, h-other.h};}
-
-        float w;
-        float h;
-};
-
-class iSize {
-    public:
-        iSize(int w, int h) : w(w), h(h) {}
-        virtual ~iSize() = default;
-
-        int w;
-        int h;
+        virtual bool checkCollision(const Shape& other) const = 0;
+        virtual bool checkCollisionWithLine(const ShapeLine& other) const = 0;
+        virtual bool checkCollisionWithCircle(const ShapeCircle& other) const = 0;
+        virtual bool checkCollisionWithRectangle(const ShapeRectangle& other) const = 0;
 };
 
 
-std::ostream &operator<<(std::ostream &os, fPoint const &p);
-std::ostream &operator<<(std::ostream &os, fSize const &p);
+/*
+** ShapeLine
+*/
 
-using fVec = fPoint;
+class ShapeLine : public Shape{
+    public:
+        ShapeLine(float x1, float y1, float x2, float y2);
+        ShapeLine(fPoint p1, fPoint p2);
+        ~ShapeLine();
+
+        bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithLine(const ShapeLine& other) const;
+        bool checkCollisionWithCircle(const ShapeCircle& other) const;
+        bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
+
+        fPoint p1;
+        fPoint p2;
+};
+std::ostream &operator<<(std::ostream &os, ShapeLine const &p);
+
+
+/*
+** ShapeCircle
+*/
+
+class ShapeCircle : public Shape{
+    public:
+        ShapeCircle(float x, float y, float r);
+        ShapeCircle(fPoint c, float r);
+        ~ShapeCircle();
+
+        bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithLine(const ShapeLine& other) const;
+        bool checkCollisionWithCircle(const ShapeCircle& other) const;
+        bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
+
+        fPoint c;
+        float r;
+};
+std::ostream &operator<<(std::ostream &os, ShapeCircle const &p);
+
+
+
+/*
+** ShapeRectangle
+*/
+
+class ShapeRectangle : public Shape{
+    public:
+        ShapeRectangle(float x, float y, float w, float h);
+        ShapeRectangle(fPoint pos, fSize size);
+        ~ShapeRectangle();
+
+        bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithLine(const ShapeLine& other) const;
+        bool checkCollisionWithCircle(const ShapeCircle& other) const;
+        bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
+
+        fPoint pos;
+        fSize size;
+};
+std::ostream &operator<<(std::ostream &os, ShapeRectangle const &p);
+
+
 
 #endif // UTILS_GEOMETRY_H_
+
+
+

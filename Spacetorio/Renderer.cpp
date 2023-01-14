@@ -26,11 +26,15 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     if (sdlRenderer == NULL){
         std::cout << "\n\nCouldn't initialize SDL_Renderer, probably will crash soon!\n\n" << std::endl << std::flush;
     }
-
+    
     currentFont = TTF_OpenFont("Spacetorio/res/fonts/DejaVuSansMono.ttf", 16);
     if (currentFont == NULL){
-        std::cout << "\n\nCouldn't initialize Font, probably will crash soon!\n\n" << std::endl << std::flush;
+        currentFont = TTF_OpenFont("res/fonts/DejaVuSansMono.ttf", 16);
+        if (currentFont == NULL) {
+            std::cout << "\n\nCouldn't initialize Font, probably will crash soon!\n\n" << std::endl << std::flush;
+        }
     }
+    
 
     //ImGui Stuff
     IMGUI_CHECKVERSION();
@@ -84,7 +88,7 @@ void renderTest(SDL_Renderer* sdlRenderer, int SCREEN_WIDTH, int SCREEN_HEIGHT){
 
 void Renderer::renderFrameBegin(){
     //Clear screen
-    SDL_SetRenderDrawColor(sdlRenderer, 0x8F, 0x00, 0x8F, 0xFF);
+    SDL_SetRenderDrawColor(sdlRenderer, 0x80, 0x80, 0x80, 0xFF);
     SDL_RenderClear(sdlRenderer);
 }
 
@@ -92,7 +96,7 @@ void Renderer::renderScene(Scene& s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
     s.render();
 
-    if (debugTexture.initialized){drawTexture(debugTexture, 10, 100);}
+    //if (debugTexture.initialized){drawTexture(debugTexture, 10, 100);}
 }
 
 void Renderer::renderGUI(Scene& s){
@@ -106,11 +110,11 @@ void Renderer::renderGUI(Scene& s){
     //Scene GUI
     s.renderGUI();
 
-    if (gen.renderGUI() || debugTexture.initialized == false){
-        SDL_Surface *testSurf = gen.createSurfaceFromNoise();
-        debugTexture = Texture(testSurf, sdlRenderer);
-        SDL_FreeSurface(testSurf);
-    }
+    //if (gen.renderGUI() || debugTexture.initialized == false){
+    //    SDL_Surface *testSurf = gen.createSurfaceFromNoise();
+    //    debugTexture = Texture(testSurf, sdlRenderer);
+    //    SDL_FreeSurface(testSurf);
+    //}
 
     //Rendere and complete ImGui
     ImGui::Render();
@@ -159,9 +163,14 @@ void Renderer::drawText(int x, int y, std::string text, SDL_Color col){
     SDL_DestroyTexture(textTexture);
 }
 
-void Renderer::drawTexture(const Texture& t, int x, int y){
-    SDL_Rect dstRect = {x, y, (int)t.w, (int)t.h};
-    SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, 0, NULL, SDL_FLIP_NONE);
+void Renderer::drawTexture(const Texture& t, int cx, int cy, float angle, float scale){
+    int scaledW = t.w*scale;
+    int scaledH = t.w*scale;
+    int ULCornerX = cx - scaledW/2.0f;
+    int ULCornerY = cy - scaledH/2.0f;
+
+    SDL_Rect dstRect = {ULCornerX, ULCornerY, scaledW, scaledH};
+    SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, angle, NULL, SDL_FLIP_NONE);
 }
 
 void Renderer::drawCircle(int cx, int cy, int radius, SDL_Color col){

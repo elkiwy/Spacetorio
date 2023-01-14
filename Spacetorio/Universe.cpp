@@ -16,7 +16,7 @@ Planet::Planet(Scene *s, std::string name, fPoint pos, float size) {
     addComponent<TagComponent>((name.empty()) ? "_UnnamedPlanet_" : name);
     addComponent<PositionComponent>(pos);
     addComponent<PlanetComponent>(size, true);
-    addComponent<RenderableCircleComponent>(size);
+    //addComponent<RenderableCircleComponent>(size);
 }
 
 
@@ -40,8 +40,8 @@ Planet StarSystem::addRandomStar() {
 }
 
 Planet StarSystem::addRandomPlanet() {
-    fPoint pos = {randFloat(400.0f, 2000.0f), 0.0f};
-    float size = 1000.0f;//randFloat(100.0f, 500.0f);
+    fPoint pos = {0.0f, 0.0f}; //{randFloat(400.0f, 2000.0f), 0.0f};
+    float size = 500.0f;//randFloat(100.0f, 500.0f);
     std::string name = "RandomPlanet " + std::to_string(randInt(1000, 9999));
     return Planet(scene, name, pos, size);
 }
@@ -68,6 +68,9 @@ PlayerSpaceship::PlayerSpaceship(Scene *s, fPoint pos) {
 */
 
 Universe::Universe(){
+}
+
+void Universe::init(){
     //Create StarSystem
     StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
     Planet p = system.addRandomPlanet();
@@ -76,7 +79,7 @@ Universe::Universe(){
     PlayerSpaceship ship = PlayerSpaceship(&spaceScene, {400.0f, 200.0f});
 
     //Lock the camera on the planet
-    spaceScene.getCamera().setTarget(p);
+    //spaceScene.getCamera().setTarget(p);
 }
 
 void Universe::update(const Uint8 *keyState) {

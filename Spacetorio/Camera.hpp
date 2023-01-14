@@ -2,7 +2,7 @@
 #define CAMERA_H_
 
 #include "SDL_stdinc.h"
-#include "Utils_geometry.hpp"
+#include "Utils_points.hpp"
 #include "Entity.hpp"
 #include <ostream>
 

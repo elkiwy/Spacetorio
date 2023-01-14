@@ -14,6 +14,7 @@ class GameController {
         Renderer& getRenderer() { return renderer; }
 
         //Game events
+        void init();
         void update(const Uint8* keyState);
         void renderBegin();
         void render();

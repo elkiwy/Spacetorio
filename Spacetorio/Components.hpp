@@ -6,8 +6,9 @@
 #include "Components_updatable.hpp"
 #include "Components_position.hpp"
 
-#include "Renderer.hpp"
 #include <iostream>
+
+#include "Renderer.hpp"
 extern Renderer* global_renderer;
 
 

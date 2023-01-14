@@ -9,27 +9,22 @@
 - [X] add zoom to camera
 
 - [X] Setup simple solar system
+- [X] Setup basic biomes on Planets
+- [X] Setup a simple spaceship player
 
 * Next steps
-- [ ] Setup biomes on Planets
-  - Mountains, lakes, caves
-  - PerlinNoise for generation
-  - Generate ground level
-  - Draw it warped to the planet circle
+- [ ] Biome selection through mouse
+  - [ ] Setup basic collision detection system (Shapes class)
+  - [ ] Add ClickableComponent
+  - [ ] Add ColliderComponent (Active/Passive?)
 
-- [ ] Setup a simple spaceship player
-  - Must be able to land to a planet
-  - Must be influenced by gravity
-
-- [ ] Add Terraria-like detailed biome generation on landing
-  - 2D side view
-  - tile grid: Dirt, Rocks, Water
+- [ ] Landing option on Biomes
+  - [ ] Detailed ground generation from lowRes biome data
+  - [ ] 2D Terraria-like tile system to place entities
+  - [ ] Scene switching system
 
 
 * Side steps
 - [ ] Universe minimap
 - [ ] Planets orbiting their Sun in StarSystem
-
-
-
-
+- [ ] Otimize biomes data by cropping the texture_space image

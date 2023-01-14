@@ -56,6 +56,9 @@ int main(int argc, char* args[]) {
         //Initialize GameController
         GameController gc = GameController(window, screenRes);
         global_renderer = &gc.getRenderer();
+        gc.init();
+
+
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 
         //Hack to get window to stay up

@@ -48,6 +48,8 @@ class Universe {
         Universe();
         virtual ~Universe(){}
 
+        void init();
+
         void update(const Uint8* keyState);
 
         Scene& getCurrentScene(){return spaceScene;}
