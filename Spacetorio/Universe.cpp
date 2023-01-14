@@ -41,7 +41,7 @@ Planet StarSystem::addRandomStar() {
 
 Planet StarSystem::addRandomPlanet() {
     fPoint pos = {randFloat(400.0f, 2000.0f), 0.0f};
-    float size = randFloat(10.0f, 50.0f);
+    float size = 1000.0f;//randFloat(100.0f, 500.0f);
     std::string name = "RandomPlanet " + std::to_string(randInt(1000, 9999));
     return Planet(scene, name, pos, size);
 }

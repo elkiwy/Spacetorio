@@ -106,7 +106,7 @@ void Renderer::renderGUI(Scene& s){
     //Scene GUI
     s.renderGUI();
 
-    if (gen.renderGUI()){
+    if (gen.renderGUI() || debugTexture.initialized == false){
         SDL_Surface *testSurf = gen.createSurfaceFromNoise();
         debugTexture = Texture(testSurf, sdlRenderer);
         SDL_FreeSurface(testSurf);
