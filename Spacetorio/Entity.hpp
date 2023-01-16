@@ -44,4 +44,19 @@ class Entity {
 };
 
 
+
+class TestEntity : public Entity{
+    public:
+        TestEntity() {}
+        TestEntity(const TestEntity &p) = default;
+        TestEntity(entt::entity handle, Scene *s) {enttHandle = handle; scene = s;}
+        TestEntity(Scene *s);
+        virtual ~TestEntity() {}
+
+      private:
+};
+
+
+
+
 #endif // ENTITY_H_

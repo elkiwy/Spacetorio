@@ -8,8 +8,14 @@
 #include <ostream>
 #include <iostream>
 
-inline float deg2rad(float d);
-inline float rad2deg(float r);
+
+inline float deg2rad(float d) {
+    return d * (M_PI / 180.0f);
+}
+inline float rad2deg(float r) {
+    return r * (180.0f / M_PI);
+}
+
 
 
 class ShapeLine;
@@ -35,6 +41,7 @@ class Shape{
 
 class ShapeLine : public Shape{
     public:
+        ShapeLine() = default;
         ShapeLine(float x1, float y1, float x2, float y2);
         ShapeLine(fPoint p1, fPoint p2);
         ~ShapeLine();
@@ -44,8 +51,8 @@ class ShapeLine : public Shape{
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
 
-        fPoint p1;
-        fPoint p2;
+        fPoint p1 = {0.0f, 0.0f};
+        fPoint p2 = {0.0f, 0.0f};
 };
 std::ostream &operator<<(std::ostream &os, ShapeLine const &p);
 
@@ -56,6 +63,7 @@ std::ostream &operator<<(std::ostream &os, ShapeLine const &p);
 
 class ShapeCircle : public Shape{
     public:
+        ShapeCircle() = default;
         ShapeCircle(float x, float y, float r);
         ShapeCircle(fPoint c, float r);
         ~ShapeCircle();
@@ -65,8 +73,8 @@ class ShapeCircle : public Shape{
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
 
-        fPoint c;
-        float r;
+        fPoint c = {0.0f, 0.0f};
+        float r = 0.0f;
 };
 std::ostream &operator<<(std::ostream &os, ShapeCircle const &p);
 
@@ -78,6 +86,7 @@ std::ostream &operator<<(std::ostream &os, ShapeCircle const &p);
 
 class ShapeRectangle : public Shape{
     public:
+        ShapeRectangle() = default;
         ShapeRectangle(float x, float y, float w, float h);
         ShapeRectangle(fPoint pos, fSize size);
         ~ShapeRectangle();
@@ -87,8 +96,8 @@ class ShapeRectangle : public Shape{
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
 
-        fPoint pos;
-        fSize size;
+        fPoint pos = {0.0f, 0.0f};
+        fSize size = {0.0f, 0.0f};
 };
 std::ostream &operator<<(std::ostream &os, ShapeRectangle const &p);
 

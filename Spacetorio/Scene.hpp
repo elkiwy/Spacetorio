@@ -18,15 +18,19 @@ class Entity;
 // like registry.view<RenderableComponent>()
 template <typename B, typename D>
 void attachGenericComponent(entt::registry &reg, entt::entity ent) {
-    auto &derivedComp = reg.get<D>(ent);
+    D& derivedComp = reg.get<D>(ent);
+    B* derivedCasted = static_cast<B*>(&derivedComp);
+
+    std::cout << "Attaching " << typeid(B).name() << " after having a " << typeid(D).name() << " connected to entity n: " << (int)ent << std::endl;
 
     if(reg.any_of<B>(ent)){
         //Has already the base class, register the other derived component to it
-        GenericComponent& generic = reg.get<B>(ent);
-        generic.addImpl(&derivedComp);
+        B& generic = reg.get<B>(ent);
+        generic.addImpl(static_cast<GenericComponent*>(derivedCasted));
     }else{
         //Create a new Generic component
-        reg.emplace<B>(ent, &derivedComp);
+        B& generic = reg.emplace<B>(ent, static_cast<GenericComponent*>(derivedCasted));
+        std::cout << "Created generic at " << (void*)&generic << " for derived " << (void*)&derivedComp << std::endl;
     }
 }
 

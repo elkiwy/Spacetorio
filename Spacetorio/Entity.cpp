@@ -11,3 +11,8 @@ entt::registry& Entity::getMyRegistry() {
     if (reg == nullptr){reg = &scene->registry;}
     return scene->registry;
 }
+
+
+TestEntity::TestEntity(Scene *s) {
+    scene = s; enttHandle = s->getRegistry().create();
+}

@@ -18,15 +18,23 @@
 #include "Components_position.hpp"
 #include "Components_renderables.hpp"
 #include "Components_planet.hpp"
+#include "Components_colliders.hpp"
 
 
 Scene::Scene(){
     registerGenericComponent<RenderableComponent, RenderableCircleComponent>();
     registerGenericComponent<RenderableComponent, RenderableRectComponent>();
     registerGenericComponent<RenderableComponent, PlanetComponent>();
+    registerGenericComponent<RenderableComponent, ColliderCircleComponent>();
+    registerGenericComponent<RenderableComponent, ColliderRectangleComponent>();
+    registerGenericComponent<RenderableComponent, ColliderLineComponent>();
 
     registerGenericComponent<UpdatableComponent, PositionComponent>();
     registerGenericComponent<UpdatableComponent, PlayerSpaceshipComponent>();
+
+    registerGenericComponent<ColliderComponent, ColliderCircleComponent>();
+    registerGenericComponent<ColliderComponent, ColliderRectangleComponent>();
+    registerGenericComponent<ColliderComponent, ColliderLineComponent>();
 }
 
 
@@ -37,12 +45,15 @@ Scene::~Scene(){
 void Scene::render(){
     //Render all the renderable entities
     auto view = registry.view<PositionComponent,RenderableComponent>();
+    //std::cout << "---------" << std::endl;
     for(auto entity: view){
+        //std::cout << "Rendering entity: " << (int)entity << std::endl;
         auto& pos = view.get<PositionComponent>(entity);
         auto& renderable = view.get<RenderableComponent>(entity);
         for(auto impl: renderable.impls){
             if (impl == nullptr){break;}
-            ((RenderableComponent*)impl)->render(pos, cam);
+            //std::cout << " -- Rendering comp: " << (void*)impl << std::endl;
+            static_cast<RenderableComponent*>(impl)->render(pos, cam);
         }
     }
 
@@ -119,6 +130,41 @@ void Scene::update(const Uint8* ks){
         if (ks[SDL_SCANCODE_DOWN]) camSpdDy += camSpeedInc;
         if (ks[SDL_SCANCODE_UP]) camSpdDy -= camSpeedInc;
         cam.addSpd(camSpdDx, camSpdDy);
+    }
+
+    //Cycle all the active colliders
+    auto collidersView = registry.view<ColliderComponent>();
+    for(auto& entity: collidersView){
+        auto& collider = collidersView.get<ColliderComponent>(entity);
+        if (collider.active == false) { continue; }
+        for(auto impl: collider.impls){
+            if (impl == nullptr){break;}
+
+            //Get all the others colliders (TODO: Probably could be optimized)
+            auto others = registry.view<ColliderComponent>();
+            for (auto& other : others) {
+                if (other == entity){continue;} //Skip myself
+
+                //Get all the impls of the other collider
+                ColliderComponent& otherCollider = others.get<ColliderComponent>(other);
+                for(auto otherImpl: otherCollider.impls){
+                    if (otherImpl == nullptr){break;}
+
+                    //Check the active entity against all the impls of the other collider
+                    ColliderComponent* implCollider = static_cast<ColliderComponent*>(impl);
+                    ColliderComponent* otherImplCollider = static_cast<ColliderComponent*>(otherImpl);
+                    implCollider->debug_color = {0,255,0,255};
+                    otherImplCollider->debug_color = {0,255,0,255};
+                    bool check = implCollider->checkCollisions(otherImplCollider);
+                    if (check){
+                        implCollider->debug_color = {255,0,0,255};
+                        otherImplCollider->debug_color = {255,0,0,255};
+                    }
+
+                    //std::cout << "Collision "<<check<<" between " << (void*)impl << " and " << (void*)otherImpl << std::endl;
+                }
+            }
+        }
     }
 
     //Update all the updatable entities

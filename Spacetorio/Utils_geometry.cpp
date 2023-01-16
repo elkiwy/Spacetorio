@@ -1,13 +1,7 @@
 #include "Utils_geometry.hpp"
+#include <algorithm>
+#include <corecrt_math.h>
 
-
-
-inline float deg2rad(float d) {
-    return d * (M_PI / 180.0f);
-}
-inline float rad2deg(float r) {
-    return r * (180.0f / M_PI);
-}
 
 
 //Explanation: https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
@@ -66,7 +60,17 @@ bool checkCircleRectangle(const ShapeCircle &circ, const ShapeRectangle &rect) {
     return false;
 }
 
+bool checkLineLine(const ShapeLine& line1, const ShapeLine& line2){
+    float d = (line1.p1.x - line1.p2.x) * (line2.p1.y - line2.p2.y) - (line1.p1.y - line1.p2.y) * (line1.p2.x - line2.p2.x);
+    if (d == 0.0f || fabs(d) < 0.00001f){ return false;}
+    float s = (1/d) *  ( (line1.p1.x - line1.p2.x) * line2.p1.y - (line1.p1.y - line1.p2.y) * line2.p1.x);
+    float t = (1/d) * -(-(line1.p1.x - line1.p2.x) * line2.p2.y + (line1.p1.y - line1.p2.y) * line2.p2.x);
+    return (s > 0 && s < 1 && t > 0 && t < 1);
+}
 
+bool checkRectangleRectangle(const ShapeRectangle &r1, const ShapeRectangle &r2) {
+    return !(r2.pos.x > (r1.pos.x+r1.size.w) || (r2.pos.x+r2.size.w) < r1.pos.x || r2.pos.y > (r1.pos.y+r1.size.h) || (r2.pos.y+r2.size.h) < r1.pos.y);
+}
 
 /*
 ** ShapeCircle
@@ -105,10 +109,25 @@ std::ostream &operator<<(std::ostream &os, ShapeRectangle const &s) {
 }
 
 ShapeRectangle::ShapeRectangle(float x, float y, float w, float h) : pos(x,y), size(w,h){}
+ShapeRectangle::ShapeRectangle(fPoint pos, fSize size) : pos(pos), size(size){}
 ShapeRectangle::~ShapeRectangle(){}
 
+bool ShapeRectangle::checkCollision(const Shape &other) const{
+    return other.checkCollisionWithRectangle(*this);
+}
+
 bool ShapeRectangle::checkCollisionWithLine(const ShapeLine& other) const{
-    // TODO
+    fPoint p1 = pos;
+    fPoint p2 = pos+fPoint(size.w, 0.0f);
+    fPoint p3 = pos+fPoint(size.w, size.h);
+    fPoint p4 = pos+fPoint(0.0f, size.h);
+    //Check if intersect any of the side
+    if (checkLineLine(other, ShapeLine(p1, p2))){return true;}
+    if (checkLineLine(other, ShapeLine(p2, p3))){return true;}
+    if (checkLineLine(other, ShapeLine(p3, p4))){return true;}
+    if (checkLineLine(other, ShapeLine(p4, p1))){return true;}
+    //Check if totally inside
+    return other.p1.inRect(pos.x, pos.y, size.w, size.h);
 }
 
 bool ShapeRectangle::checkCollisionWithCircle(const ShapeCircle& other) const{
@@ -116,7 +135,7 @@ bool ShapeRectangle::checkCollisionWithCircle(const ShapeCircle& other) const{
 }
 
 bool ShapeRectangle::checkCollisionWithRectangle(const ShapeRectangle& other) const{
-    // TODO
+    return checkRectangleRectangle(*this, other);
 }
 
 
@@ -132,8 +151,12 @@ ShapeLine::ShapeLine(float x1, float y1, float x2, float y2) : p1(x1,y1), p2(x2,
 ShapeLine::ShapeLine(fPoint p1, fPoint p2) : p1(p1), p2(p2){}
 ShapeLine::~ShapeLine(){}
 
+bool ShapeLine::checkCollision(const Shape &other) const{
+    return other.checkCollisionWithLine(*this);
+}
+
 bool ShapeLine::checkCollisionWithLine(const ShapeLine& other) const{
-    // TODO
+    return checkLineLine(*this, other);
 }
 
 bool ShapeLine::checkCollisionWithCircle(const ShapeCircle& other) const{
@@ -141,5 +164,15 @@ bool ShapeLine::checkCollisionWithCircle(const ShapeCircle& other) const{
 }
 
 bool ShapeLine::checkCollisionWithRectangle(const ShapeRectangle& other) const{
-    // TODO
+    fPoint p1 = other.pos;
+    fPoint p2 = other.pos+fPoint(other.size.w, 0.0f);
+    fPoint p3 = other.pos+fPoint(other.size.w, other.size.h);
+    fPoint p4 = other.pos+fPoint(0.0f, other.size.h);
+    //Check if intersect any of the side
+    if (checkLineLine(*this, ShapeLine(p1, p2))){return true;}
+    if (checkLineLine(*this, ShapeLine(p2, p3))){return true;}
+    if (checkLineLine(*this, ShapeLine(p3, p4))){return true;}
+    if (checkLineLine(*this, ShapeLine(p4, p1))){return true;}
+    //Check if totally inside
+    return this->p1.inRect(other.pos.x, other.pos.y, other.size.w, other.size.h);
 }

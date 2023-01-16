@@ -19,7 +19,7 @@ extern Renderer* global_renderer;
 //Base Component
 struct RenderableComponent : public GenericComponent{
     RenderableComponent() = default;
-    RenderableComponent(RenderableComponent* impl) : GenericComponent(impl) {}
+    RenderableComponent(GenericComponent* impl) : GenericComponent(impl) {}
 
     virtual void render(const PositionComponent& posComp, const Camera& cam) const{
         std::cout << "WARNING: Trying to render generic RenderableComponent! Use the impl instead." << std::endl;

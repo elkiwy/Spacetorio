@@ -5,6 +5,7 @@
 #include <iostream>
 
 struct GenericComponent{
+    //Array of ptrs to other components
     std::array<GenericComponent*, 10> impls = {nullptr};
     size_t implN = 0;
 

@@ -2,6 +2,7 @@
 #define COMPONENTS_PLANET_H_
 
 #include "Components_renderables.hpp"
+#include "Utils_geometry.hpp"
 #include "Texture.hpp"
 #include "SDL_stdinc.h"
 #include <vector>

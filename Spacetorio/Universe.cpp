@@ -4,6 +4,7 @@
 #include "Components_position.hpp"
 #include "Components_renderables.hpp"
 #include "Components_planet.hpp"
+#include "Components_colliders.hpp"
 
 #include "Utils_math.hpp"
 
@@ -41,7 +42,7 @@ Planet StarSystem::addRandomStar() {
 
 Planet StarSystem::addRandomPlanet() {
     fPoint pos = {0.0f, 0.0f}; //{randFloat(400.0f, 2000.0f), 0.0f};
-    float size = 500.0f;//randFloat(100.0f, 500.0f);
+    float size = 300.0f;//randFloat(100.0f, 500.0f);
     std::string name = "RandomPlanet " + std::to_string(randInt(1000, 9999));
     return Planet(scene, name, pos, size);
 }
@@ -71,12 +72,44 @@ Universe::Universe(){
 }
 
 void Universe::init(){
-    //Create StarSystem
-    StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
-    Planet p = system.addRandomPlanet();
+    ////Create StarSystem
+    //StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
+    //Planet p = system.addRandomPlanet();
 
-    //Create player ship
-    PlayerSpaceship ship = PlayerSpaceship(&spaceScene, {400.0f, 200.0f});
+    ////Create player ship
+    //PlayerSpaceship ship = PlayerSpaceship(&spaceScene, {400.0f, 200.0f});
+
+
+    {
+      TestEntity t = TestEntity(&spaceScene);
+      t.addComponent<TagComponent>("TestEntity mouse circle");
+      PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, 0.0f);
+      posComp.lockToMouse();
+      ColliderCircleComponent& coll = t.addComponent<ColliderCircleComponent>(100.0f, &posComp);
+      ColliderComponent& genericcoll = t.getComponent<ColliderComponent>();
+      genericcoll.active = true;
+    }
+
+    {
+      TestEntity t = TestEntity(&spaceScene);
+      t.addComponent<TagComponent>("TestEntity circle");
+      PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, 0.0f);
+      ColliderCircleComponent& coll = t.addComponent<ColliderCircleComponent>(100.0f, &posComp);
+    }
+
+    {
+      TestEntity t = TestEntity(&spaceScene);
+      t.addComponent<TagComponent>("TestEntity rect");
+      PositionComponent &posComp = t.addComponent<PositionComponent>(300.0f, 0.0f);
+      ColliderRectangleComponent& coll = t.addComponent<ColliderRectangleComponent>(fSize(100.0f, 500.0f), &posComp);
+    }
+
+    {
+      TestEntity t = TestEntity(&spaceScene);
+      t.addComponent<TagComponent>("TestEntity line");
+      PositionComponent &posComp = t.addComponent<PositionComponent>(500.0f, 0.0f);
+      ColliderLineComponent& coll = t.addComponent<ColliderLineComponent>(fPoint(0.0f, -100.0f), fPoint(50.0f, 100.0f), &posComp);
+    }
 
     //Lock the camera on the planet
     //spaceScene.getCamera().setTarget(p);

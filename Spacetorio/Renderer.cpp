@@ -147,6 +147,15 @@ void Renderer::drawRect(int cx, int cy, int w, int h, SDL_Color col){
     SDL_GetRenderDrawColor(sdlRenderer, &prevR, &prevG, &prevB, &prevA);
     SDL_SetRenderDrawColor(sdlRenderer, col.r, col.g, col.b, col.a);
     SDL_Rect fillRect = {cx-w/2, cy-h/2, w, h};
+    SDL_RenderDrawRect(sdlRenderer, &fillRect);
+    SDL_SetRenderDrawColor(sdlRenderer, prevR, prevG, prevB, prevA);
+}
+
+void Renderer::drawRectFill(int cx, int cy, int w, int h, SDL_Color col){
+    Uint8 prevR; Uint8 prevG; Uint8 prevB; Uint8 prevA;
+    SDL_GetRenderDrawColor(sdlRenderer, &prevR, &prevG, &prevB, &prevA);
+    SDL_SetRenderDrawColor(sdlRenderer, col.r, col.g, col.b, col.a);
+    SDL_Rect fillRect = {cx-w/2, cy-h/2, w, h};
     SDL_RenderFillRect(sdlRenderer, &fillRect);
     SDL_SetRenderDrawColor(sdlRenderer, prevR, prevG, prevB, prevA);
 }

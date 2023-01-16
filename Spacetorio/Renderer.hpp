@@ -31,6 +31,7 @@ class Renderer {
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
         void drawRect(int cx, int cy, int w, int h, SDL_Color col);
+        void drawRectFill(int cx, int cy, int w, int h, SDL_Color col);
         void drawText(int x, int y, std::string text, SDL_Color col);
         void drawCircle(int cx, int cy, int radius, SDL_Color col);
         void drawTexture(const Texture& tex, int cx, int cy, float angle = 0.0f, float scale = 1.0f);
