@@ -50,3 +50,8 @@ void GameController::onMouseWheel(float dy){
     Scene& activeScene = universe.getCurrentScene();
     activeScene.onMouseWheel(dy);
 }
+
+void GameController::onMouseLeftClick(){
+    Scene& activeScene = universe.getCurrentScene();
+    activeScene.onMouseLeftClick();
+}

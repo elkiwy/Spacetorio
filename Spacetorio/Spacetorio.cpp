@@ -12,6 +12,7 @@
 
 #include "GameController.hpp"
 #include "SDL_keyboard.h"
+#include "SDL_mouse.h"
 #include "SDL_video.h"
 #include "Utils_time.hpp"
 
@@ -80,6 +81,10 @@ int main(int argc, char* args[]) {
                     gc.onKeyPressed(e.key.keysym.sym);
                 }else if(e.type == SDL_MOUSEWHEEL){
                     gc.onMouseWheel(e.wheel.y);
+                }else if(e.type == SDL_MOUSEBUTTONDOWN){
+                    if (e.button.button == SDL_BUTTON_LEFT){
+                        gc.onMouseLeftClick();
+                    }
                 }
             }
 

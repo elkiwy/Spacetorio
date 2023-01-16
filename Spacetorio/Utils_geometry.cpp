@@ -3,6 +3,14 @@
 #include <corecrt_math.h>
 
 
+bool checkPointCircle(const ShapePoint& pt, const ShapeCircle& circ){
+    return pt.p.distSquaredTo(circ.c) < circ.r*circ.r;
+}
+
+bool checkPointRect(const ShapePoint& pt, const ShapeRectangle& rect){
+    return pt.p.inRect(rect.pos.x, rect.pos.y, rect.size.w, rect.size.h);
+}
+
 
 //Explanation: https://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
 bool checkSegmentCircle(const ShapeLine &line, const ShapeCircle &circ) {
@@ -88,6 +96,10 @@ bool ShapeCircle::checkCollision(const Shape& other) const{
     return other.checkCollisionWithCircle(*this);
 }
 
+bool ShapeCircle::checkCollisionWithPoint(const ShapePoint& other) const{
+    return checkPointCircle(other, *this);
+}
+
 bool ShapeCircle::checkCollisionWithLine(const ShapeLine& other) const{
     return checkSegmentCircle(other, *this);
 }
@@ -114,6 +126,10 @@ ShapeRectangle::~ShapeRectangle(){}
 
 bool ShapeRectangle::checkCollision(const Shape &other) const{
     return other.checkCollisionWithRectangle(*this);
+}
+
+bool ShapeRectangle::checkCollisionWithPoint(const ShapePoint& other) const{
+    return checkPointRect(other, *this);
 }
 
 bool ShapeRectangle::checkCollisionWithLine(const ShapeLine& other) const{
@@ -155,6 +171,10 @@ bool ShapeLine::checkCollision(const Shape &other) const{
     return other.checkCollisionWithLine(*this);
 }
 
+bool ShapeLine::checkCollisionWithPoint(const ShapePoint& other) const{
+    return false;
+}
+
 bool ShapeLine::checkCollisionWithLine(const ShapeLine& other) const{
     return checkLineLine(*this, other);
 }
@@ -175,4 +195,39 @@ bool ShapeLine::checkCollisionWithRectangle(const ShapeRectangle& other) const{
     if (checkLineLine(*this, ShapeLine(p4, p1))){return true;}
     //Check if totally inside
     return this->p1.inRect(other.pos.x, other.pos.y, other.size.w, other.size.h);
+}
+
+
+
+
+/*
+** ShapePoint
+*/
+
+std::ostream &operator<<(std::ostream &os, ShapePoint const &s) {
+    return os << "{Point " << s.p.x << "," << s.p.y << "}";
+}
+
+ShapePoint::ShapePoint(float x, float y) : p(x,y){}
+ShapePoint::ShapePoint(fPoint p) : p(p){}
+ShapePoint::~ShapePoint(){}
+
+bool ShapePoint::checkCollision(const Shape &other) const{
+    return other.checkCollisionWithPoint(*this);
+}
+
+bool ShapePoint::checkCollisionWithPoint(const ShapePoint& other) const{
+    return false;
+}
+
+bool ShapePoint::checkCollisionWithLine(const ShapeLine& other) const{
+    return false;
+}
+
+bool ShapePoint::checkCollisionWithCircle(const ShapeCircle& other) const{
+    return checkPointCircle(*this, other);
+}
+
+bool ShapePoint::checkCollisionWithRectangle(const ShapeRectangle& other) const{
+    return checkPointRect(*this, other);
 }

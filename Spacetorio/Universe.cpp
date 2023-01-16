@@ -5,6 +5,7 @@
 #include "Components_renderables.hpp"
 #include "Components_planet.hpp"
 #include "Components_colliders.hpp"
+#include "Components_clickables.hpp"
 
 #include "Utils_math.hpp"
 
@@ -71,6 +72,11 @@ PlayerSpaceship::PlayerSpaceship(Scene *s, fPoint pos) {
 Universe::Universe(){
 }
 
+
+void testClick(){
+    std::cout << "Click clock!" << std::endl;
+}
+
 void Universe::init(){
     ////Create StarSystem
     //StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
@@ -111,9 +117,31 @@ void Universe::init(){
       ColliderLineComponent& coll = t.addComponent<ColliderLineComponent>(fPoint(0.0f, -100.0f), fPoint(50.0f, 100.0f), &posComp);
     }
 
+
+    {
+      TestEntity t = TestEntity(&spaceScene);
+      t.addComponent<TagComponent>("TestEntity clickable circle");
+      PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, -300.0f);
+      ClickableCircleComponent& clickable = t.addComponent<ClickableCircleComponent>(100.0f, &posComp);
+      clickable.onclick = &testClick;
+    }
+
+    {
+      TestEntity t = TestEntity(&spaceScene);
+      t.addComponent<TagComponent>("TestEntity clickable circle");
+      PositionComponent &posComp = t.addComponent<PositionComponent>(300.0f, -300.0f);
+      ClickableRectangleComponent& clickable = t.addComponent<ClickableRectangleComponent>(fSize(100.0f, 200.0f), &posComp);
+      clickable.onclick = &testClick;
+
+    }
+
+
     //Lock the camera on the planet
     //spaceScene.getCamera().setTarget(p);
 }
+
+
+
 
 void Universe::update(const Uint8 *keyState) {
     spaceScene.update(keyState);

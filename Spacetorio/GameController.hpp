@@ -25,6 +25,7 @@ class GameController {
         //User events
         void onKeyPressed(SDL_Keycode key);
         void onMouseWheel(float dy);
+        void onMouseLeftClick();
 
 
     private:

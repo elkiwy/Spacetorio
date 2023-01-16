@@ -19,6 +19,7 @@
 #include "Components_renderables.hpp"
 #include "Components_planet.hpp"
 #include "Components_colliders.hpp"
+#include "Components_clickables.hpp"
 
 
 Scene::Scene(){
@@ -28,6 +29,8 @@ Scene::Scene(){
     registerGenericComponent<RenderableComponent, ColliderCircleComponent>();
     registerGenericComponent<RenderableComponent, ColliderRectangleComponent>();
     registerGenericComponent<RenderableComponent, ColliderLineComponent>();
+    registerGenericComponent<RenderableComponent, ClickableCircleComponent>();
+    registerGenericComponent<RenderableComponent, ClickableRectangleComponent>();
 
     registerGenericComponent<UpdatableComponent, PositionComponent>();
     registerGenericComponent<UpdatableComponent, PlayerSpaceshipComponent>();
@@ -35,6 +38,9 @@ Scene::Scene(){
     registerGenericComponent<ColliderComponent, ColliderCircleComponent>();
     registerGenericComponent<ColliderComponent, ColliderRectangleComponent>();
     registerGenericComponent<ColliderComponent, ColliderLineComponent>();
+
+    registerGenericComponent<ClickableComponent, ClickableCircleComponent>();
+    registerGenericComponent<ClickableComponent, ClickableRectangleComponent>();
 }
 
 
@@ -167,6 +173,23 @@ void Scene::update(const Uint8* ks){
         }
     }
 
+    //Check for hovered clickables
+    iPoint mousePos = {0,0};
+    SDL_GetMouseState(&mousePos.x, &mousePos.y);
+    fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
+    ShapePoint worldMousePt = ShapePoint(worldMouse);
+    auto viewClickables = registry.view<ClickableComponent, PositionComponent>();
+    for(auto entity: viewClickables){
+        auto& clickable = viewClickables.get<ClickableComponent>(entity);
+        if (clickable.active == false){continue;}
+        for(auto impl: clickable.impls){
+            if (impl == nullptr){break;}
+            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
+            implCasted->checkHovered(worldMousePt);
+        }
+    }
+
+
     //Update all the updatable entities
     auto view = registry.view<UpdatableComponent, PositionComponent>();
     for(auto entity: view){
@@ -174,7 +197,7 @@ void Scene::update(const Uint8* ks){
         Entity e = {entity, this};
         for(auto impl: updatable.impls){
             if (impl == nullptr){break;}
-            ((UpdatableComponent*)impl)->update(e, ks);
+            static_cast<UpdatableComponent*>(impl)->update(e, ks);
         }
     }
 
@@ -189,4 +212,25 @@ void Scene::onMouseWheel(float dy){
     SDL_GetMouseState(&mousePos.x, &mousePos.y);
     cam.zoomBy(dy*zoomFactor, {(float)mousePos.x, (float)mousePos.y});
     //cam.testZoom(dy*zoomFactor);
+}
+
+
+void Scene::onMouseLeftClick(){
+    //Check for hovered clickables
+    iPoint mousePos = {0,0};
+    SDL_GetMouseState(&mousePos.x, &mousePos.y);
+    fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
+    ShapePoint worldMousePt = ShapePoint(worldMouse);
+    auto viewClickables = registry.view<ClickableComponent, PositionComponent>();
+    for(auto entity: viewClickables){
+        auto& clickable = viewClickables.get<ClickableComponent>(entity);
+        if (clickable.active == false){continue;}
+        for(auto impl: clickable.impls){
+            if (impl == nullptr){break;}
+            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
+            bool hovered = implCasted->checkHovered(worldMousePt);
+            if (hovered){ implCasted->click(); }
+        }
+    }
+
 }

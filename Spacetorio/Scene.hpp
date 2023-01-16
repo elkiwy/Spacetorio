@@ -51,6 +51,7 @@ class Scene {
 
         void update(const Uint8* keyState);
         void onMouseWheel(float dy);
+        void onMouseLeftClick();
 
         Camera& getCamera() { return cam; }
         entt::registry& getRegistry(){ return registry; }

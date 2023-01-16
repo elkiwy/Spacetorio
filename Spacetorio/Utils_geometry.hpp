@@ -18,6 +18,7 @@ inline float rad2deg(float r) {
 
 
 
+class ShapePoint;
 class ShapeLine;
 class ShapeCircle;
 class ShapeRectangle;
@@ -29,10 +30,33 @@ class ShapeRectangle;
 class Shape{
     public:
         virtual bool checkCollision(const Shape& other) const = 0;
+        virtual bool checkCollisionWithPoint(const ShapePoint& other) const = 0;
         virtual bool checkCollisionWithLine(const ShapeLine& other) const = 0;
         virtual bool checkCollisionWithCircle(const ShapeCircle& other) const = 0;
         virtual bool checkCollisionWithRectangle(const ShapeRectangle& other) const = 0;
 };
+
+
+/*
+** ShapePoint
+*/
+
+class ShapePoint : public Shape{
+    public:
+        ShapePoint() = default;
+        ShapePoint(float x, float y);
+        ShapePoint(fPoint p);
+        ~ShapePoint();
+
+        bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithPoint(const ShapePoint& other) const;
+        bool checkCollisionWithLine(const ShapeLine& other) const;
+        bool checkCollisionWithCircle(const ShapeCircle& other) const;
+        bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
+
+        fPoint p = {0.0f, 0.0f};
+};
+std::ostream &operator<<(std::ostream &os, ShapeLine const &p);
 
 
 /*
@@ -47,6 +71,7 @@ class ShapeLine : public Shape{
         ~ShapeLine();
 
         bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithPoint(const ShapePoint& other) const;
         bool checkCollisionWithLine(const ShapeLine& other) const;
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
@@ -69,6 +94,7 @@ class ShapeCircle : public Shape{
         ~ShapeCircle();
 
         bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithPoint(const ShapePoint& other) const;
         bool checkCollisionWithLine(const ShapeLine& other) const;
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
@@ -92,6 +118,7 @@ class ShapeRectangle : public Shape{
         ~ShapeRectangle();
 
         bool checkCollision(const Shape& other) const;
+        bool checkCollisionWithPoint(const ShapePoint& other) const;
         bool checkCollisionWithLine(const ShapeLine& other) const;
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
