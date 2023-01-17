@@ -32,7 +32,8 @@ struct ClickableComponent : public GenericComponent{
     }
 
     void click(){
-        this->onclick();
+        if (onclick == nullptr){std::cout << "WARNING: Called click() on a nullptr!" << std::endl;
+        }else{this->onclick();}
     }
 
 };
@@ -40,23 +41,25 @@ struct ClickableComponent : public GenericComponent{
 //Circle Clickable
 struct ClickableCircleComponent : public ClickableComponent, public RenderableComponent{
     PositionComponent* posRef = nullptr;
+    fPoint offset = {0.0f, 0.0f};
     ShapeCircle shape;
 
     ClickableCircleComponent() = default;
     ClickableCircleComponent(const ClickableCircleComponent&) = default;
-    ClickableCircleComponent(float radius, PositionComponent* posRef) : posRef(posRef), shape(ShapeCircle(posRef->pos, radius)) {}
+    ClickableCircleComponent(float radius, PositionComponent* posRef, fPoint offset = {0.0f, 0.0f})
+        : posRef(posRef), shape(ShapeCircle(posRef->pos, radius)), offset(offset) {}
 
-    const Shape& getShape() override {shape.c = posRef->pos; return shape;}
+    const Shape& getShape() override {shape.c = posRef->pos+offset; return shape;}
 
     void render(const PositionComponent& posComp, const Camera& cam) const override{
         auto& pos = posComp.pos;
-        const fPoint screenPos = cam.worldToScreen({pos.x, pos.y});
+        const fPoint screenPos = cam.worldToScreen({pos.x+offset.x, pos.y+offset.y});
         SDL_Color col = (hovered) ? debug_color_hovered : debug_color_normal;
         global_renderer->drawCircle(screenPos.x, screenPos.y, shape.r * cam.zoom, col);
     }
 
     bool checkHovered(const ShapePoint& mouseWorldPt) override{
-        this->hovered = shape.checkCollisionWithPoint(mouseWorldPt);
+        this->hovered = getShape().checkCollisionWithPoint(mouseWorldPt);
         return this->hovered;
     }
 };
@@ -65,25 +68,27 @@ struct ClickableCircleComponent : public ClickableComponent, public RenderableCo
 //Rectangle Clickable
 struct ClickableRectangleComponent : public ClickableComponent, public RenderableComponent{
     PositionComponent* posRef = nullptr;
+    fPoint offset = {0.0f, 0.0f};
     ShapeRectangle shape;
     SDL_Color col = {255,128,0,255};
 
     ClickableRectangleComponent() = default;
     ClickableRectangleComponent(const ClickableRectangleComponent&) = default;
-    ClickableRectangleComponent(fSize size, PositionComponent* posRef) : posRef(posRef), shape(ShapeRectangle(posRef->pos, size)) {}
+    ClickableRectangleComponent(fSize size, PositionComponent* posRef, fPoint offset = {0.0f, 0.0f})
+        : posRef(posRef), shape(ShapeRectangle(posRef->pos, size)), offset(offset) {}
 
-    const Shape& getShape() override{shape.pos = posRef->pos; return shape;}
+    const Shape& getShape() override{shape.pos = posRef->pos+offset; return shape;}
 
     void render(const PositionComponent& posComp, const Camera& cam) const override{
         auto& pos = posComp.pos;
-        const fPoint screenPos = cam.worldToScreen({pos.x, pos.y});
+        const fPoint screenPos = cam.worldToScreen({pos.x+offset.x, pos.y+offset.y});
         const fPoint center = {screenPos.x + (cam.zoom*shape.size.w/2), screenPos.y + (cam.zoom*shape.size.h/2)};
         SDL_Color col = (hovered) ? debug_color_hovered : debug_color_normal;
         global_renderer->drawRect(center.x, center.y, shape.size.w*cam.zoom, shape.size.h*cam.zoom, col);
     }
 
     bool checkHovered(const ShapePoint& mouseWorldPt) override{
-        this->hovered = shape.checkCollisionWithPoint(mouseWorldPt);
+        this->hovered = getShape().checkCollisionWithPoint(mouseWorldPt);
         return this->hovered;
     }
 };

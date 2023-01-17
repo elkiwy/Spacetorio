@@ -6,6 +6,22 @@
 #include "Scene.hpp"
 #include <array>
 
+#include "Utils_data.hpp"
+
+
+class PlanetBiome : public Entity{
+    public:
+        PlanetBiome() {}
+        PlanetBiome(const PlanetBiome &p) = default;
+        PlanetBiome(entt::entity handle, Scene *s) {enttHandle = handle; scene = s;}
+        PlanetBiome(Entity planetEntity, PlanetBiomeType t);
+        virtual ~PlanetBiome() {}
+
+    private:
+};
+
+
+
 class Planet : public Entity{
     public:
         Planet() {}

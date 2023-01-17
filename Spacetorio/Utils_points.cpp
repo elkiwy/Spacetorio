@@ -56,6 +56,11 @@ float fPoint::length() const{
     return std::sqrt(x*x + y*y);
 }
 
+
+fPoint fPoint::movedByTo(float dist, float angleRad) const {
+    return fPoint(this->x + dist * cos(angleRad), this->y + dist * sin(angleRad));
+}
+
 fPoint &fPoint::operator+=(const fPoint &other) {x += other.x; y += other.y; return *this;}
 fPoint &fPoint::operator-=(const fPoint &other) {x -= other.x; y -= other.y; return *this;}
 fPoint fPoint::operator*(float v){return {x*v, y*v};}

@@ -10,6 +10,21 @@
 #include "Utils_math.hpp"
 
 /*
+** PlanetBiome
+*/
+
+PlanetBiome::PlanetBiome(Entity planetEntity, PlanetBiomeType t) {
+    scene = planetEntity.scene; enttHandle = planetEntity.scene->newEntity();
+    addComponent<TagComponent>("_UnnamedBiome_");
+    addComponent<PlanetBiomeComponent>(t);
+    auto& posComp = planetEntity.getComponent<PositionComponent>();
+    auto& myPosComp = addComponent<PositionComponent>(posComp.pos);
+    addComponent<ClickableCircleComponent>(100.0f, &myPosComp);
+    //addComponent<RenderableCircleComponent>(size);
+}
+
+
+/*
 ** Planet
 */
 
@@ -17,7 +32,8 @@ Planet::Planet(Scene *s, std::string name, fPoint pos, float size) {
     scene = s; enttHandle = s->getRegistry().create();
     addComponent<TagComponent>((name.empty()) ? "_UnnamedPlanet_" : name);
     addComponent<PositionComponent>(pos);
-    addComponent<PlanetComponent>(size, true);
+    Entity myEntity = {enttHandle, scene};
+    addComponent<PlanetComponent>(myEntity, size);
     //addComponent<RenderableCircleComponent>(size);
 }
 
@@ -132,6 +148,8 @@ void loadPlanetScene(Scene* s){
     //Create StarSystem
     StarSystem system = StarSystem(s, "Solar System 1", {400.0f, 400.0f});
     Planet p = system.addRandomPlanet();
+
+
 
     //Create player ship
     PlayerSpaceship ship = PlayerSpaceship(s, {400.0f, 200.0f});

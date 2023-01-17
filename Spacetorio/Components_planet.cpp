@@ -1,4 +1,7 @@
 #include "Components_planet.hpp"
+#include "Components_clickables.hpp"
+#include "Scene.hpp"
+#include "Universe.hpp"
 #include "SDL_pixels.h"
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
@@ -74,10 +77,16 @@ SDL_Surface* bendImageOnArc(SDL_Surface* src, float angle, int Ro, int Ri){
 
 
 
+PlanetBiomeComponent::PlanetBiomeComponent(PlanetBiomeType t):type(t){
 
+}
 
+PlanetBiomeComponent::~PlanetBiomeComponent(){
+    if (surface_space != nullptr){SDL_FreeSurface(surface_space); surface_space = nullptr;}
+    if (surface_flat != nullptr){SDL_FreeSurface(surface_flat); surface_flat = nullptr;}
+}
 
-void PlanetBiome::generateTerrain() {
+void PlanetBiomeComponent::generateTerrain() {
     //Asset that I'm not doing stupid things
     assert((this->chunkData_lowRes_sizeW == 0 && this->chunkData_lowRes_sizeH == 0) && "ERROR: calling generateTerrain() on a biome with a terrain.");
     assert((this->size.w > 0.0f && this->size.h > 0.0f) && "ERROR: calling generateTerrain() on a biome without a size set first.");
@@ -173,18 +182,79 @@ void PlanetBiome::generateTerrain() {
     //SDL_SaveBMP(surface_space, "Terrain_bent.bmp");
 }
 
-PlanetBiome::~PlanetBiome(){
-    if (surface_space != nullptr){SDL_FreeSurface(surface_space); surface_space = nullptr;}
-    if (surface_flat != nullptr){SDL_FreeSurface(surface_flat); surface_flat = nullptr;}
-}
-
-
-void PlanetBiome::setData(fSize size, float curvature, float planetRadius, float direction){
+void PlanetBiomeComponent::setData(fSize size, float curvature, float planetRadius, float direction){
     this->size = size; this->curvature = curvature;
     this->planetRadius = planetRadius;
     this->direction = direction;
 }
 
-void PlanetBiome::render(fPoint planetPosOnScreen, float cameraZoom) const{
+void PlanetBiomeComponent::render(fPoint planetPosOnScreen, float cameraZoom) const{
     global_renderer->drawTexture(texture_space, planetPosOnScreen.x, planetPosOnScreen.y, direction, cameraZoom);
+}
+
+
+
+/*
+**
+** Planet Component
+**
+*/
+
+void PlanetComponent::addBiome(PlanetBiomeType t){
+    PlanetBiome b = PlanetBiome(myEntity, BIOME_FLATS);
+    biomes.emplace_back(b.enttHandle);
+}
+
+PlanetComponent::PlanetComponent(Entity planetEntity, float s):myEntity(planetEntity),planetRadius(s){
+    Scene* scene = myEntity.scene;
+
+    //Init test biomes
+    addBiome(BIOME_FLATS);
+    addBiome(BIOME_MOUNTAIN);
+    addBiome(BIOME_LAKE);
+    addBiome(BIOME_MOUNTAIN);
+    addBiome(BIOME_LAKE);
+
+    //Init all the biomes
+    const int nBiomes = biomes.size();
+    const float angle = deg2rad(360.0f/(float)nBiomes);
+    const float arcLength = planetRadius * angle;
+    const float crustHeight = planetRadius*0.75f;
+    for(int i=0;i<biomes.size();i++){
+        float direction = rad2deg(0.0f + i*angle);
+        PlanetBiome b = {biomes[i], scene};
+        auto& clickable = b.getComponent<ClickableCircleComponent>();
+        clickable.offset = fPoint(0.0f, 0.0f).movedByTo(planetRadius, deg2rad(direction)+(angle/2.0f));
+        PlanetBiomeComponent& bc = b.getComponent<PlanetBiomeComponent>();
+        bc.setData(fSize(arcLength, crustHeight), angle, planetRadius, direction);
+        bc.generateTerrain();
+    }
+}
+
+void PlanetComponent::render(const PositionComponent& posComp, const Camera& cam) const{
+    SDL_Color col = {255,255,255,255};
+    auto& pos = posComp.pos;
+    const float scaledRadius = planetRadius * cam.zoom;
+    const fPoint planetScreenPos = cam.worldToScreen({pos.x, pos.y});
+    //global_renderer->drawCircle(planetScreenPos.x, planetScreenPos.y, scaledRadius, col);
+
+    //Render biomes guides
+    const int nBiomes = biomes.size();
+    const float biomesAngRad = deg2rad(360.0f/(float)nBiomes);
+    const fPoint startPt = planetScreenPos + fPoint(scaledRadius, 0.0f);
+    for (int i=0;i<nBiomes;i++){
+        float currAng = biomesAngRad * i;
+        fPoint p = startPt.rotatedPoint(currAng, planetScreenPos);
+        global_renderer->drawLine(planetScreenPos.x, planetScreenPos.y, p.x, p.y, col);
+    }
+
+    //Render Biomes textures
+    for(auto& biome : biomes){
+        PlanetBiome b = {biome, myEntity.scene};
+        auto& bc = b.getComponent<PlanetBiomeComponent>();
+        bc.render(planetScreenPos, cam.zoom);
+    }
+
+    //Re-render circle for guide
+    //global_renderer->drawCircle(planetScreenPos.x, planetScreenPos.y, scaledRadius, {255,0,0,255});
 }

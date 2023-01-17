@@ -55,6 +55,7 @@ class Scene {
 
         Camera& getCamera() { return cam; }
         entt::registry& getRegistry(){ return registry; }
+        entt::entity newEntity(){ return registry.create(); }
 
     private:
         Camera cam;

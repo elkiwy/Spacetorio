@@ -31,6 +31,8 @@ class fPoint {
         bool inRect(float rx, float ry, float rw, float rh) const;
         float dot(const fPoint& other) const;
         float length() const;
+        fPoint movedByTo(float dist, float angleRad) const;
+
 
         fPoint& operator+=(const fPoint& other);
         fPoint& operator-=(const fPoint& other);

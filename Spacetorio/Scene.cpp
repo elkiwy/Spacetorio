@@ -50,7 +50,7 @@ Scene::~Scene(){
 
 void Scene::render(){
     //Render all the renderable entities
-    auto view = registry.view<PositionComponent,RenderableComponent>();
+    auto view = registry.view<RenderableComponent, PositionComponent>();
     //std::cout << "---------" << std::endl;
     for(auto entity: view){
         //std::cout << "Rendering entity: " << (int)entity << std::endl;
@@ -100,6 +100,10 @@ void Scene::renderGUI(){
 
             if (registry.any_of<RenderableComponent>(e)){
                 ImGui::Text("RenderableComponent : YES");
+            }
+
+            if (registry.any_of<ClickableComponent>(e)){
+                ImGui::Text("ClickableComponent : YES");
             }
 
             if (registry.any_of<RenderableCircleComponent>(e)){
@@ -178,7 +182,7 @@ void Scene::update(const Uint8* ks){
     SDL_GetMouseState(&mousePos.x, &mousePos.y);
     fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
     ShapePoint worldMousePt = ShapePoint(worldMouse);
-    auto viewClickables = registry.view<ClickableComponent, PositionComponent>();
+    auto viewClickables = registry.view<ClickableComponent>();
     for(auto entity: viewClickables){
         auto& clickable = viewClickables.get<ClickableComponent>(entity);
         if (clickable.active == false){continue;}
@@ -191,7 +195,7 @@ void Scene::update(const Uint8* ks){
 
 
     //Update all the updatable entities
-    auto view = registry.view<UpdatableComponent, PositionComponent>();
+    auto view = registry.view<UpdatableComponent>();
     for(auto entity: view){
         auto& updatable = view.get<UpdatableComponent>(entity);
         Entity e = {entity, this};
@@ -221,7 +225,7 @@ void Scene::onMouseLeftClick(){
     SDL_GetMouseState(&mousePos.x, &mousePos.y);
     fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
     ShapePoint worldMousePt = ShapePoint(worldMouse);
-    auto viewClickables = registry.view<ClickableComponent, PositionComponent>();
+    auto viewClickables = registry.view<ClickableComponent>();
     for(auto entity: viewClickables){
         auto& clickable = viewClickables.get<ClickableComponent>(entity);
         if (clickable.active == false){continue;}
