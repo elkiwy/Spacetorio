@@ -77,17 +77,9 @@ void testClick(){
     std::cout << "Click clock!" << std::endl;
 }
 
-void Universe::init(){
-    ////Create StarSystem
-    //StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
-    //Planet p = system.addRandomPlanet();
-
-    ////Create player ship
-    //PlayerSpaceship ship = PlayerSpaceship(&spaceScene, {400.0f, 200.0f});
-
-
+void loadTestScene(Scene* s){
     {
-      TestEntity t = TestEntity(&spaceScene);
+      TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity mouse circle");
       PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, 0.0f);
       posComp.lockToMouse();
@@ -97,21 +89,21 @@ void Universe::init(){
     }
 
     {
-      TestEntity t = TestEntity(&spaceScene);
+      TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity circle");
       PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, 0.0f);
       ColliderCircleComponent& coll = t.addComponent<ColliderCircleComponent>(100.0f, &posComp);
     }
 
     {
-      TestEntity t = TestEntity(&spaceScene);
+      TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity rect");
       PositionComponent &posComp = t.addComponent<PositionComponent>(300.0f, 0.0f);
       ColliderRectangleComponent& coll = t.addComponent<ColliderRectangleComponent>(fSize(100.0f, 500.0f), &posComp);
     }
 
     {
-      TestEntity t = TestEntity(&spaceScene);
+      TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity line");
       PositionComponent &posComp = t.addComponent<PositionComponent>(500.0f, 0.0f);
       ColliderLineComponent& coll = t.addComponent<ColliderLineComponent>(fPoint(0.0f, -100.0f), fPoint(50.0f, 100.0f), &posComp);
@@ -119,7 +111,7 @@ void Universe::init(){
 
 
     {
-      TestEntity t = TestEntity(&spaceScene);
+      TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity clickable circle");
       PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, -300.0f);
       ClickableCircleComponent& clickable = t.addComponent<ClickableCircleComponent>(100.0f, &posComp);
@@ -127,17 +119,31 @@ void Universe::init(){
     }
 
     {
-      TestEntity t = TestEntity(&spaceScene);
+      TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity clickable circle");
       PositionComponent &posComp = t.addComponent<PositionComponent>(300.0f, -300.0f);
       ClickableRectangleComponent& clickable = t.addComponent<ClickableRectangleComponent>(fSize(100.0f, 200.0f), &posComp);
       clickable.onclick = &testClick;
 
     }
+}
 
+void loadPlanetScene(Scene* s){
+    //Create StarSystem
+    StarSystem system = StarSystem(s, "Solar System 1", {400.0f, 400.0f});
+    Planet p = system.addRandomPlanet();
+
+    //Create player ship
+    PlayerSpaceship ship = PlayerSpaceship(s, {400.0f, 200.0f});
 
     //Lock the camera on the planet
-    //spaceScene.getCamera().setTarget(p);
+    s->getCamera().setTarget(p);
+}
+
+
+void Universe::init(){
+    loadPlanetScene(&spaceScene);
+    //loadTestScene(&spaceScene);
 }
 
 
