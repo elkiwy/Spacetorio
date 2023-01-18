@@ -7,6 +7,7 @@
 #include "SDL.h"
 #include "Components_generic.hpp"
 
+#include "imgui.h"
 
 class Renderer;
 extern Renderer* global_renderer;
@@ -60,6 +61,10 @@ class Scene {
     private:
         Camera cam;
         entt::registry registry;
+
+
+        ImVec2 curveValues[10];
+        int curveSelectionInd = -1;
 
 
     friend class Entity;
