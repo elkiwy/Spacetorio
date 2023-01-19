@@ -1,5 +1,8 @@
 #include "Utils_points.hpp"
+
+#ifdef __WIN32__
 #include <corecrt_math.h>
+#endif
 
 
 std::ostream &operator<<(std::ostream &os, fPoint const &p) {
@@ -53,7 +56,7 @@ float fPoint::dot(const fPoint& other) const{
     return x*other.x + y*other.y;
 }
 float fPoint::length() const{
-    return std::sqrt(x*x + y*y);
+    return sqrt(x*x + y*y);
 }
 
 

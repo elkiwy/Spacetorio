@@ -6,6 +6,7 @@
 #include "Scene.hpp"
 #include <array>
 
+#include "SceneBiome.hpp"
 #include "Utils_data.hpp"
 
 
@@ -16,8 +17,6 @@ class PlanetBiome : public Entity{
         PlanetBiome(entt::entity handle, Scene *s) {enttHandle = handle; scene = s;}
         PlanetBiome(Entity planetEntity, PlanetBiomeType t);
         virtual ~PlanetBiome() {}
-
-    private:
 };
 
 
@@ -29,8 +28,6 @@ class Planet : public Entity{
         Planet(entt::entity handle, Scene *s) {enttHandle = handle; scene = s;}
         Planet(Scene *s, std::string name, fPoint pos, float size);
         virtual ~Planet() {}
-
-    private:
 };
 
 
@@ -65,13 +62,17 @@ class Universe {
         virtual ~Universe(){}
 
         void init();
-
         void update(const Uint8* keyState);
 
-        Scene& getCurrentScene(){return spaceScene;}
+        Scene* getCurrentScene();
+        void switchScene(Scene* s);
+        Scene* getSpaceScene();
+        Scene* getBiomeScene();
 
     private:
         Scene spaceScene;
+        Scene* activeScene = nullptr;
+        Scene* planetScene = nullptr;
 };
 
 

@@ -24,8 +24,8 @@ class Renderer {
 
         //Render Events
         void renderFrameBegin();
-        void renderScene(Scene& s);
-        void renderGUI(Scene& s);
+        void renderScene(Scene* s);
+        void renderGUI(Scene* s);
         void renderFrameEnd();
 
         //Drawing operations

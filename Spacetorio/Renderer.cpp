@@ -92,14 +92,14 @@ void Renderer::renderFrameBegin(){
     SDL_RenderClear(sdlRenderer);
 }
 
-void Renderer::renderScene(Scene& s){
+void Renderer::renderScene(Scene* s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
-    s.render();
+    s->render();
 
     //if (debugTexture.initialized){drawTexture(debugTexture, 10, 100);}
 }
 
-void Renderer::renderGUI(Scene& s){
+void Renderer::renderGUI(Scene* s){
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -108,7 +108,7 @@ void Renderer::renderGUI(Scene& s){
     //ImGui::ShowDemoWindow(&imgui_showDemo);
 
     //Scene GUI
-    s.renderGUI();
+    s->renderGUI();
 
     //if (gen.renderGUI() || debugTexture.initialized == false){
     //    SDL_Surface *testSurf = gen.createSurfaceFromNoise();

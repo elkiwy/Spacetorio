@@ -7,6 +7,7 @@
 #include "Components_colliders.hpp"
 #include "Components_clickables.hpp"
 
+#include "Entity.hpp"
 #include "Utils_math.hpp"
 
 /*
@@ -144,29 +145,50 @@ void loadTestScene(Scene* s){
     }
 }
 
-void loadPlanetScene(Scene* s){
-    //Create StarSystem
-    StarSystem system = StarSystem(s, "Solar System 1", {400.0f, 400.0f});
-    Planet p = system.addRandomPlanet();
-
-
-
-    //Create player ship
-    PlayerSpaceship ship = PlayerSpaceship(s, {400.0f, 200.0f});
-
-    //Lock the camera on the planet
-    s->getCamera().setTarget(p);
-}
-
 
 void Universe::init(){
-    loadPlanetScene(&spaceScene);
-    //loadTestScene(&spaceScene);
+    //Create StarSystem
+    StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
+    Planet p = system.addRandomPlanet();
+
+    //Create player ship
+    PlayerSpaceship ship = PlayerSpaceship(&spaceScene, {400.0f, 200.0f});
+
+    //Lock the camera on the planet
+    //spaceScene.getCamera().setTarget(p);
+
+
+
+    //Load BiomeScene
+    PlanetComponent& pc = p.getComponent<PlanetComponent>();
+    PlanetBiome b = PlanetBiome(pc.biomes[0], &spaceScene);
+    PlanetBiomeComponent& pbc = b.getComponent<PlanetBiomeComponent>();
+    this->planetScene = pbc.getBiomeScene();
+    this->switchScene(this->planetScene);
 }
 
 
 
 
 void Universe::update(const Uint8 *keyState) {
-    spaceScene.update(keyState);
+    activeScene->update(keyState);
+}
+
+
+Scene* Universe::getCurrentScene(){
+    return (activeScene == nullptr) ? &spaceScene : activeScene;
+}
+
+void Universe::switchScene(Scene* s){
+    std::cout << "Switching to scene " << (void*)s << std::endl;
+    this->activeScene = s;
+}
+
+
+Scene* Universe::getSpaceScene(){
+    return &spaceScene;
+}
+
+Scene* Universe::getBiomeScene(){
+    return this->planetScene;
 }

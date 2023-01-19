@@ -11,6 +11,7 @@
 #define MAX_BIOMES 16
 
 
+class SceneBiome;
 
 struct PlanetComponent;
 
@@ -30,6 +31,8 @@ struct PlanetBiomeComponent{
     SDL_Surface* surface_space = nullptr;
     Texture texture_space;
 
+    SceneBiome* biomeScene = nullptr;
+
     PlanetBiomeComponent() = default;
     PlanetBiomeComponent(const PlanetBiomeComponent&) = default;
     PlanetBiomeComponent(PlanetBiomeType t);
@@ -37,6 +40,8 @@ struct PlanetBiomeComponent{
 
     void setData(fSize size, float curvature, float planetRadius, float direction);
     void generateTerrain();
+
+    SceneBiome* getBiomeScene();
 
     void render(fPoint planetPosOnScreen, float cameraZoom) const;
 };

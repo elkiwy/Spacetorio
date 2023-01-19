@@ -1,12 +1,12 @@
 #include "Components_planet.hpp"
 #include "Components_clickables.hpp"
 #include "Scene.hpp"
+#include "SceneBiome.hpp"
 #include "Universe.hpp"
 #include "SDL_pixels.h"
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
 #include <cassert>
-#include <corecrt_math.h>
 #include <iostream>
 #include <vector>
 
@@ -84,6 +84,15 @@ PlanetBiomeComponent::PlanetBiomeComponent(PlanetBiomeType t):type(t){
 PlanetBiomeComponent::~PlanetBiomeComponent(){
     if (surface_space != nullptr){SDL_FreeSurface(surface_space); surface_space = nullptr;}
     if (surface_flat != nullptr){SDL_FreeSurface(surface_flat); surface_flat = nullptr;}
+    if (biomeScene != nullptr){delete biomeScene; surface_flat = nullptr;}
+}
+
+
+SceneBiome* PlanetBiomeComponent::getBiomeScene(){
+    if (biomeScene == nullptr){
+        biomeScene = new SceneBiome();
+    }
+    return biomeScene;
 }
 
 void PlanetBiomeComponent::generateTerrain() {

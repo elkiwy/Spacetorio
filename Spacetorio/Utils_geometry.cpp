@@ -1,7 +1,9 @@
 #include "Utils_geometry.hpp"
 #include <algorithm>
-#include <corecrt_math.h>
 
+#ifdef __WIN32__
+#include <corecrt_math.h>
+#endif
 
 bool checkPointCircle(const ShapePoint& pt, const ShapeCircle& circ){
     return pt.p.distSquaredTo(circ.c) < circ.r*circ.r;
