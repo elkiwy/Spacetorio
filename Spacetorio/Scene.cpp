@@ -10,6 +10,8 @@
 #include "SDL_render.h"
 #include "imgui.h"
 
+#include "imgui_curves.hpp"
+
 #include "Universe.hpp"
 #include "Utils_math.hpp"
 
@@ -41,6 +43,9 @@ Scene::Scene(){
 
     registerGenericComponent<ClickableComponent, ClickableCircleComponent>();
     registerGenericComponent<ClickableComponent, ClickableRectangleComponent>();
+
+
+    curveValues[0].x = ImGui::CurveTerminator; // init data so editor knows to take it from here
 }
 
 
@@ -117,6 +122,22 @@ void Scene::renderGUI(){
         }
     }
     ImGui::EndChild();
+    ImGui::End();
+
+    //Splines
+    ImGui::Begin("Splines");
+    ImGui::Text("Splines");
+
+
+    if (ImGui::Curve("Das editor", ImVec2(600, 200), 10, curveValues, &curveSelectionInd)) {
+        std::cout << "Curve: ";
+        for (int i=0;i<10;i++){
+            std::cout << "[" << std::to_string(curveValues[i].x) << "," << std::to_string(curveValues[i].y) << "] ";
+        }
+        std::cout << std::endl;
+    }
+    float value_you_care_about = ImGui::CurveValue(0.7f, 10, curveValues); // calculate value at position 0.7
+
     ImGui::End();
 
     //Camera

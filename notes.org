@@ -14,9 +14,9 @@
 
 * Next steps
 - [ ] Biome selection through mouse
-  - [ ] Setup basic collision detection system (Shapes class)
-  - [ ] Add ClickableComponent
-  - [ ] Add ColliderComponent (Active/Passive?)
+  - [X] Setup basic collision detection system (Shapes class)
+  - [X] Add ClickableComponent
+  - [X] Add ColliderComponent (Active/Passive?)
 
 - [ ] Landing option on Biomes
   - [ ] Detailed ground generation from lowRes biome data
