@@ -120,13 +120,12 @@ void Renderer::renderGUI(Scene* s){
 
     //Noise Generator debug
     if (gen.renderGUI() || debugTextureFinal.initialized == false){
-        DebugSurfaces surfaces = gen.createSurfaceFromNoise();
-
-        debugTextureFinal = Texture(surfaces.finalSurface, false);
-        debugTextureContinentalness = Texture(surfaces.contSurface, false);
-        debugTextureErosion = Texture(surfaces.erosionSurface, false);
-
-        surfaces.free();
+        DebugSurfaces ds;
+        gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
+        debugTextureFinal = Texture(ds.finalSurface, false);
+        debugTextureContinentalness = Texture(ds.contSurface, false);
+        debugTextureErosion = Texture(ds.erosionSurface, false);
+        ds.free();
     }
 
     //Rendere and complete ImGui

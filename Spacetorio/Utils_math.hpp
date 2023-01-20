@@ -33,10 +33,17 @@ inline float randFloat(float min, float max){
     return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max-min)));
 }
 
-struct InteractiveCurve{
+enum SplineCurveTemplates {CURVE_CONTINENTALNESS, CURVE_EROSION};
+
+struct SplineCurve{
     ImVec2 values[10];
     int selection = -1;
-    InteractiveCurve(){values[0].x = ImGui::CurveTerminator;}
+
+    SplineCurve(){values[0].x = ImGui::CurveTerminator;}
+    SplineCurve(SplineCurveTemplates temp) : SplineCurve() {
+        if (temp == CURVE_CONTINENTALNESS) { setContinentalness(); }
+        else if (temp == CURVE_EROSION) { setErosion(); }
+    }
 
     void setContinentalness(){
         values[0] = {0.000000f,0.020000f};
@@ -81,7 +88,7 @@ struct InteractiveCurve{
         std::cout << std::endl;
     }
 
-    float getValue(float x){
+    float getValue(float x) const{
         return ImGui::CurveValue(x, 10, values);
     }
 };
@@ -99,193 +106,132 @@ struct DebugSurfaces{
     }
 };
 
+
+
 class NoiseSurfaceGenerator{
   public:
-    fSize size = {1200,400};
-    long seed = time(NULL);
-    int binaryThreshold = 128;
-    bool binaryOutput = false;
+    struct GenerationSettings{
+        float scale_cont = 0.3f;
+        float scale_ero = 0.3f;
+        float bias_cont = 1.0f;
+        float bias_ero = 0.5f;
+        int octaves_cont = 7;
+        int octaves_ero = 7;
+        SplineCurve curve_cont = SplineCurve(CURVE_CONTINENTALNESS);
+        SplineCurve curve_ero = SplineCurve(CURVE_EROSION);
 
-    //Feature Map
-    float FM_ScaleX = 0.020f;
-    float FM_ScaleY = 0.020f;
-     bool FM_ScaleSame = false;
-      int FM_Octaves = 5;
-    float FM_Persistance = 0.5f;
-    float FM_Influence = 3.0f;
+        float scale_features = 1.5f;
+        int octaves_features = 4;
+        float persistance_features = 0.5f;
 
-    //Altitude Map
-    float AM_Scale = 0.01f;
-      int AM_Octaves = 1;
-    float AM_Influence = 3.0f;
+        int seed = 0;
+    };
 
-    //Altitude Map 2
-    float AM2_Scale = 0.03f;
-      int AM2_Octaves = 3;
-    float AM2_Influence = 2.0f;
+    GenerationSettings instanceSettings;
 
-    //Gradient
-    float VG_Ratio = 0.45f;
-    float VG_Influence = 4.0f;
+    NoiseSurfaceGenerator(){}
 
-
-
-    InteractiveCurve continentalnessCurve;
-    float continentalnessScale = 0.4f;
-    int continentalnessOctaves = 7;
-    float continentalnessBias = 1.0f;
-
-    InteractiveCurve erosionCurve;
-    float erosionScale = 0.3f;
-    int erosionOctaves = 7;
-    float erosionBias = 0.5f;
-
-
-    //InteractiveCurve erosionCurve;
-    //InteractiveCurve peakAndValleyCurve;
-
-
-
-    enum FeatureType {NOISE_1D, NOISE_2D, VERTGRAD};
-
-
-    NoiseSurfaceGenerator(){
-        continentalnessCurve.setContinentalness();
-        erosionCurve.setErosion();
-    }
     ~NoiseSurfaceGenerator(){}
 
     bool renderGUI(){
         bool upd = false;
-        //Debug Texture
         ImGui::Begin("Debug Texture");
         ImGui::Text("Debug Texture");
-        ImGui::Separator();
-
-        upd = ImGui::SliderFloat("SizeX",      &size.w,      100.0f, 2000.0f) || upd;
-        upd = ImGui::SliderFloat("SizeY",      &size.h,      100.0f, 1000.0f) || upd;
 
         ImGui::Separator();
         ImGui::Text("Continentalness");
-        upd = ImGui::SliderFloat("ContScale", &continentalnessScale, 0.01f, 10.0f) || upd;
-        upd = ImGui::SliderInt("ContOctaves", &continentalnessOctaves, 1, 10) || upd;
-        upd = continentalnessCurve.renderGUI() || upd;
+        upd = ImGui::SliderFloat("ContScale", &instanceSettings.scale_cont, 0.01f, 10.0f) || upd;
+        upd = ImGui::SliderInt("ContOctaves", &instanceSettings.octaves_cont, 1, 10) || upd;
+        upd = instanceSettings.curve_cont.renderGUI() || upd;
 
         ImGui::Separator();
         ImGui::Text("Erosion");
-        upd = ImGui::SliderFloat("EroScale", &erosionScale, 0.01f, 10.0f) || upd;
-        upd = ImGui::SliderInt("EroOctaves", &erosionOctaves, 1, 10) || upd;
-        upd = erosionCurve.renderGUI() || upd;
+        upd = ImGui::SliderFloat("EroScale", &instanceSettings.scale_ero, 0.01f, 10.0f) || upd;
+        upd = ImGui::SliderInt("EroOctaves", &instanceSettings.octaves_ero, 1, 10) || upd;
+        upd = instanceSettings.curve_ero.renderGUI() || upd;
+
+        ImGui::Separator();
+        ImGui::Text("Features");
+        upd = ImGui::SliderFloat("Scale", &instanceSettings.scale_features, 0.01f, 10.0f) || upd;
+        upd = ImGui::SliderInt("Octaves", &instanceSettings.octaves_features, 1, 10) || upd;
+        upd = ImGui::SliderFloat("Persistance", &instanceSettings.persistance_features, 0.01f, 1.0f) || upd;
 
         ImGui::Separator();
         ImGui::Text("Bias");
-        upd = ImGui::SliderFloat("Continentalness bias", &continentalnessBias, 0.0f, 5.0f) || upd;
-        upd = ImGui::SliderFloat("Erosion bias", &erosionBias, 0.0f, 5.0f) || upd;
-        ImGui::Separator();
+        upd = ImGui::SliderFloat("Continentalness bias", &instanceSettings.bias_cont, 0.0f, 5.0f) || upd;
+        upd = ImGui::SliderFloat("Erosion bias", &instanceSettings.bias_ero, 0.0f, 5.0f) || upd;
 
         ImGui::Separator();
-        if (ImGui::Button("Randomize")){upd = true; seed = randInt(0, 999999);}
-        if (ImGui::Button("Reset")){upd = true; continentalnessCurve.setContinentalness(); erosionCurve.setErosion();}
+        if (ImGui::Button("Randomize")){upd = true; instanceSettings.seed = randInt(0, 999999);}
+        if (ImGui::Button("Reset")){upd = true; instanceSettings.curve_cont.setContinentalness(); instanceSettings.curve_ero.setErosion();}
         ImGui::End();
         return upd;
     }
 
-
-    bool renderGUI_OLD(){
-        bool upd = false;
-        //Debug Texture
-        ImGui::Begin("Debug Texture");
-        ImGui::Text("Debug Texture");
-        ImGui::Separator();
-
-
-        upd = upd || ImGui::SliderFloat("SizeX",      &size.w,      100.0f, 1000.0f);
-        upd = upd || ImGui::SliderFloat("SizeY",      &size.h,      100.0f, 1000.0f);
-
-        ImGui::Text("AltitudeMap");
-        upd = upd || ImGui::SliderFloat("Scale",   &AM_Scale, 0.001f, 0.030f);
-        upd = upd || ImGui::SliderInt(  "Octaves", &AM_Octaves, 0, 10);
-        ImGui::Separator();
-
-        ImGui::Text("AltitudeMap2");
-        upd = upd || ImGui::SliderFloat("Scale",   &AM2_Scale,   0.001f, 0.030f);
-        upd = upd || ImGui::SliderInt(  "Octaves", &AM2_Octaves,      0,     10);
-        ImGui::Separator();
-
-        ImGui::Text("FeatureMap");
-        upd = upd || ImGui::SliderFloat("ScaleX",      &FM_ScaleX,      0.001f, 0.100f);
-        upd = upd || ImGui::SliderFloat("ScaleY",      &FM_ScaleY,      0.001f, 0.100f);
-        upd = upd || ImGui::Checkbox(   "SameScale",   &FM_ScaleSame);
-        upd = upd || ImGui::SliderInt(  "Octaves",     &FM_Octaves,          1,     10);
-        upd = upd || ImGui::SliderFloat("Persistance", &FM_Persistance, 0.001f,   1.0f);
-        ImGui::Separator();
-
-        ImGui::Text("VerGradient");
-        upd = upd || ImGui::SliderFloat("Ratio",     &VG_Ratio,     0.0f, 1.0f);
-        ImGui::Separator();
-        ImGui::Separator();
-
-        ImGui::Text("Influences");
-        upd = upd || ImGui::SliderFloat("AltitudeMap",  &AM_Influence,  0.0f, 6.0f);
-        upd = upd || ImGui::SliderFloat("AltitudeMap2", &AM2_Influence, 0.0f, 6.0f);
-        upd = upd || ImGui::SliderFloat("FeatureMap",   &FM_Influence,  0.0f, 6.0f);
-        upd = upd || ImGui::SliderFloat("VertGrad",     &VG_Influence,  0.0f, 6.0f);
-        ImGui::Separator();
-
-        upd = upd || ImGui::SliderInt("Binary threshold", &binaryThreshold, 0, 255);
-        upd = upd || ImGui::Checkbox("Binary output", &binaryOutput);
-        upd = upd || ImGui::Button("Reload");
-
-        if(ImGui::Button("Seed")){seed = time(NULL); upd = true;}
-
-        ImGui::End();
-        return upd;
-    }
-
-
-    DebugSurfaces createSurfaceFromNoise(){
-        int imgW = floor(size.w); int imgH = floor(size.h);
+    SDL_Surface* generateTerrain(iSize res, int backgroundCount, const GenerationSettings& conf, DebugSurfaces* debugSurfaces = nullptr){
+        int imgW = res.w; int imgH = res.h;
         SDL_Surface* s = SDL_CreateRGBSurface(0, imgW, imgH, 32, 0, 0, 0, 0);
         Uint8* pixelsData = (Uint8*)s->pixels;
 
-        SDL_Surface* contSurf = SDL_CreateRGBSurface(0, imgW, 32, 32, 0, 0, 0, 0);
-        SDL_Surface* eroSurf = SDL_CreateRGBSurface(0, imgW, 32, 32, 0, 0, 0, 0);
-        Uint8* contData = (Uint8*)contSurf->pixels;
-        Uint8* eroData = (Uint8*)eroSurf->pixels;
+        //Create debug surfaces
+        SDL_Surface* contSurf = nullptr;
+        SDL_Surface* eroSurf = nullptr;
+        Uint8* contData = nullptr;
+        Uint8* eroData = nullptr;
+        if (debugSurfaces != nullptr){
+            contSurf = SDL_CreateRGBSurface(0, imgW, 32, 32, 0, 0, 0, 0);
+            eroSurf = SDL_CreateRGBSurface(0, imgW, 32, 32, 0, 0, 0, 0);
+            contData = (Uint8*)contSurf->pixels;
+            eroData = (Uint8*)eroSurf->pixels;
+        }
 
-        const int max_iter = 4;
+        const int max_iter = backgroundCount+1;
         for (int iter = 0; iter < max_iter; iter++){
-            const siv::PerlinNoise perlin{(siv::PerlinNoise::seed_type)(seed + (iter+1))};
+            const siv::PerlinNoise perlin{(siv::PerlinNoise::seed_type)(conf.seed + (iter+1))};
             float MAX_HEIGHT = imgH;
             float HALF_HEIGHT = MAX_HEIGHT/2.0f;
             for (int i = 0; i < imgW; i+=1) {
                 //Continentalness, how fat inland we are
-                float CONT_NOISE = perlin.octave1D_01((i * continentalnessScale/100.0f), continentalnessOctaves);
-                CONT_NOISE = (CONT_NOISE/continentalnessBias) + ((continentalnessBias-1)/continentalnessBias); // Apply Bias
-                float curveValue_01 = continentalnessCurve.getValue(CONT_NOISE); // Apply Spline
+                float CONT_NOISE = perlin.octave1D_01((i * conf.scale_cont/100.0f), conf.octaves_cont);
+                CONT_NOISE = (CONT_NOISE/conf.bias_cont) + ((conf.bias_cont-1)/conf.bias_cont); // Apply Bias
+                float curveValue_01 = conf.curve_cont.getValue(CONT_NOISE); // Apply Spline
                 curveValue_01 = (1.0f - curveValue_01); //Flip values
                 float CONT_HEIGHT = ((curveValue_01 - 0.5f) * 2.0f) * (HALF_HEIGHT*0.8f); // first to -1 <-> +1 and then upscaled to HEIGHT
 
                 //Erosion, Vertical Gradient squashing everything with high values of erosion
-                float ERO_NOISE = perlin.octave1D_01((i * erosionScale/100.0f)+9999.0f, erosionOctaves);
-                ERO_NOISE = (ERO_NOISE/erosionBias) + ((erosionBias-1)/erosionBias); // Apply Bias
-                float eroValue_01 = erosionCurve.getValue(ERO_NOISE); // Apply Spline
+                float ERO_NOISE = perlin.octave1D_01((i * conf.scale_ero/100.0f)+9999.0f, conf.octaves_ero);
+                ERO_NOISE = (ERO_NOISE/conf.bias_ero) + ((conf.bias_ero-1)/conf.bias_ero); // Apply Bias
+                float eroValue_01 = conf.curve_ero.getValue(ERO_NOISE); // Apply Spline
                 float ERO_VALUE_01 = (eroValue_01); //high value = high erosion
 
                 //Final height
                 float height = HALF_HEIGHT + CONT_HEIGHT * ERO_VALUE_01;
                 for (int j = 0; j < imgH; j+=1) {
-                    Uint8 val = 255/(max_iter - iter) ;
-                    Uint8 c = (j>height) ? val : 0;
-                    if (c > 0){
-                        pixelsData[(i+(imgW*j))*4 + 0] = c;
-                        pixelsData[(i+(imgW*j))*4 + 1] = c;
-                        pixelsData[(i+(imgW*j))*4 + 2] = c;
+                    //Get a gradient value around the 1D height value to be able to mix it up with the 2D noise
+                    float gradSize = 20.0f;
+                    float diff = fmax(fmin((j - height), gradSize), -gradSize);
+                    float gradStep = 128/gradSize;
+                    int density_0255 = 128 + (int)(diff * gradStep);
+
+                    //Features - Noise 2D
+                    const float FEATURES_NOISE = perlin.octave2D_01((i * (conf.scale_features/100.0f)), (j * (conf.scale_features/100.0f)), conf.octaves_features, conf.persistance_features);
+                    density_0255 = fmax((FEATURES_NOISE*2.0f) * (float)density_0255, density_0255);
+                    density_0255 = std::min(density_0255, 255); //Clip it at 255 max
+
+                    //Uint8 pixelValue = (j>height) ? layerColor : 0;
+                    Uint8 layerColor = 255/(max_iter - iter) ;
+                    bool solidPixel = (density_0255 >= 128);
+
+                    //layerColor = density_0255; //override to show gradients
+                    if (solidPixel){
+                        pixelsData[(i+(imgW*j))*4 + 0] = layerColor;
+                        pixelsData[(i+(imgW*j))*4 + 1] = layerColor;
+                        pixelsData[(i+(imgW*j))*4 + 2] = layerColor;
                         pixelsData[(i+(imgW*j))*4 + 3] = 255;
                     }
                 }
 
-                if (iter == max_iter-1){
+                if (debugSurfaces != nullptr && iter == max_iter-1){
                     //Continentalness
                     for (int j = 0; j < 32; j+=1) {
                         Uint8 c = CONT_NOISE*255.0f;
@@ -307,70 +253,19 @@ class NoiseSurfaceGenerator{
             }
         }
 
-        DebugSurfaces db = DebugSurfaces();
-        db.finalSurface = s;
-        db.contSurface = contSurf;
-        db.erosionSurface = eroSurf;
-        return db;
-    }
-
-    SDL_Surface* createSurfaceFromNoise_OLD(){
-        int imgW = floor(size.w); int imgH = floor(size.h);
-        SDL_Surface* s = SDL_CreateRGBSurface(0, imgW, imgH, 32, 0, 0, 0, 0);
-        Uint8* pixelsData = (Uint8*)s->pixels;
-        std::cout << "using " << imgW << " " << imgH << std::endl;
-
-        const siv::PerlinNoise perlin{(siv::PerlinNoise::seed_type)seed};
-        for (int j = 0; j < imgH; j+=1) {
-            for (int i = 0; i < imgW; i+=1) {
-                //Vertical Gradient
-                const float vgSize = ((float)imgH) * VG_Ratio;
-                const float vgGap = (((float)imgH) - vgSize)/2.0f;
-                float vgVal = (j-vgGap)/vgSize;
-                float VG = (j<vgGap) ? 0.0f : ((j>vgSize+vgGap) ? 1.0f : vgVal);
-                float VG_02 = VG * 2.0f;
-                float VG_11 = (VG * 2.0f) - 1.0f;
-
-                //Features - Noise 2D
-                double FM_tmpScaleY = FM_ScaleY;
-                if (FM_ScaleSame){FM_tmpScaleY = FM_ScaleX;};
-                const double FM = perlin.octave2D_01((i * FM_ScaleX), (j * FM_tmpScaleY), FM_Octaves, FM_Persistance);
-
-                //AltitudeMap - Noise 1D
-                double AM = perlin.octave1D_01((i * AM_Scale), AM_Octaves);
-                AM = AM + VG_11;
-                AM = fmin(fmax(AM, 0.0001f), 0.9999f);
-
-                //AltitudeMap2 - Noise 1D
-                const double AM2 = perlin.octave1D_01((i * AM2_Scale), AM2_Octaves);
-
-                //Group and finalize
-                double tot = AM_Influence + FM_Influence + VG_Influence + AM2_Influence;
-                double final_01 = (FM*FM_Influence + AM*AM_Influence + AM2*AM2_Influence + VG*VG_Influence)/tot;
-
-                Uint8 pixelVal = floor(final_01 * 255.0f);
-                if (binaryOutput){pixelVal = (pixelVal > binaryThreshold) ? 255 : 0;}
-                pixelsData[(i+(imgW*j))*4 + 0] = pixelVal;
-                pixelsData[(i+(imgW*j))*4 + 1] = pixelVal;
-                pixelsData[(i+(imgW*j))*4 + 2] = pixelVal;
-                pixelsData[(i+(imgW*j))*4 + 3] = (Uint8)255;
-
-
-                //pixelsData[(i+(imgW*j))*4 + 0] = 255;
-                //pixelsData[(i+(imgW*j))*4 + 1] = 255;
-                //pixelsData[(i+(imgW*j))*4 + 2] = 0;
-                //pixelsData[(i+(imgW*j))*4 + 3] = 255;
-            }
+        if (debugSurfaces!=nullptr){
+            debugSurfaces->finalSurface = s;
+            debugSurfaces->contSurface = contSurf;
+            debugSurfaces->erosionSurface = eroSurf;
         }
-
-        //void* pixelsData = &chunkData_lowRes[0];
-        //int imgW = size.w; int imgH = size.h;
-        //SDL_Surface* s = SDL_CreateRGBSurfaceFrom(pixelsData, imgW, imgH, 32, imgW*4, 0, 0, 0, 0);
-        //SDL_SaveBMP(s, "testone.bmp");
-        //SDL_FreeSurface(s);
 
         return s;
     }
+
+    SDL_Surface* generateTerrainInstanceSettings(iSize res, int backgroundCount, DebugSurfaces* debugSurfaces = nullptr){
+        return this->generateTerrain(res, backgroundCount, instanceSettings, debugSurfaces);
+    }
+
 };
 
 

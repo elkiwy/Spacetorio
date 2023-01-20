@@ -86,8 +86,7 @@ PlayerSpaceship::PlayerSpaceship(Scene *s, fPoint pos) {
 ** Universe
 */
 
-Universe::Universe(){
-}
+Universe::Universe(){}
 
 
 void testClick(){
