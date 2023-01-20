@@ -157,8 +157,6 @@ void Universe::init(){
     //Lock the camera on the planet
     //spaceScene.getCamera().setTarget(p);
 
-
-
     //Load BiomeScene
     PlanetComponent& pc = p.getComponent<PlanetComponent>();
     PlanetBiome b = PlanetBiome(pc.biomes[0], &spaceScene);

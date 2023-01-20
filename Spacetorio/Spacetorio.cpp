@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define SCREEN_W 1920
+#define SCREEN_H 1080
 
 #include "GameController.hpp"
 #include "SDL_keyboard.h"
@@ -23,6 +25,7 @@
 
 #include "backends/imgui_impl_sdl.h"
 
+
 float global_avgFPS = 0;
 Renderer* global_renderer = nullptr;
 
@@ -36,7 +39,7 @@ int main(int argc, char* args[]) {
     //Create window
     const int TARGET_FPS = 60;
     const int TARGET_TICKS_PER_FRAME = 1000/TARGET_FPS;
-    iSize screenRes = {1280, 720};
+    iSize screenRes = {SCREEN_W, SCREEN_H};
     SDL_WindowFlags wf = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
     SDL_Window* window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenRes.w, screenRes.h, wf);
     if (window == NULL){
@@ -56,6 +59,7 @@ int main(int argc, char* args[]) {
     {
         //Initialize GameController
         GameController gc = GameController(window, screenRes);
+        std::cout << "Setting global_renderer" << std::endl;
         global_renderer = &gc.getRenderer();
         gc.init();
 

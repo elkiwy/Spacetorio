@@ -16,7 +16,7 @@ struct Texture{
     size_t h = 0;
 
     Texture() = default;
-    Texture(SDL_Surface *s);
+    Texture(SDL_Surface *s, bool blended = true);
 
     void free(){SDL_DestroyTexture(this->sdlTexture); w = 0; h = 0; initialized = false;}
 

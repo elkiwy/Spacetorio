@@ -18,6 +18,7 @@
 #include "backends/imgui_impl_sdlrenderer.h"
 
 #include "PerlinNoise.hpp"
+#include "Texture.hpp"
 
 Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     std::cout << "Renderer initializing..." << std::endl;
@@ -47,7 +48,9 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
 
 
 Renderer::~Renderer(){
-    debugTexture.free();
+    debugTextureFinal.free();
+    debugTextureContinentalness.free();
+    debugTextureErosion.free();
 
     std::cout << "Renderer destroying..." << std::endl;
     ImGui_ImplSDLRenderer_Shutdown();
@@ -96,7 +99,12 @@ void Renderer::renderScene(Scene* s){
     renderTest(sdlRenderer, screenRes.w, screenRes.h);
     s->render();
 
-    //if (debugTexture.initialized){drawTexture(debugTexture, 10, 100);}
+    //Noise Generator debug
+    if (debugTextureFinal.initialized){
+        drawTexture(debugTextureFinal, debugTextureFinal.w/2.0f+10.0f, debugTextureFinal.h/2.0f+10.0f);
+        drawTexture(debugTextureContinentalness, debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
+        drawTexture(debugTextureErosion, debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
+    }
 }
 
 void Renderer::renderGUI(Scene* s){
@@ -110,11 +118,16 @@ void Renderer::renderGUI(Scene* s){
     //Scene GUI
     s->renderGUI();
 
-    //if (gen.renderGUI() || debugTexture.initialized == false){
-    //    SDL_Surface *testSurf = gen.createSurfaceFromNoise();
-    //    debugTexture = Texture(testSurf, sdlRenderer);
-    //    SDL_FreeSurface(testSurf);
-    //}
+    //Noise Generator debug
+    if (gen.renderGUI() || debugTextureFinal.initialized == false){
+        DebugSurfaces surfaces = gen.createSurfaceFromNoise();
+
+        debugTextureFinal = Texture(surfaces.finalSurface, false);
+        debugTextureContinentalness = Texture(surfaces.contSurface, false);
+        debugTextureErosion = Texture(surfaces.erosionSurface, false);
+
+        surfaces.free();
+    }
 
     //Rendere and complete ImGui
     ImGui::Render();
@@ -132,7 +145,7 @@ void Renderer::renderFrameEnd(){
 
 /*
 ** Drawing operations
- */
+*/
 
 void Renderer::drawLine(int x1, int y1, int x2, int y2, SDL_Color col){
     Uint8 prevR; Uint8 prevG; Uint8 prevB; Uint8 prevA;
@@ -174,7 +187,7 @@ void Renderer::drawText(int x, int y, std::string text, SDL_Color col){
 
 void Renderer::drawTexture(const Texture& t, int cx, int cy, float angle, float scale){
     int scaledW = t.w*scale;
-    int scaledH = t.w*scale;
+    int scaledH = t.h*scale;
     int ULCornerX = cx - scaledW/2.0f;
     int ULCornerY = cy - scaledH/2.0f;
 

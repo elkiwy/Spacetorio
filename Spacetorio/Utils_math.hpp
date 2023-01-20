@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdlib.h>
+#include <string>
 #include <vector>
 
 #ifdef __APPLE__
@@ -18,6 +19,7 @@
 #include "SDL_surface.h"
 #include "Utils_points.hpp"
 #include "imgui.h"
+#include "imgui_curves.hpp"
 
 inline int randInt(int min, int max){
     return rand() % (max-min+1) + min;
@@ -31,9 +33,75 @@ inline float randFloat(float min, float max){
     return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max-min)));
 }
 
+struct InteractiveCurve{
+    ImVec2 values[10];
+    int selection = -1;
+    InteractiveCurve(){values[0].x = ImGui::CurveTerminator;}
+
+    void setContinentalness(){
+        values[0] = {0.000000f,0.020000f};
+        values[1] = {0.056000f,0.045000f};
+        values[2] = {0.158000f,0.080000f};
+        values[3] = {0.208000f,0.355000f};
+        values[4] = {0.228000f,0.370000f};
+        values[5] = {0.520000f,0.425000f};
+        values[6] = {0.644000f,0.650000f};
+        values[7] = {0.776000f,0.775000f};
+        values[8] = {0.876000f,0.940000f};
+        values[9] = {1.000000f,1.000000f};
+    }
+
+    void setErosion(){
+        values[0] = {0.000000f,1.000000f};
+        values[1] = {0.054000f,0.910000f};
+        values[2] = {0.110000f,0.965000f};
+        values[3] = {0.200000f,0.725000f};
+        values[4] = {0.414000f,0.600000f};
+        values[5] = {0.542000f,0.300000f};
+        values[6] = {0.758000f,0.210000f};
+        values[7] = {0.826000f,0.255000f};
+        values[8] = {0.862000f,0.055000f};
+        values[9] = {1.000000f,0.000000f};
+    }
+
+    bool renderGUI() {
+        if(ImGui::Curve("", ImVec2(500, 200), 10, values, &selection)){
+            this->print();
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    void print(){
+        std::cout << "Curve: ";
+        for (int i = 0; i < 10; i++) {
+            std::cout << "values["<<std::to_string(i)<<"] = {" << std::to_string(values[i].x) << "f," << std::to_string(values[i].y) << "f};"<<std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    float getValue(float x){
+        return ImGui::CurveValue(x, 10, values);
+    }
+};
+
+
+struct DebugSurfaces{
+    SDL_Surface* finalSurface = nullptr;
+    SDL_Surface* contSurface = nullptr;
+    SDL_Surface* erosionSurface = nullptr;
+
+    void free(){
+        if (finalSurface != nullptr) { SDL_FreeSurface(finalSurface); finalSurface = nullptr; }
+        if (contSurface != nullptr) { SDL_FreeSurface(contSurface); contSurface = nullptr; }
+        if (erosionSurface != nullptr) { SDL_FreeSurface(erosionSurface); erosionSurface = nullptr; }
+    }
+};
+
 class NoiseSurfaceGenerator{
   public:
-    fSize size = {1000,500};
+    fSize size = {1200,400};
     long seed = time(NULL);
     int binaryThreshold = 128;
     bool binaryOutput = false;
@@ -60,13 +128,70 @@ class NoiseSurfaceGenerator{
     float VG_Ratio = 0.45f;
     float VG_Influence = 4.0f;
 
+
+
+    InteractiveCurve continentalnessCurve;
+    float continentalnessScale = 0.4f;
+    int continentalnessOctaves = 7;
+    float continentalnessBias = 1.0f;
+
+    InteractiveCurve erosionCurve;
+    float erosionScale = 0.3f;
+    int erosionOctaves = 7;
+    float erosionBias = 0.5f;
+
+
+    //InteractiveCurve erosionCurve;
+    //InteractiveCurve peakAndValleyCurve;
+
+
+
     enum FeatureType {NOISE_1D, NOISE_2D, VERTGRAD};
 
 
-    NoiseSurfaceGenerator(){}
+    NoiseSurfaceGenerator(){
+        continentalnessCurve.setContinentalness();
+        erosionCurve.setErosion();
+    }
     ~NoiseSurfaceGenerator(){}
 
     bool renderGUI(){
+        bool upd = false;
+        //Debug Texture
+        ImGui::Begin("Debug Texture");
+        ImGui::Text("Debug Texture");
+        ImGui::Separator();
+
+        upd = ImGui::SliderFloat("SizeX",      &size.w,      100.0f, 2000.0f) || upd;
+        upd = ImGui::SliderFloat("SizeY",      &size.h,      100.0f, 1000.0f) || upd;
+
+        ImGui::Separator();
+        ImGui::Text("Continentalness");
+        upd = ImGui::SliderFloat("ContScale", &continentalnessScale, 0.01f, 10.0f) || upd;
+        upd = ImGui::SliderInt("ContOctaves", &continentalnessOctaves, 1, 10) || upd;
+        upd = continentalnessCurve.renderGUI() || upd;
+
+        ImGui::Separator();
+        ImGui::Text("Erosion");
+        upd = ImGui::SliderFloat("EroScale", &erosionScale, 0.01f, 10.0f) || upd;
+        upd = ImGui::SliderInt("EroOctaves", &erosionOctaves, 1, 10) || upd;
+        upd = erosionCurve.renderGUI() || upd;
+
+        ImGui::Separator();
+        ImGui::Text("Bias");
+        upd = ImGui::SliderFloat("Continentalness bias", &continentalnessBias, 0.0f, 5.0f) || upd;
+        upd = ImGui::SliderFloat("Erosion bias", &erosionBias, 0.0f, 5.0f) || upd;
+        ImGui::Separator();
+
+        ImGui::Separator();
+        if (ImGui::Button("Randomize")){upd = true; seed = randInt(0, 999999);}
+        if (ImGui::Button("Reset")){upd = true; continentalnessCurve.setContinentalness(); erosionCurve.setErosion();}
+        ImGui::End();
+        return upd;
+    }
+
+
+    bool renderGUI_OLD(){
         bool upd = false;
         //Debug Texture
         ImGui::Begin("Debug Texture");
@@ -118,22 +243,78 @@ class NoiseSurfaceGenerator{
     }
 
 
-   /*
+    DebugSurfaces createSurfaceFromNoise(){
+        int imgW = floor(size.w); int imgH = floor(size.h);
+        SDL_Surface* s = SDL_CreateRGBSurface(0, imgW, imgH, 32, 0, 0, 0, 0);
+        Uint8* pixelsData = (Uint8*)s->pixels;
 
-    0.0 -> 0.0 -> -1.0
-    0.0 -> 0.0 -> -1.0
-    0.2 -> 0.4 -> -0.8
-    0.4 -> 0.8 -> -0.4
-    0.5 -> 1.0 ->  0.0
-    0.6 -> 1.2 ->  0.4
-    0.8 -> 1.6 ->  0.8
-    1.0 -> 2.0 ->  1.0
-    1.0 -> 2.0 ->  1.0
+        SDL_Surface* contSurf = SDL_CreateRGBSurface(0, imgW, 32, 32, 0, 0, 0, 0);
+        SDL_Surface* eroSurf = SDL_CreateRGBSurface(0, imgW, 32, 32, 0, 0, 0, 0);
+        Uint8* contData = (Uint8*)contSurf->pixels;
+        Uint8* eroData = (Uint8*)eroSurf->pixels;
 
-    */
+        const int max_iter = 4;
+        for (int iter = 0; iter < max_iter; iter++){
+            const siv::PerlinNoise perlin{(siv::PerlinNoise::seed_type)(seed + (iter+1))};
+            float MAX_HEIGHT = imgH;
+            float HALF_HEIGHT = MAX_HEIGHT/2.0f;
+            for (int i = 0; i < imgW; i+=1) {
+                //Continentalness, how fat inland we are
+                float CONT_NOISE = perlin.octave1D_01((i * continentalnessScale/100.0f), continentalnessOctaves);
+                CONT_NOISE = (CONT_NOISE/continentalnessBias) + ((continentalnessBias-1)/continentalnessBias); // Apply Bias
+                float curveValue_01 = continentalnessCurve.getValue(CONT_NOISE); // Apply Spline
+                curveValue_01 = (1.0f - curveValue_01); //Flip values
+                float CONT_HEIGHT = ((curveValue_01 - 0.5f) * 2.0f) * (HALF_HEIGHT*0.8f); // first to -1 <-> +1 and then upscaled to HEIGHT
 
+                //Erosion, Vertical Gradient squashing everything with high values of erosion
+                float ERO_NOISE = perlin.octave1D_01((i * erosionScale/100.0f)+9999.0f, erosionOctaves);
+                ERO_NOISE = (ERO_NOISE/erosionBias) + ((erosionBias-1)/erosionBias); // Apply Bias
+                float eroValue_01 = erosionCurve.getValue(ERO_NOISE); // Apply Spline
+                float ERO_VALUE_01 = (eroValue_01); //high value = high erosion
 
-    SDL_Surface* createSurfaceFromNoise(){
+                //Final height
+                float height = HALF_HEIGHT + CONT_HEIGHT * ERO_VALUE_01;
+                for (int j = 0; j < imgH; j+=1) {
+                    Uint8 val = 255/(max_iter - iter) ;
+                    Uint8 c = (j>height) ? val : 0;
+                    if (c > 0){
+                        pixelsData[(i+(imgW*j))*4 + 0] = c;
+                        pixelsData[(i+(imgW*j))*4 + 1] = c;
+                        pixelsData[(i+(imgW*j))*4 + 2] = c;
+                        pixelsData[(i+(imgW*j))*4 + 3] = 255;
+                    }
+                }
+
+                if (iter == max_iter-1){
+                    //Continentalness
+                    for (int j = 0; j < 32; j+=1) {
+                        Uint8 c = CONT_NOISE*255.0f;
+                        contData[(i+(imgW*j))*4 + 0] = c;
+                        contData[(i+(imgW*j))*4 + 1] = c;
+                        contData[(i+(imgW*j))*4 + 2] = c;
+                        contData[(i+(imgW*j))*4 + 3] = 255;
+                    }
+
+                    //Erosion
+                    for (int j = 0; j < 32; j+=1) {
+                        Uint8 c = ERO_NOISE*255.0f;
+                        eroData[(i+(imgW*j))*4 + 0] = c;
+                        eroData[(i+(imgW*j))*4 + 1] = c;
+                        eroData[(i+(imgW*j))*4 + 2] = c;
+                        eroData[(i+(imgW*j))*4 + 3] = 255;
+                    }
+                }
+            }
+        }
+
+        DebugSurfaces db = DebugSurfaces();
+        db.finalSurface = s;
+        db.contSurface = contSurf;
+        db.erosionSurface = eroSurf;
+        return db;
+    }
+
+    SDL_Surface* createSurfaceFromNoise_OLD(){
         int imgW = floor(size.w); int imgH = floor(size.h);
         SDL_Surface* s = SDL_CreateRGBSurface(0, imgW, imgH, 32, 0, 0, 0, 0);
         Uint8* pixelsData = (Uint8*)s->pixels;
@@ -188,10 +369,10 @@ class NoiseSurfaceGenerator{
         //SDL_SaveBMP(s, "testone.bmp");
         //SDL_FreeSurface(s);
 
-
         return s;
     }
 };
+
 
 
 

@@ -1,7 +1,19 @@
 #include "Camera.hpp"
 #include "Components_position.hpp"
+#include "Texture.hpp"
+#include "Utils_points.hpp"
+#include "Renderer.hpp"
+#include <iostream>
 
-Camera::Camera() { moveTo(0, 0); }
+Camera::Camera() {
+    std::cout << "Initializing camera" << std::endl;
+    if (global_renderer != nullptr){
+        iSize sz = global_renderer->getScreenSize();
+        screen_size = fSize(sz.w, sz.h);
+        moveTo(0, 0);
+    }
+    std::cout << "done camera" << std::endl;
+}
 Camera::~Camera() {}
 
 void Camera::update(const Uint8 *ks) {

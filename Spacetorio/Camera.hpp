@@ -6,6 +6,10 @@
 #include "Entity.hpp"
 #include <ostream>
 
+
+class Renderer;
+extern Renderer* global_renderer;
+
 class PositionComponent;
 
 class Camera {
@@ -31,7 +35,7 @@ class Camera {
         fVec   spd = fVec(0.0f, 0.0f);
         fPoint pos = fPoint(0,0);
         float zoom = 1.0f;
-        fSize screen_size = {1280.0f, 720.0f};
+        fSize screen_size = {0.0f, 0.0f};
 
         PositionComponent* target = nullptr;
 

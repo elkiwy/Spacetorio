@@ -37,6 +37,7 @@ class Renderer {
         void drawTexture(const Texture& tex, int cx, int cy, float angle = 0.0f, float scale = 1.0f);
 
         SDL_Renderer* getSdlRenderer(){return sdlRenderer;};
+        iSize getScreenSize(){return screenRes;};
 
     private:
         iSize screenRes;
@@ -45,7 +46,9 @@ class Renderer {
         SDL_Renderer* sdlRenderer = nullptr;
 
         NoiseSurfaceGenerator gen;
-        Texture debugTexture;
+        Texture debugTextureFinal;
+        Texture debugTextureContinentalness;
+        Texture debugTextureErosion;
 
         bool imgui_showDemo = true;
 };
