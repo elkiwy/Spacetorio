@@ -6,6 +6,7 @@
 #include "SDL_pixels.h"
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
+#include "Utils_math.hpp"
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -29,10 +30,6 @@ iPoint dstToSrc(iPoint dst, int Ro, int Ri, iSize srcSize, float minAngle, float
     const float percHeight = ((float)(distance-Ri)) / ((float)(Ro-Ri));
     const int targetSrcHeight = floor(percHeight * ((float)(srcSize.h)));
     const float percWidth = angle / (M_PI*2.0f);
-
-    if (srcSize.h - targetSrcHeight - 1 == -1) {
-        std::cout << "cazzo";
-    }
     return {(int)(srcSize.w*percAngle) % srcSize.w, srcSize.h - targetSrcHeight - 1};
 }
 
@@ -87,108 +84,38 @@ PlanetBiomeComponent::~PlanetBiomeComponent(){
     if (biomeScene != nullptr){delete biomeScene; surface_flat = nullptr;}
 }
 
-
 SceneBiome* PlanetBiomeComponent::getBiomeScene(){
     if (biomeScene == nullptr){
-        biomeScene = new SceneBiome();
+        iSize sz = iSize(this->chunkData_lowRes_sizeW, this->chunkData_lowRes_sizeH);
+        biomeScene = new SceneBiome(sz);
     }
     return biomeScene;
 }
 
 void PlanetBiomeComponent::generateTerrain() {
-    //Asset that I'm not doing stupid things
+    //Assert that I'm not doing stupid things
     assert((this->chunkData_lowRes_sizeW == 0 && this->chunkData_lowRes_sizeH == 0) && "ERROR: calling generateTerrain() on a biome with a terrain.");
     assert((this->size.w > 0.0f && this->size.h > 0.0f) && "ERROR: calling generateTerrain() on a biome without a size set first.");
 
-
-    //Prepare the vector to hold the data
-    const size_t chunkData_size = floor(this->size.w) * floor(this->size.h);
-    chunkData_lowRes = std::vector<Uint8>(chunkData_size * 4, 0);// 4 = RGBA
-    //chunkData_lowRes.reserve(chunkData_size*pixelDataSize);
-    //std::fill(chunkData_lowRes.begin(), chunkData_lowRes.end(), 0);
-
-    std::cout << "Generating a terrain of size " << this->size.w << " " << this->size.h << std::endl;
-
-    //Output handling
-    int binaryThreshold = 128;
-    bool binaryOutput = true;
-
-    Uint32 seed = time(NULL);
-
-    //Feature Map
-    float FM_ScaleX = 0.020f;
-    float FM_ScaleY = 0.020f;
-    bool FM_ScaleSame = false;
-    int FM_Octaves = 5;
-    float FM_Persistance = 0.5f;
-    float FM_Influence = 3.0f;
-
-    //Altitude Map
-    float AM_Scale = 0.01f;
-    int AM_Octaves = 1;
-    float AM_Influence = 3.0f;
-
-    //Altitude Map 2
-    float AM2_Scale = 0.03f;
-    int AM2_Octaves = 3;
-    float AM2_Influence = 2.0f;
-
-    //Gradient
-    float VG_Ratio = 0.45f;
-    float VG_Influence = 4.0f;
-
     //Generate terrain
-    int imgW = floor(size.w); int imgH = floor(size.h);
-    const siv::PerlinNoise perlin{ (siv::PerlinNoise::seed_type)seed };
-    for (int j = 0; j < imgH; j += 1) {
-        for (int i = 0; i < imgW; i += 1) {
-            //Vertical Gradient
-            const float vgSize = ((float)imgH) * VG_Ratio;
-            const float vgGap = (((float)imgH) - vgSize) / 2.0f;
-            float vgVal = (j - vgGap) / vgSize;
-            float VG = (j < vgGap) ? 0.0f : ((j > vgSize + vgGap) ? 1.0f : vgVal);
-            float VG_02 = VG * 2.0f;
-            float VG_11 = (VG * 2.0f) - 1.0f;
-
-            //Features - Noise 2D
-            double FM_tmpScaleY = FM_ScaleY;
-            if (FM_ScaleSame) { FM_tmpScaleY = FM_ScaleX; };
-            const double FM = perlin.octave2D_01((i * FM_ScaleX), (j * FM_tmpScaleY), FM_Octaves, FM_Persistance);
-
-            //AltitudeMap - Noise 1D
-            double AM = perlin.octave1D_01((i * AM_Scale), AM_Octaves);
-            AM = AM + VG_11;
-            AM = fmin(fmax(AM, 0.0001f), 0.9999f);
-
-            //AltitudeMap2 - Noise 1D
-            const double AM2 = perlin.octave1D_01((i * AM2_Scale), AM2_Octaves);
-
-            //Group and finalize
-            double tot = AM_Influence + FM_Influence + VG_Influence + AM2_Influence;
-            double final_01 = (FM * FM_Influence + AM * AM_Influence + AM2 * AM2_Influence + VG * VG_Influence) / tot;
-
-            Uint8 pixelVal = floor(final_01 * 255.0f);
-            if (binaryOutput) { pixelVal = (pixelVal > binaryThreshold) ? 255 : 0; }
-            chunkData_lowRes[(i + (imgW * j)) * 4 + 0] = pixelVal;
-            chunkData_lowRes[(i + (imgW * j)) * 4 + 1] = pixelVal;
-            chunkData_lowRes[(i + (imgW * j)) * 4 + 2] = pixelVal;
-            chunkData_lowRes[(i + (imgW * j)) * 4 + 3] = (Uint8)255;
-        }
-    }
-
-    this->chunkData_lowRes_sizeW = imgW;
-    this->chunkData_lowRes_sizeH = imgH;
-
+    NoiseSurfaceGenerator gen;
+    NoiseSurfaceGenerator::GenerationSettings conf;
+    conf.seed = randInt(0, 999999);
+    std::cout << "Generating a terrain of size " << this->size.w << " " << this->size.h << std::endl;
+    this->surface_flat = gen.generateTerrain({(int)size.w, (int)size.h}, 3, conf);
+    this->chunkData_lowRes_sizeW = size.w;
+    this->chunkData_lowRes_sizeH = size.h;
     std::cout << "Done generating terrain of size " << this->size.w << " " << this->size.h << std::endl;
 
-
-    this->surface_flat = SDL_CreateRGBSurfaceFrom(&chunkData_lowRes[0], chunkData_lowRes_sizeW, chunkData_lowRes_sizeH, 32, chunkData_lowRes_sizeW * 4, 0, 0, 0, 0);
+    //Create the bent surface to be able to use it in space
     const float Ro = this->planetRadius + this->size.h*0.5f;
     const float Ri = this->planetRadius - this->size.h*0.5f;
     this->surface_space = bendImageOnArc(this->surface_flat, rad2deg(this->curvature), Ro, Ri);
     this->texture_space = Texture(this->surface_space);
-    //SDL_SaveBMP(surface_flat, "Terrain_normal.bmp");
-    //SDL_SaveBMP(surface_space, "Terrain_bent.bmp");
+
+    //DEBUG: save the images
+    SDL_SaveBMP(surface_flat, "Terrain_normal.bmp");
+    SDL_SaveBMP(surface_space, "Terrain_bent.bmp");
 }
 
 void PlanetBiomeComponent::setData(fSize size, float curvature, float planetRadius, float direction){
@@ -228,7 +155,7 @@ PlanetComponent::PlanetComponent(Entity planetEntity, float s):myEntity(planetEn
     const int nBiomes = biomes.size();
     const float angle = deg2rad(360.0f/(float)nBiomes);
     const float arcLength = planetRadius * angle;
-    const float crustHeight = planetRadius*0.75f;
+    const float crustHeight = planetRadius*0.4f;
     for(int i=0;i<biomes.size();i++){
         float direction = rad2deg(0.0f + i*angle);
         PlanetBiome b = {biomes[i], scene};

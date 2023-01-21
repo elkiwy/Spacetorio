@@ -37,12 +37,12 @@ struct TileBiome{
 };
 
 struct ChunkBiome{
-    std::array<std::array<TileBiome, GRID_SIZE>, GRID_SIZE> tiles;
+    std::vector<std::vector<TileBiome>> tiles;
 };
 
 class SceneBiome : public Scene {
     public:
-        SceneBiome();
+        SceneBiome(iSize size);
         virtual ~SceneBiome();
 
         TileBiome& getTile(float worldX, float worldY);
@@ -50,7 +50,7 @@ class SceneBiome : public Scene {
         void addEntityToTileAt(entt::entity e, float worldX, float worldY);
 
     private:
-        std::array<std::array<ChunkBiome, GRID_SIZE>, GRID_SIZE> chunks;
+        std::vector<std::vector<ChunkBiome>> chunks;
 };
 
 #endif // SCENEBIOME_H_

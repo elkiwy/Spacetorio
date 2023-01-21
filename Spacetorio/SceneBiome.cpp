@@ -4,7 +4,7 @@
 #include "Entity.hpp"
 
 
-SceneBiome::SceneBiome(){
+SceneBiome::SceneBiome(iSize size){
     for(int j=GRID_SIZE/2; j<GRID_SIZE; j++){
         for(int i=0; i<GRID_SIZE; i++){
             Entity e = {this->newEntity(), this};

@@ -22,7 +22,7 @@ void attachGenericComponent(entt::registry &reg, entt::entity ent) {
     D& derivedComp = reg.get<D>(ent);
     B* derivedCasted = static_cast<B*>(&derivedComp);
 
-    std::cout << "Attaching " << typeid(B).name() << " after having a " << typeid(D).name() << " connected to entity n: " << (int)ent << std::endl;
+    //std::cout << "Attaching " << typeid(B).name() << " after having a " << typeid(D).name() << " connected to entity n: " << (int)ent << std::endl;
 
     if(reg.any_of<B>(ent)){
         //Has already the base class, register the other derived component to it
@@ -31,7 +31,7 @@ void attachGenericComponent(entt::registry &reg, entt::entity ent) {
     }else{
         //Create a new Generic component
         B& generic = reg.emplace<B>(ent, static_cast<GenericComponent*>(derivedCasted));
-        std::cout << "Created generic at " << (void*)&generic << " for derived " << (void*)&derivedComp << std::endl;
+        //std::cout << "Created generic at " << (void*)&generic << " for derived " << (void*)&derivedComp << std::endl;
     }
 }
 

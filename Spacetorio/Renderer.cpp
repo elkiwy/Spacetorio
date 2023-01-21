@@ -112,21 +112,18 @@ void Renderer::renderGUI(Scene* s){
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    ////Test Imgui
-    //ImGui::ShowDemoWindow(&imgui_showDemo);
-
     //Scene GUI
     s->renderGUI();
 
     //Noise Generator debug
-    if (gen.renderGUI() || debugTextureFinal.initialized == false){
-        DebugSurfaces ds;
-        gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
-        debugTextureFinal = Texture(ds.finalSurface, false);
-        debugTextureContinentalness = Texture(ds.contSurface, false);
-        debugTextureErosion = Texture(ds.erosionSurface, false);
-        ds.free();
-    }
+    //if (gen.renderGUI() || debugTextureFinal.initialized == false){
+    //    DebugSurfaces ds;
+    //    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
+    //    debugTextureFinal = Texture(ds.finalSurface, false);
+    //    debugTextureContinentalness = Texture(ds.contSurface, false);
+    //    debugTextureErosion = Texture(ds.erosionSurface, false);
+    //    ds.free();
+    //}
 
     //Rendere and complete ImGui
     ImGui::Render();
