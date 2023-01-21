@@ -146,6 +146,9 @@ void loadTestScene(Scene* s){
 
 
 void Universe::init(){
+    spaceScene.init();
+    activeScene = &spaceScene;
+
     //Create StarSystem
     StarSystem system = StarSystem(&spaceScene, "Solar System 1", {400.0f, 400.0f});
     Planet p = system.addRandomPlanet();
@@ -161,7 +164,7 @@ void Universe::init(){
     PlanetBiome b = PlanetBiome(pc.biomes[0], &spaceScene);
     PlanetBiomeComponent& pbc = b.getComponent<PlanetBiomeComponent>();
     this->planetScene = pbc.getBiomeScene();
-    this->switchScene(this->planetScene);
+    //this->switchScene(this->planetScene);
 }
 
 

@@ -23,6 +23,14 @@
 
 
 Scene::Scene(){
+}
+
+Scene::~Scene(){
+
+}
+
+
+void Scene::init(){
     registerGenericComponent<RenderableComponent, RenderableCircleComponent>();
     registerGenericComponent<RenderableComponent, RenderableRectComponent>();
     registerGenericComponent<RenderableComponent, PlanetComponent>();
@@ -41,14 +49,13 @@ Scene::Scene(){
 
     registerGenericComponent<ClickableComponent, ClickableCircleComponent>();
     registerGenericComponent<ClickableComponent, ClickableRectangleComponent>();
-}
 
-Scene::~Scene(){
-
+    cam.init();
 }
 
 void Scene::render(){
     //Render all the renderable entities
+    const ShapeRectangle& cameraRect = cam.getCameraShape();
     auto view = registry.view<RenderableComponent, PositionComponent>();
     //std::cout << "---------" << std::endl;
     for(auto entity: view){
@@ -58,13 +65,16 @@ void Scene::render(){
         for(auto impl: renderable.impls){
             if (impl == nullptr){break;}
             //std::cout << " -- Rendering comp: " << (void*)impl << std::endl;
-            static_cast<RenderableComponent*>(impl)->render(pos, cam);
+            bool inCamera = cameraRect.checkCollisionWithPoint(ShapePoint(pos.pos));
+            if (inCamera){
+                static_cast<RenderableComponent*>(impl)->render(pos, cam);
+            }
         }
     }
 
     //Draw camera crosshair and coordinates
     int len = 10;
-    iPoint c = {640, 360};
+    iPoint c = iPoint(((int)cam.screen_size.w)/2, ((int)cam.screen_size.h)/2);
     global_renderer->drawLine(c.x, c.y-len, c.x, c.y+len, {0,0,0,255});
     global_renderer->drawLine(c.x-len, c.y, c.x+len, c.y, {0,0,0,255});
     fPoint worldPos = cam.screenToWorld({(float)c.x, (float)c.y});

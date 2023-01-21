@@ -12,6 +12,7 @@ class GameController {
         GameController(SDL_Window* sdlWindow, iSize screenRes);
         virtual ~GameController();
         Renderer& getRenderer() { return renderer; }
+        Universe& getUniverse() { return universe; }
 
         //Game events
         void init();

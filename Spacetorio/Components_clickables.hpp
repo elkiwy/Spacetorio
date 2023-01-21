@@ -6,6 +6,7 @@
 #include "Components_renderables.hpp"
 
 #include "Utils_geometry.hpp"
+#include <functional>
 
 
 //Base Component
@@ -14,7 +15,7 @@ struct ClickableComponent : public GenericComponent{
     ClickableComponent(GenericComponent* impl) : GenericComponent(impl) {}
 
     bool active = true;
-    void (*onclick)() = nullptr;
+    std::function<void()> onclick = nullptr;
     bool hovered = false;
 
     SDL_Color debug_color_normal = {128,64,0,255};

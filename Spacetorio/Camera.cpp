@@ -5,7 +5,10 @@
 #include "Renderer.hpp"
 #include <iostream>
 
-Camera::Camera() {
+Camera::Camera() {}
+Camera::~Camera() {}
+
+void Camera::init(){
     std::cout << "Initializing camera" << std::endl;
     if (global_renderer != nullptr){
         iSize sz = global_renderer->getScreenSize();
@@ -14,7 +17,6 @@ Camera::Camera() {
     }
     std::cout << "done camera" << std::endl;
 }
-Camera::~Camera() {}
 
 void Camera::update(const Uint8 *ks) {
     if (this->target == nullptr){
@@ -64,4 +66,11 @@ void Camera::setTarget(PositionComponent* p){
 
 void Camera::setTarget(Entity e){
     target = &e.getComponent<PositionComponent>();
+}
+
+const ShapeRectangle& Camera::getCameraShape(){
+    shape.pos = pos;
+    shape.size.w = (screen_size.w / zoom);
+    shape.size.h = (screen_size.h / zoom);
+    return shape;
 }

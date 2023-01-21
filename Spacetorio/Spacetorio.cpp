@@ -28,6 +28,7 @@
 
 float global_avgFPS = 0;
 Renderer* global_renderer = nullptr;
+Universe* global_universe = nullptr;
 
 int main(int argc, char* args[]) {
     //Initialize SDL
@@ -61,6 +62,7 @@ int main(int argc, char* args[]) {
         GameController gc = GameController(window, screenRes);
         std::cout << "Setting global_renderer" << std::endl;
         global_renderer = &gc.getRenderer();
+        global_universe = &gc.getUniverse();
         gc.init();
 
 

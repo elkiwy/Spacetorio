@@ -6,10 +6,6 @@
 #include <array>
 #include <vector>
 
-#define CHUNK_SIZE 8 //Tiles
-#define GRID_SIZE CHUNK_SIZE*8 //Tiles
-#define TILE_SIZE 32 //WorldCoordinates
-
 
 /*
 
@@ -42,10 +38,13 @@ struct ChunkBiome{
 
 class SceneBiome : public Scene {
     public:
-        SceneBiome(iSize size);
+        SceneBiome();
         virtual ~SceneBiome();
 
-        TileBiome& getTile(float worldX, float worldY);
+        void init(SDL_Surface* terrain);
+
+        TileBiome& getTileAtWorldPos(float worldX, float worldY);
+        TileBiome& getTileAtTilePos(int tX, int tY);
         ChunkBiome& getChunk(float worldX, float worldY);
         void addEntityToTileAt(entt::entity e, float worldX, float worldY);
 

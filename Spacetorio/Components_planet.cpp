@@ -7,8 +7,10 @@
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
 #include "Utils_math.hpp"
+#include <array>
 #include <cassert>
 #include <iostream>
+#include <string>
 #include <vector>
 
 
@@ -87,7 +89,8 @@ PlanetBiomeComponent::~PlanetBiomeComponent(){
 SceneBiome* PlanetBiomeComponent::getBiomeScene(){
     if (biomeScene == nullptr){
         iSize sz = iSize(this->chunkData_lowRes_sizeW, this->chunkData_lowRes_sizeH);
-        biomeScene = new SceneBiome(sz);
+        biomeScene = new SceneBiome();
+        biomeScene->init(surface_flat);
     }
     return biomeScene;
 }
@@ -118,14 +121,14 @@ void PlanetBiomeComponent::generateTerrain() {
     SDL_SaveBMP(surface_space, "Terrain_bent.bmp");
 }
 
-void PlanetBiomeComponent::setData(fSize size, float curvature, float planetRadius, float direction){
+void PlanetBiomeComponent::setData(fSize size, float curvature, float planetRadius, float directionDeg){
     this->size = size; this->curvature = curvature;
     this->planetRadius = planetRadius;
-    this->direction = direction;
+    this->directionDeg = directionDeg;
 }
 
 void PlanetBiomeComponent::render(fPoint planetPosOnScreen, float cameraZoom) const{
-    global_renderer->drawTexture(texture_space, planetPosOnScreen.x, planetPosOnScreen.y, direction, cameraZoom);
+    global_renderer->drawTexture(texture_space, planetPosOnScreen.x, planetPosOnScreen.y, directionDeg, cameraZoom);
 }
 
 
@@ -154,16 +157,27 @@ PlanetComponent::PlanetComponent(Entity planetEntity, float s):myEntity(planetEn
     //Init all the biomes
     const int nBiomes = biomes.size();
     const float angle = deg2rad(360.0f/(float)nBiomes);
-    const float arcLength = planetRadius * angle;
-    const float crustHeight = planetRadius*0.4f;
+    const float biomeW = planetRadius * angle; //Arc length formula
+    const int biomeH = 300;
     for(int i=0;i<biomes.size();i++){
         float direction = rad2deg(0.0f + i*angle);
+        float angleToCenter = deg2rad(direction)+(angle/2.0f);
+
+        //Setup biome
         PlanetBiome b = {biomes[i], scene};
-        auto& clickable = b.getComponent<ClickableCircleComponent>();
-        clickable.offset = fPoint(0.0f, 0.0f).movedByTo(planetRadius, deg2rad(direction)+(angle/2.0f));
         PlanetBiomeComponent& bc = b.getComponent<PlanetBiomeComponent>();
-        bc.setData(fSize(arcLength, crustHeight), angle, planetRadius, direction);
+        fSize biomeSize = fSize(roundChunk(biomeW), roundChunk(biomeH));
+        bc.setData(biomeSize, angle, planetRadius, 90.0f + rad2deg(angleToCenter));
         bc.generateTerrain();
+
+        //Setup click interaction
+        auto& clickable = b.getComponent<ClickableCircleComponent>();
+        clickable.offset = fPoint(0.0f, 0.0f).movedByTo(planetRadius, angleToCenter);
+        clickable.onclick = [i, &bc](){
+            std::cout << "Loading scene of biome " << std::to_string(i) << std::endl;
+            SceneBiome* biomeScene = bc.getBiomeScene();
+            global_universe->switchScene(biomeScene);
+        };
     }
 }
 

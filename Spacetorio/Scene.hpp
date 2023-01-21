@@ -47,6 +47,8 @@ class Scene {
             registry.on_construct<D>().template connect<&attachGenericComponent<B, D>>();
         }
 
+        virtual void init();
+
         void render();
         void renderGUI();
 

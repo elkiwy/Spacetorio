@@ -181,14 +181,14 @@ void Renderer::drawText(int x, int y, std::string text, SDL_Color col){
     SDL_DestroyTexture(textTexture);
 }
 
-void Renderer::drawTexture(const Texture& t, int cx, int cy, float angle, float scale){
+void Renderer::drawTexture(const Texture& t, int cx, int cy, float angleDeg, float scale){
     int scaledW = t.w*scale;
     int scaledH = t.h*scale;
     int ULCornerX = cx - scaledW/2.0f;
     int ULCornerY = cy - scaledH/2.0f;
 
     SDL_Rect dstRect = {ULCornerX, ULCornerY, scaledW, scaledH};
-    SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, angle, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, angleDeg, NULL, SDL_FLIP_NONE);
 }
 
 void Renderer::drawCircle(int cx, int cy, int radius, SDL_Color col){

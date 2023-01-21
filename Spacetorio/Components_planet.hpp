@@ -10,6 +10,9 @@
 
 #define MAX_BIOMES 16
 
+class Universe;
+extern Universe* global_universe;
+
 
 class SceneBiome;
 
@@ -17,10 +20,10 @@ struct PlanetComponent;
 
 struct PlanetBiomeComponent{
     PlanetBiomeType type;
-    Uint32 seed = 0;
     fSize size = {0.0f, 0.0f}; //Length of the arc on the planet and height of the chunk
+
     float curvature = 0.0f;
-    float direction = 0.0f;
+    float directionDeg = 0.0f;
     float planetRadius = 0.0f;
 
     size_t chunkData_lowRes_sizeW = 0;

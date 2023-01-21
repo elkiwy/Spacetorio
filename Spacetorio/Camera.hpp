@@ -3,6 +3,7 @@
 
 #include "SDL_stdinc.h"
 #include "Utils_points.hpp"
+#include "Utils_geometry.hpp"
 #include "Entity.hpp"
 #include <ostream>
 
@@ -17,7 +18,8 @@ class Camera {
         Camera();
         virtual ~Camera();
 
-        void update(const Uint8* ks) ;
+        void init();
+        void update(const Uint8* ks);
 
         void moveTo(float x, float y);
         void moveBy(float dx, float dy);
@@ -31,12 +33,15 @@ class Camera {
         void setTarget(PositionComponent* p);
         void setTarget(Entity e);
 
+        const ShapeRectangle& getCameraShape();
+
 
         fVec   spd = fVec(0.0f, 0.0f);
         fPoint pos = fPoint(0,0);
         float zoom = 1.0f;
         fSize screen_size = {0.0f, 0.0f};
 
+        ShapeRectangle shape;
         PositionComponent* target = nullptr;
 
 };

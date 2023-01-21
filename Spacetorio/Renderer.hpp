@@ -34,7 +34,7 @@ class Renderer {
         void drawRectFill(int cx, int cy, int w, int h, SDL_Color col);
         void drawText(int x, int y, std::string text, SDL_Color col);
         void drawCircle(int cx, int cy, int radius, SDL_Color col);
-        void drawTexture(const Texture& tex, int cx, int cy, float angle = 0.0f, float scale = 1.0f);
+        void drawTexture(const Texture& tex, int cx, int cy, float angleDeg = 0.0f, float scale = 1.0f);
 
         SDL_Renderer* getSdlRenderer(){return sdlRenderer;};
         iSize getScreenSize(){return screenRes;};
