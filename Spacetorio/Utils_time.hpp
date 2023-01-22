@@ -1,6 +1,8 @@
 #ifndef UTILS_TIME_H_
 #define UTILS_TIME_H_
 
+#include <iostream>
+#include <chrono>
 
 #include "SDL_stdinc.h"
 #include "SDL_timer.h"
@@ -63,5 +65,21 @@ class Timer {
         bool paused;
         bool started;
 };
+
+class HighResTimer{
+    typedef std::chrono::high_resolution_clock Clock;
+    std::chrono::time_point<Clock> start;
+
+    public:
+        HighResTimer(){
+            start = Clock::now();
+        }
+
+        long long timePassed(){
+            auto now = Clock::now();
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
+        }
+};
+
 
 #endif // UTILS_TIME_H_
