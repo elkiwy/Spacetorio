@@ -24,6 +24,20 @@ class Entity {
             return getMyRegistry().emplace<T>(enttHandle, std::forward<Args>(args)...);
         }
 
+        template<typename T, typename... Args>
+        T& addComponentToPool(std::string poolName, Args&&... args){
+            //assert(!hasComponent<T>() && "ERROR: Trying to add the same component to the same entity.");
+            auto&& pool = getMyRegistry().storage<T>(entt::hashed_string(poolName.c_str()));
+            return pool.emplace(enttHandle, std::forward<Args>(args)...);
+        }
+
+        template<typename T, typename... Args>
+        T& addComponentToPool(entt::hashed_string hash, Args&&... args){
+            //assert(!hasComponent<T>() && "ERROR: Trying to add the same component to the same entity.");
+            auto&& pool = getMyRegistry().storage<T>(hash);
+            return pool.emplace(enttHandle, std::forward<Args>(args)...);
+        }
+
         template<typename T>
         T& getComponent(){
             assert(hasComponent<T>() && "ERROR: Entity doesn't have component to get.");

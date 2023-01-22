@@ -1,10 +1,10 @@
 #include "SceneBiome.hpp"
-#include "Components_position.hpp"
-#include "Components_renderables.hpp"
 #include "Entity.hpp"
 #include "SDL_stdinc.h"
 #include <string>
 #include <vector>
+
+
 
 SceneBiome::SceneBiome(){
 
@@ -25,10 +25,11 @@ void SceneBiome::init(SDL_Surface* terrainMap){
     int chunkCountH = mapH/CHUNK_SIZE;
 
     //Instanciate all the empty chunks
+    entt::registry& reg = getRegistry();
     for(int j=0; j<chunkCountH; ++j){
         auto& v = chunks.emplace_back();
         for(int i=0; i<chunkCountW; ++i){
-            v.emplace_back(i, j);
+            v.emplace_back(i, j, reg);
         }
     }
 
@@ -44,11 +45,20 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             if (tileVal > 250){
                 //Create the entity
                 Entity e = {this->newEntity(), this};
-                e.addComponent<StaticPositionComponent>(i*TILE_SIZE+TILE_SIZE/2, j*TILE_SIZE+TILE_SIZE/2);
-                e.addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE);
+                //e.addComponent<StaticPositionComponent>(i*TILE_SIZE+TILE_SIZE/2, j*TILE_SIZE+TILE_SIZE/2);
+                //e.addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE);
+
+                ChunkBiome& ck = chunks[chunkY][chunkX];
+                e.addComponentToPool<StaticPositionComponent>(ck.pool_positions.id, i*TILE_SIZE+TILE_SIZE/2, j*TILE_SIZE+TILE_SIZE/2);
+                auto& comp = e.addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE);
+
+                //TODO optimize this, I made it only for proof of concept, duplicate renderable components in two pools for each entity
+                GenericComponent* impl = static_cast<GenericComponent*>(&comp);
+                e.addComponentToPool<RenderableComponent>(ck.pool_renderables.id, impl);
+
 
                 //Add it to the staticEntities in the correct chunk for faster queries for rendering
-                chunks[chunkY][chunkX].staticEntities.push_back(e.enttHandle);
+                ck.staticEntities.push_back(e.enttHandle);
             }
         }
     }
@@ -85,21 +95,20 @@ void SceneBiome::render(){
         }
     }
 
+
+    //auto group = reg.group<StaticPositionComponent, RenderableComponent>();
     for(int j=minChunkY;j<=maxChunkY;++j){
         for(int i=minChunkX;i<=maxChunkX;++i){
             auto& chunkView = chunks[j][i].staticEntities;
-            for(auto& entity: chunkView){
-                //StaticPositionComponent& pos = reg.get<StaticPositionComponent>(entity);
-                //RenderableComponent& renderable = reg.get<RenderableComponent>(entity);
+            auto& chunk = chunks[j][i];
 
-                auto [pos, renderable] = reg.get<StaticPositionComponent, RenderableComponent>(entity);
+            for(auto& entity: chunkView){
+                StaticPositionComponent& pos = chunk.pool_positions.pool->get(entity);
+                RenderableComponent& renderable = chunk.pool_renderables.pool->get(entity);
 
                 for(auto impl: renderable.impls){
                     if (impl == nullptr){break;}
-                    //bool inCamera = cameraRect.checkCollisionWithPoint(ShapePoint(pos->pos));
-                    //if (inCamera){
-                        static_cast<RenderableComponent*>(impl)->render(pos, cam);
-                    //}
+                    static_cast<RenderableComponent*>(impl)->render(pos, cam);
                 }
             }
         }
