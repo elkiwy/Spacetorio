@@ -5,14 +5,11 @@
 #include "entt.hpp"
 #include <array>
 #include <vector>
+#include "Utils_data.hpp"
 
 
 /*
 
-World
- 0,0
-   |
-   V
    /-----+-----+-----+-----\
    | 0,0 | 1,0 | 2,0 | 3,0 |
    |-----+-----+-----+-----|
@@ -24,6 +21,27 @@ World
    \-----+-----+-----+-----/
 
 
+entt::dense_map<
+    unsigned int,
+    std::shared_ptr<
+        entt::basic_sparse_set<
+            entt::entity,
+            std::allocator<entt::entity>
+        >
+    >,
+    entt::identity,
+    std::equal_to<unsigned int>,
+    std::allocator<std::pair<
+        const unsigned int,
+        std::shared_ptr<
+            entt::basic_sparse_set<
+                entt::entity,
+                std::allocator<entt::entity>
+            >
+        >
+    >>
+>
+
 
 */
 
@@ -34,6 +52,11 @@ struct TileBiome{
 
 struct ChunkBiome{
     std::vector<std::vector<TileBiome>> tiles;
+    std::vector<entt::entity> staticEntities;
+    ShapeRectangle shape;
+    int x = -1; int y = -1;
+    ChunkBiome(int x, int y) :x(x), y(y),
+         shape(fPoint(x*CHUNK_SIZE*TILE_SIZE,y*CHUNK_SIZE*TILE_SIZE),fSize(CHUNK_SIZE*TILE_SIZE, CHUNK_SIZE*TILE_SIZE)){}
 };
 
 class SceneBiome : public Scene {
@@ -42,6 +65,7 @@ class SceneBiome : public Scene {
         virtual ~SceneBiome();
 
         void init(SDL_Surface* terrain);
+        void render() override;
 
         TileBiome& getTileAtWorldPos(float worldX, float worldY);
         TileBiome& getTileAtTilePos(int tX, int tY);

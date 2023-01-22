@@ -36,6 +36,16 @@ void attachGenericComponent(entt::registry &reg, entt::entity ent) {
 }
 
 
+// Attach a generic component, so it's easier to do generic queries for events
+// like registry.view<RenderableComponent>()
+template <typename B, typename D>
+void attachMonoGenericComponent(entt::registry &reg, entt::entity ent) {
+    D& derivedComp = reg.get<D>(ent);
+    B* derivedCasted = static_cast<B*>(&derivedComp);
+    B& generic = reg.emplace<B>(ent, static_cast<MonoGenericComponent*>(derivedCasted));
+}
+
+
 class Scene {
     public:
         Scene();
@@ -47,10 +57,16 @@ class Scene {
             registry.on_construct<D>().template connect<&attachGenericComponent<B, D>>();
         }
 
+        template<typename B, typename D>
+        void registerMonoGenericComponent() {
+            registry.on_construct<D>().template connect<&attachMonoGenericComponent<B, D>>();
+        }
+
         virtual void init();
 
-        void render();
+        virtual void render();
         void renderGUI();
+        void renderCameraCrosshair();
 
         void update(const Uint8* keyState);
         void onMouseWheel(float dy);

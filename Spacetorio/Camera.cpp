@@ -29,6 +29,13 @@ void Camera::update(const Uint8 *ks) {
     }
 }
 
+fPoint Camera::getCameraWorldCenter() const{
+    return {
+        pos.x + (screen_size.w * 0.5f)/zoom,
+        pos.y + (screen_size.h * 0.5f)/zoom
+    };
+}
+
 void Camera::moveTo(float x, float y) {
     pos.x = x - (screen_size.w * 0.5f)/zoom;
     pos.y = y - (screen_size.h * 0.5f)/zoom;

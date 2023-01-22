@@ -40,7 +40,7 @@ void Scene::init(){
     registerGenericComponent<RenderableComponent, ClickableCircleComponent>();
     registerGenericComponent<RenderableComponent, ClickableRectangleComponent>();
 
-    registerGenericComponent<UpdatableComponent, PositionComponent>();
+    registerGenericComponent<UpdatableComponent, DynamicPositionComponent>();
     registerGenericComponent<UpdatableComponent, PlayerSpaceshipComponent>();
 
     registerGenericComponent<ColliderComponent, ColliderCircleComponent>();
@@ -49,6 +49,9 @@ void Scene::init(){
 
     registerGenericComponent<ClickableComponent, ClickableCircleComponent>();
     registerGenericComponent<ClickableComponent, ClickableRectangleComponent>();
+
+    registerMonoGenericComponent<PositionComponent, DynamicPositionComponent>();
+    registerMonoGenericComponent<PositionComponent, StaticPositionComponent>();
 
     cam.init();
 }
@@ -60,19 +63,23 @@ void Scene::render(){
     //std::cout << "---------" << std::endl;
     for(auto entity: view){
         //std::cout << "Rendering entity: " << (int)entity << std::endl;
-        auto& pos = view.get<PositionComponent>(entity);
-        auto& renderable = view.get<RenderableComponent>(entity);
+        PositionComponent* pos = static_cast<PositionComponent*>(view.get<PositionComponent>(entity).impl);
+        RenderableComponent& renderable = view.get<RenderableComponent>(entity);
         for(auto impl: renderable.impls){
             if (impl == nullptr){break;}
             //std::cout << " -- Rendering comp: " << (void*)impl << std::endl;
-            bool inCamera = cameraRect.checkCollisionWithPoint(ShapePoint(pos.pos));
+            bool inCamera = cameraRect.checkCollisionWithPoint(ShapePoint(pos->pos));
             if (inCamera){
-                static_cast<RenderableComponent*>(impl)->render(pos, cam);
+                static_cast<RenderableComponent*>(impl)->render(*pos, cam);
             }
         }
     }
 
     //Draw camera crosshair and coordinates
+    renderCameraCrosshair();
+}
+
+void Scene::renderCameraCrosshair(){
     int len = 10;
     iPoint c = iPoint(((int)cam.screen_size.w)/2, ((int)cam.screen_size.h)/2);
     global_renderer->drawLine(c.x, c.y-len, c.x, c.y+len, {0,0,0,255});
@@ -88,41 +95,41 @@ void Scene::renderGUI(){
     //
     ImGui::Text("Entities");
     ImGui::BeginChild("Scrolling");
-    auto view = registry.view<TagComponent>();
-    for(auto e: view){
-        auto& tag  = view.get<TagComponent>(e);
-        std::string name = tag.tag + "("+std::to_string((int)e)+")";
-        if (ImGui::TreeNode(name.c_str())){
+    if (false){
+        auto view = registry.view<TagComponent>();
+        for(auto e: view){
+            auto& tag  = view.get<TagComponent>(e);
+            std::string name = tag.tag + "("+std::to_string((int)e)+")";
+            if (ImGui::TreeNode(name.c_str())){
 
-            if (registry.any_of<UpdatableComponent>(e)){
-                ImGui::Text("UpdatableComponent : YES");
+                if (registry.any_of<UpdatableComponent>(e)){
+                    ImGui::Text("UpdatableComponent : YES");
+                }
+
+                //if (registry.any_of<PositionComponent>(e)){
+                //    auto& pos = registry.get<PositionComponent>(e);
+                //    ImGui::Text("Position:");
+                //    ImGui::SliderFloat("Pos X:", &pos.pos.x, -900.0f, 900.0f);
+                //    ImGui::SliderFloat("Pos Y:", &pos.pos.y, -900.0f, 900.0f);
+                //}
+
+                if (registry.any_of<RenderableComponent>(e)){
+                    ImGui::Text("RenderableComponent : YES");
+                }
+
+                if (registry.any_of<ClickableComponent>(e)){
+                    ImGui::Text("ClickableComponent : YES");
+                }
+
+                if (registry.any_of<RenderableCircleComponent>(e)){
+                    auto& rc = registry.get<RenderableCircleComponent>(e);
+                    ImGui::Text("Renderable Circle:");
+                    ImGui::SliderFloat("Size", &rc.s, -900.0f, 900.0f);
+                }
+
+
+                ImGui::TreePop();
             }
-
-            if (registry.any_of<PositionComponent>(e)){
-                auto& pos = registry.get<PositionComponent>(e);
-                ImGui::Text("Position:");
-                ImGui::SliderFloat("Pos X:", &pos.pos.x, -900.0f, 900.0f);
-                ImGui::SliderFloat("Pos Y:", &pos.pos.y, -900.0f, 900.0f);
-                ImGui::SliderFloat("Speed X:", &pos.spd.x, -10.0f, 10.0f);
-                ImGui::SliderFloat("Speed Y:", &pos.spd.y, -10.0f, 10.0f);
-            }
-
-            if (registry.any_of<RenderableComponent>(e)){
-                ImGui::Text("RenderableComponent : YES");
-            }
-
-            if (registry.any_of<ClickableComponent>(e)){
-                ImGui::Text("ClickableComponent : YES");
-            }
-
-            if (registry.any_of<RenderableCircleComponent>(e)){
-                auto& rc = registry.get<RenderableCircleComponent>(e);
-                ImGui::Text("Renderable Circle:");
-                ImGui::SliderFloat("Size", &rc.s, -900.0f, 900.0f);
-            }
-
-
-            ImGui::TreePop();
         }
     }
     ImGui::EndChild();

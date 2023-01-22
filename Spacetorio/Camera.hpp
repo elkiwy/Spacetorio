@@ -21,6 +21,7 @@ class Camera {
         void init();
         void update(const Uint8* ks);
 
+        fPoint getCameraWorldCenter() const;
         void moveTo(float x, float y);
         void moveBy(float dx, float dy);
         void addSpd(float dx, float dy);
@@ -34,6 +35,7 @@ class Camera {
         void setTarget(Entity e);
 
         const ShapeRectangle& getCameraShape();
+
 
 
         fVec   spd = fVec(0.0f, 0.0f);

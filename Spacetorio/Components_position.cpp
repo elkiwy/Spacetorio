@@ -2,7 +2,7 @@
 #include "Entity.hpp"
 #include "Scene.hpp"
 
-void PositionComponent::update(Entity& e, const Uint8* keyState){
+void DynamicPositionComponent::update(Entity& e, const Uint8* keyState){
     pos += spd;
     if (lockedToMouse){
         iPoint mousePos = {0,0};

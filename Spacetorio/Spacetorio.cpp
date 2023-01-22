@@ -38,7 +38,7 @@ int main(int argc, char* args[]) {
     }
 
     //Create window
-    const int TARGET_FPS = 60;
+    const int TARGET_FPS = 60*5;
     const int TARGET_TICKS_PER_FRAME = 1000/TARGET_FPS;
     iSize screenRes = {SCREEN_W, SCREEN_H};
     SDL_WindowFlags wf = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
@@ -96,6 +96,7 @@ int main(int argc, char* args[]) {
 
             //Calculate avg fps so far
             float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
+            if (countedFrames > 60*5){countedFrames = 0; fpsTimer = Timer(); fpsTimer.start();}
             if (avgFPS > 2000000){avgFPS = 0;}
             global_avgFPS = avgFPS;
 

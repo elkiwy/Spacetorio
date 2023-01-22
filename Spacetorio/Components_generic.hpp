@@ -25,5 +25,12 @@ struct GenericComponent{
 
 };
 
+struct MonoGenericComponent{
+    MonoGenericComponent* impl = nullptr;
+
+    MonoGenericComponent() = default;
+    MonoGenericComponent(MonoGenericComponent* impl) : impl(impl) {}
+};
+
 
 #endif // COMPONENTS_GENERIC_H_
