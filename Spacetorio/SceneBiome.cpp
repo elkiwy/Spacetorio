@@ -34,8 +34,6 @@ void SceneBiome::init(SDL_Surface* terrainMap){
         }
     }
 
-    std::cout << "Chunks: " << chunks.size() << " " << chunks[0].size() << std::endl;
-
     //Load all the entities from the terrainMap
     Uint8* terrainMapData = (Uint8*)terrainMap->pixels;
     for(int j=0; j<mapH; ++j){
@@ -43,24 +41,13 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             int chunkX = i/CHUNK_SIZE;
             int chunkY = j/CHUNK_SIZE;
             Uint8 tileVal = terrainMapData[(i+(mapW*j))*4+0];
-            if (tileVal > 250 || true){
+            if (tileVal > 250){
                 //Create the entity
                 Entity e = {this->newEntity(), this};
                 ChunkBiome& ck = chunks[chunkY][chunkX];
-
-                /**/
                 e.addComponent<StaticPositionComponent>(i*TILE_SIZE+TILE_SIZE/2, j*TILE_SIZE+TILE_SIZE/2);
                 e.addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE);
                 ck.entities.emplace(e.enttHandle);
-                /*/
-                e.addComponentToPool<StaticPositionComponent>(ck.pool_positions.id, i*TILE_SIZE+TILE_SIZE/2, j*TILE_SIZE+TILE_SIZE/2);
-                auto& comp = e.addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE);
-                GenericComponent* impl = static_cast<GenericComponent*>(&comp); //TODO optimize this, I made it only for proof of concept, duplicate renderable components in two pools for each entity
-                e.addComponentToPool<RenderableComponent>(ck.pool_renderables.id, impl);
-                //Add it to the staticEntities in the correct chunk for faster queries for rendering
-                ck.staticEntities.push_back(e.enttHandle);
-                /**/
-
             }
         }
     }
@@ -70,80 +57,50 @@ void SceneBiome::init(SDL_Surface* terrainMap){
 }
 
 
-void SceneBiome::render(){
-    auto& cam = getCamera();
+void getChunksInCamera(Camera& cam, const std::vector<std::vector<ChunkBiome>>& chunks, int* minX, int* minY, int* maxX, int* maxY){
+    //Get Camera world position
     auto& camShape = cam.getCameraShape();
-    auto& reg = getRegistry();
     fPoint cameraWorldPos = cam.getCameraWorldCenter();
-    ChunkBiome& chunkOnCameraCenter = getChunk(cameraWorldPos.x, cameraWorldPos.y);
+
+    //Get the main chunk in focus
+    int chunkX = std::clamp((int)(cameraWorldPos.x / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks[0].size() - 1);
+    int chunkY = std::clamp((int)(cameraWorldPos.y / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks.size()-1);
 
     //Scan the row that has the chunkOnCameraCenter and mark min and max chunk Xs
-    int minChunkX = 999999; int maxChunkX = -1;
+    *minX = 999999; *maxX = -1;
     for(int x=0;x<chunks[0].size();++x){
-        ChunkBiome& c = chunks[chunkOnCameraCenter.y][x];
+        const ChunkBiome& c = chunks[chunkY][x];
         if (c.shape.checkCollisionWithRectangle(camShape)){
-            if (x<minChunkX) { minChunkX = x; }
-            if (x>maxChunkX) { maxChunkX = x; }
+            if (x<*minX) { *minX = x; }
+            if (x>*maxX) { *maxX = x; }
         }
     }
 
     //Scan the col that has the chunkOnCameraCenter and mark min and max chunk Ys
-    int minChunkY = 999999; int maxChunkY = -1;
+    *minY = 999999; *maxY = -1;
     for(int y=0;y<chunks.size();++y){
-        ChunkBiome& c = chunks[y][chunkOnCameraCenter.x];
+        const ChunkBiome& c = chunks[y][chunkX];
         if (c.shape.checkCollisionWithRectangle(camShape)){
-            if (y<minChunkY) { minChunkY = y; }
-            if (y>maxChunkY) { maxChunkY = y; }
+            if (y<*minY) { *minY = y; }
+            if (y>*maxY) { *maxY = y; }
         }
     }
+}
 
+void SceneBiome::render(){
+    auto& cam = getCamera();
+    auto& reg = getRegistry();
+    int minChunkX,minChunkY,maxChunkX,maxChunkY;
+    getChunksInCamera(cam, this->chunks, &minChunkX, &minChunkY, &maxChunkX, &maxChunkY);
 
-    /**/
+    auto globalView = reg.view<StaticPositionComponent, RenderableComponent>();
     for(int j=minChunkY;j<=maxChunkY;++j){
         for(int i=minChunkX;i<=maxChunkX;++i){
             auto& chunk = chunks[j][i];
-
-            auto chunkView = (entt::basic_view{chunks[j][i].entities} | reg.view<StaticPositionComponent, RenderableComponent>());
-
-            //long long tot_get = 0;
-            //long long tot_render = 0;
-
+            auto chunkView = (entt::basic_view{chunks[j][i].entities} | globalView);
             for(auto e: chunkView){
-
-                //HighResTimer t_get;
                 auto& pos = chunkView.get<StaticPositionComponent>(e);
                 auto& renderable = chunkView.get<RenderableComponent>(e);
-                //tot_get += t_get.timePassed();
-
-                //HighResTimer t_render;
-                for(auto impl: renderable.impls){
-                    if (impl == nullptr){break;}
-                    static_cast<RenderableComponent*>(impl)->render(pos, cam);
-                }
-                //tot_render += t_render.timePassed();
-            }
-            //std::cout << "t_get: " << tot_get << std::endl;
-            //std::cout << "t_render: " << tot_render << std::endl;
-
-            //for(auto&& [e, pos, renderable]: (entt::basic_view{chunks[j][i].entities} | reg.view<StaticPositionComponent, RenderableComponent>()).each()){
-            //    for(auto impl: renderable.impls){
-            //        if (impl == nullptr){break;}
-            //        static_cast<RenderableComponent*>(impl)->render(pos, cam);
-            //    }
-            //}
-        }
-    }
-    /*/
-    //auto group = reg.group<StaticPositionComponent, RenderableComponent>();
-    for(int j=minChunkY;j<=maxChunkY;++j){
-        for(int i=minChunkX;i<=maxChunkX;++i){
-            auto& chunkView = chunks[j][i].staticEntities;
-            auto& chunk = chunks[j][i];
-
-            for(auto& entity: chunkView){
-                StaticPositionComponent& pos = chunk.pool_positions.pool->get(entity);
-                RenderableComponent& renderable = chunk.pool_renderables.pool->get(entity);
-
                 for(auto impl: renderable.impls){
                     if (impl == nullptr){break;}
                     static_cast<RenderableComponent*>(impl)->render(pos, cam);
@@ -151,9 +108,6 @@ void SceneBiome::render(){
             }
         }
     }
-    /**/
-
-
 
     renderCameraCrosshair();
 }
