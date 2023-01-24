@@ -22,6 +22,7 @@ struct PositionComponent : public MonoGenericComponent{
 struct DynamicPositionComponent : public PositionComponent, public UpdatableComponent{
     fVec spd = {0.0f,0.0f};
     bool lockedToMouse = false;
+    bool automaticUpdates = true;
 
     DynamicPositionComponent(const fPoint& p) : PositionComponent(p) {}
     DynamicPositionComponent(float x, float y) : PositionComponent(x,y) {}

@@ -115,7 +115,7 @@ void Renderer::renderGUI(Scene* s){
     //Scene GUI
     s->renderGUI();
 
-    //Noise Generator debug
+    ////Noise Generator debug
     //if (gen.renderGUI() || debugTextureFinal.initialized == false){
     //    DebugSurfaces ds;
     //    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);

@@ -126,7 +126,7 @@ void Universe::init(){
     PlanetBiomeComponent& pbc = b.getComponent<PlanetBiomeComponent>();
     this->planetScene = pbc.getBiomeScene();
     this->switchScene(this->planetScene);
-    this->planetScene->getCamera().zoom = 0.3f;
+    this->planetScene->getCamera().zoom = 0.5f;
 }
 
 

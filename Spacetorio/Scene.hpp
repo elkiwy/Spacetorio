@@ -71,6 +71,7 @@ class Scene {
         void update(const Uint8* keyState);
         void onMouseWheel(float dy);
         void onMouseLeftClick();
+        void onKeyPressed(SDL_Keycode key);
 
         Camera& getCamera() { return cam; }
         entt::registry& getRegistry(){ return registry; }

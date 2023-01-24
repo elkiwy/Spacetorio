@@ -61,12 +61,14 @@ struct ColliderRectangleComponent : public ColliderComponent, public RenderableC
     ColliderRectangleComponent(const ColliderRectangleComponent&) = default;
     ColliderRectangleComponent(fSize size, PositionComponent* posRef) : posRef(posRef), shape(ShapeRectangle(posRef->pos, size)) {}
 
-    const Shape& getShape() override{shape.pos = posRef->pos; return shape;}
+    inline fPoint getUpdatedPos(){return posRef->pos - (shape.size * 0.5f).toPoint();}
+    const Shape& getShape() override{shape.pos = getUpdatedPos(); return shape;}
+    const ShapeRectangle& getRectShape() {shape.pos = getUpdatedPos(); return shape;}
 
     void render(const PositionComponent& posComp, const Camera& cam) const override{
         auto& pos = posComp.pos;
         const fPoint screenPos = cam.worldToScreen({pos.x, pos.y});
-        const fPoint center = {screenPos.x + (cam.zoom*shape.size.w/2), screenPos.y + (cam.zoom*shape.size.h/2)};
+        const fPoint center = {screenPos.x, screenPos.y};
         global_renderer->drawRect(center.x, center.y, shape.size.w*cam.zoom, shape.size.h*cam.zoom, debug_color);
     }
 };

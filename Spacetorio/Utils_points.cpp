@@ -84,3 +84,4 @@ fSize fSize::operator+(fSize& other){return {w+other.w, h+other.h};}
 fSize fSize::operator-(fSize& other){return {w-other.w, h-other.h};}
 fSize fSize::operator+(const fSize& other){return {w+other.w, h+other.h};}
 fSize fSize::operator-(const fSize& other){return {w-other.w, h-other.h};}
+fSize fSize::operator*(float v) const{return {w*v, h*v};}

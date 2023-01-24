@@ -18,7 +18,7 @@ if "%1" == "--clean" (
 	) else (echo ERROR: Failed to run cmake.)
 
 	if %ERRORLEVEL% == 0 (
-		ninja -v
+		ninja
 	) else (echo ERROR: Failed to run ninja.)
 
 	if %ERRORLEVEL% == 0 (

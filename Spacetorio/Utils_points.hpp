@@ -73,6 +73,9 @@ class fSize {
         fSize operator-(fSize& other);
         fSize operator+(const fSize& other);
         fSize operator-(const fSize& other);
+        fSize operator*(float v) const;
+
+        fPoint toPoint() const {return {w,h};}
 
         float w;
         float h;
@@ -96,5 +99,6 @@ std::ostream &operator<<(std::ostream &os, fPoint const &p);
 std::ostream &operator<<(std::ostream &os, fSize const &p);
 
 using fVec = fPoint;
+using iVec = iPoint;
 
 #endif // UTILS_POINTS_H_

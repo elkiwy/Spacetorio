@@ -76,6 +76,8 @@ class ShapeLine : public Shape{
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
 
+        ShapeRectangle toRectangle() const;
+
         fPoint p1 = {0.0f, 0.0f};
         fPoint p2 = {0.0f, 0.0f};
 };

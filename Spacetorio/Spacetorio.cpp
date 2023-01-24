@@ -38,7 +38,7 @@ int main(int argc, char* args[]) {
     }
 
     //Create window
-    const int TARGET_FPS = 60*5;
+    const int TARGET_FPS = 60;
     const int TARGET_TICKS_PER_FRAME = 1000/TARGET_FPS;
     iSize screenRes = {SCREEN_W, SCREEN_H};
     SDL_WindowFlags wf = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);

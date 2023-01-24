@@ -19,7 +19,6 @@ class SceneBiome;
 struct PlanetComponent;
 
 struct PlanetBiomeComponent{
-    PlanetBiomeType type;
     fSize size = {0.0f, 0.0f}; //Length of the arc on the planet and height of the chunk
 
     float curvature = 0.0f;

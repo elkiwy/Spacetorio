@@ -21,6 +21,8 @@
 #include "Components_colliders.hpp"
 #include "Components_clickables.hpp"
 
+#include "Entity_player.hpp"
+
 
 Scene::Scene(){
 }
@@ -42,6 +44,7 @@ void Scene::init(){
 
     registerGenericComponent<UpdatableComponent, DynamicPositionComponent>();
     registerGenericComponent<UpdatableComponent, PlayerSpaceshipComponent>();
+    registerGenericComponent<UpdatableComponent, PlayerComponent>();
 
     registerGenericComponent<ColliderComponent, ColliderCircleComponent>();
     registerGenericComponent<ColliderComponent, ColliderRectangleComponent>();
@@ -52,6 +55,8 @@ void Scene::init(){
 
     registerMonoGenericComponent<PositionComponent, DynamicPositionComponent>();
     registerMonoGenericComponent<PositionComponent, StaticPositionComponent>();
+
+
 
     cam.init();
 }
@@ -253,4 +258,18 @@ void Scene::onMouseLeftClick(){
         }
     }
 
+}
+
+
+void Scene::onKeyPressed(SDL_Keycode key){
+    //Update all the updatable entities
+    auto view = registry.view<UpdatableComponent>();
+    for(auto entity: view){
+        auto& updatable = view.get<UpdatableComponent>(entity);
+        Entity e = {entity, this};
+        for(auto impl: updatable.impls){
+            if (impl == nullptr){break;}
+            static_cast<UpdatableComponent*>(impl)->onKeyPressed(key);
+        }
+    }
 }

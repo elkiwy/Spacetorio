@@ -55,6 +55,9 @@ void GameController::onKeyPressed(SDL_Keycode key){
         Scene* s = (universe.getCurrentScene() == universe.getBiomeScene()) ? universe.getSpaceScene() : universe.getBiomeScene();
         universe.switchScene(s);
     }
+
+    Scene* activeScene = universe.getCurrentScene();
+    activeScene->onKeyPressed(key);
 }
 
 void GameController::onMouseWheel(float dy){

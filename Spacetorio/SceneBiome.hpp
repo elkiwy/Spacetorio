@@ -30,7 +30,12 @@
 
 struct TileBiome{
     std::vector<entt::entity> entities;
+
+    void addEntity(entt::entity e);
+    inline bool isEmpty() const{return entities.size() == 0;}
 };
+
+
 
 struct ChunkBiome{
     std::vector<std::vector<TileBiome>> tiles;
@@ -38,8 +43,11 @@ struct ChunkBiome{
     ShapeRectangle shape;
     int x = -1; int y = -1;
 
-    ChunkBiome(int x, int y, entt::registry& reg) : x(x), y(y), shape(fPoint(x*CT,y*CT),fSize(CT, CT)){}
+    ChunkBiome(int x, int y, entt::registry& reg);
+    void addEntity(Entity e);
 };
+
+
 
 class SceneBiome : public Scene {
     public:
@@ -49,10 +57,14 @@ class SceneBiome : public Scene {
         void init(SDL_Surface* terrain);
         void render() override;
 
-        TileBiome& getTileAtWorldPos(float worldX, float worldY);
+        void spawnPlayerAt(fPoint pos);
+
+        TileBiome& getTileAtWorldPos(float worldX, float worldY, iVec offset = {0,0});
         TileBiome& getTileAtTilePos(int tX, int tY);
         ChunkBiome& getChunk(float worldX, float worldY);
-        void addEntityToTileAt(entt::entity e, float worldX, float worldY);
+
+        std::vector<TileBiome*> getTilesInRect(const ShapeRectangle& rect);
+        std::vector<TileBiome*> getTilesInLine(const ShapeLine& line);
 
     private:
         std::vector<std::vector<ChunkBiome>> chunks;

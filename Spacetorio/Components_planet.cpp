@@ -76,7 +76,7 @@ SDL_Surface* bendImageOnArc(SDL_Surface* src, float angle, int Ro, int Ri){
 
 
 
-PlanetBiomeComponent::PlanetBiomeComponent(PlanetBiomeType t):type(t){
+PlanetBiomeComponent::PlanetBiomeComponent(PlanetBiomeType t){
 
 }
 
@@ -91,7 +91,10 @@ SceneBiome* PlanetBiomeComponent::getBiomeScene(){
         iSize sz = iSize(this->chunkData_lowRes_sizeW, this->chunkData_lowRes_sizeH);
         biomeScene = new SceneBiome();
         biomeScene->init(surface_flat);
+        biomeScene->spawnPlayerAt(fPoint(sz.w*TILE_SIZE*0.5f,sz.h*TILE_SIZE*0.25f));
+    std::cout << "pizzo" << std::endl;
     }
+    std::cout << "cippoppa" << std::endl;
     return biomeScene;
 }
 

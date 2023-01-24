@@ -169,6 +169,11 @@ ShapeLine::ShapeLine(float x1, float y1, float x2, float y2) : p1(x1,y1), p2(x2,
 ShapeLine::ShapeLine(fPoint p1, fPoint p2) : p1(p1), p2(p2){}
 ShapeLine::~ShapeLine(){}
 
+
+ShapeRectangle ShapeLine::toRectangle() const{
+    return {std::min(p1.x,p2.x), std::min(p1.y,p2.y), abs(p2.x-p1.x), abs(p2.y-p1.y)};
+}
+
 bool ShapeLine::checkCollision(const Shape &other) const{
     return other.checkCollisionWithLine(*this);
 }
