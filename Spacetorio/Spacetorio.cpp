@@ -71,7 +71,7 @@ int main(int argc, char* args[]) {
         gc.init();
 
 
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        //ImGuiIO& io = ImGui::GetIO(); (void)io;
 
         //Hack to get window to stay up
         Uint32 startTime = 0;
@@ -84,7 +84,7 @@ int main(int argc, char* args[]) {
             //Process all the event queue
             SDL_Event e;
             while (SDL_PollEvent(&e)) {
-                ImGui_ImplSDL2_ProcessEvent(&e);
+                //ImGui_ImplSDL2_ProcessEvent(&e);
                 if (e.type == SDL_QUIT) {
                     quit = true;
                     gc.quit();

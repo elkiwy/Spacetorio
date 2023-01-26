@@ -14,6 +14,8 @@
 
 #include "Texture.hpp"
 
+#include "Renderer_shader.hpp"
+
 class Scene;
 extern float global_avgFPS;
 
@@ -54,6 +56,10 @@ class Renderer {
         bool imgui_showDemo = true;
 
         SDL_GLContext glContext = nullptr;
+
+        Shader tileShader;
+        unsigned int genericTileVBO, genericTileVAO;
+        unsigned int instancedTilesVBO;
 };
 
 

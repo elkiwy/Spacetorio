@@ -48,6 +48,69 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     if (SDL_GL_SetSwapInterval(1) < 0) {printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());}
 
 
+    this->tileShader = Shader("Spacetorio/shaders/tiles.vert", "Spacetorio/shaders/tiles.frag");
+
+
+    /*
+    ** Setup tiles data
+    */
+    glm::vec2 tilesData[100];
+    int index = 0;
+    float offset = 0.1f;
+    for(int y=-10;y<10;y+=2){
+        for(int x=-10;x<10;x+=2){
+            glm::vec2 tileData;
+            tileData.x = (float)x / 10.0f + offset;
+            tileData.y = (float)y / 10.0f + offset;
+            tilesData[index++] = tileData;
+        }
+    }
+
+    /*
+    ** Create tiles data VBO
+    */
+    glGenBuffers(1, &this->instancedTilesVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->instancedTilesVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &tilesData[0], GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    /*
+    ** Setup genericTile data
+    */
+    float genericTileData[] = {
+        //Positions       //colors
+        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
+         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
+        -0.05f, -0.05f,   0.0f, 0.0f, 1.0f,
+
+        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
+         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
+         0.05f,  0.05f,   0.0f, 1.0f, 1.0f
+    };
+
+    /*
+    ** Create generic tiles data VAO
+    */
+    glGenVertexArrays(1, &this->genericTileVAO);
+    glGenBuffers(1, &this->genericTileVBO);
+
+    glBindVertexArray(this->genericTileVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->genericTileVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(genericTileData), genericTileData, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, this->instancedTilesVBO);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribDivisor(2, 1);
+
+
+
     //glClearColor(0.f, 0.f, 0.f, 1.f);
     //GLfloat vertexData[] = {-0.5f, -0.5f, 0.5f,  -0.5f, 0.5f,  0.5f,  -0.5f, 0.5f};
     //GLuint indexData[] = {0, 1, 2, 3};
@@ -130,15 +193,25 @@ void Renderer::renderFrameBegin(){
 }
 
 void Renderer::renderScene(Scene* s){
-    renderTest(sdlRenderer, screenRes.w, screenRes.h);
-    s->render();
 
-    //Noise Generator debug
-    if (debugTextureFinal.initialized){
-        drawTexture(debugTextureFinal, debugTextureFinal.w/2.0f+10.0f, debugTextureFinal.h/2.0f+10.0f);
-        drawTexture(debugTextureContinentalness, debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
-        drawTexture(debugTextureErosion, debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
-    }
+    //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    tileShader.use();
+
+    glBindVertexArray(this->genericTileVAO);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+    glBindVertexArray(0);
+
+    //renderTest(sdlRenderer, screenRes.w, screenRes.h);
+    //s->render();
+
+    ////Noise Generator debug
+    //if (debugTextureFinal.initialized){
+    //    drawTexture(debugTextureFinal, debugTextureFinal.w/2.0f+10.0f, debugTextureFinal.h/2.0f+10.0f);
+    //    drawTexture(debugTextureContinentalness, debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
+    //    drawTexture(debugTextureErosion, debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
+    //}
 }
 
 void Renderer::renderGUI(Scene* s){
@@ -167,7 +240,8 @@ void Renderer::renderGUI(Scene* s){
 void Renderer::renderFrameEnd(){
     //Update the image on screen
     drawText(8, 8, "FPS: " + std::to_string(global_avgFPS), {0x00, 0x00, 0x00, 0xff});
-    SDL_RenderPresent(sdlRenderer);
+    //SDL_RenderPresent(sdlRenderer);
+    SDL_GL_SwapWindow(sdlWindow);
 }
 
 

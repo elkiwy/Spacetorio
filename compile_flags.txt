@@ -14,7 +14,9 @@
 -ISpacetorio/vendor/imgui
 -ISpacetorio\vendor\imgui
 
--ISpacetorio/vendor/glew-mac/include
--ISpacetorio\vendor\glew-windows\include
+-IC:\Program Files\GLEW\include
+
+-ISpacetorio/vendor/glm
+-ISpacetorio\vendor\glm
 
 -std=c++20

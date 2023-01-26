@@ -15,11 +15,9 @@ if (APPLE)
   set(SDL2_TTF_LIBRARIES "${SDL2_TTF_PATH}/lib/libSDL2_ttf.a")
   SET(CMAKE_EXE_LINKER_FLAGS "-v -lfreetype -lharfbuzz")
 
-
   SET(OPENGL_GLEW_PATH "/opt/homebrew/Cellar/glew/2.2.0_1")
   SET(OPENGL_GLEW_INCLUDE_DIR "${OPENGL_GLEW_PATH}/include")
   SET(OPENGL_GLEW_LIBRARIES "${OPENGL_GLEW_PATH}/lib/libGLEW.a")
-
 
 elseif (WIN32)
   # Set the path to the SDL2 installation
@@ -33,8 +31,10 @@ elseif (WIN32)
   set(SDL2_TTF_LIBRARIES "${SDL2_TTF_PATH}/lib/x64/SDL2_ttf.lib")
   set(SDL2_TTF_DLL "${SDL2_TTF_PATH}/lib/x64/SDL2_ttf.dll")
 
-  SET(OPENGL_GLEW_INCLUDE_DIR "vendor/glew-windows/include")
-  SET(OPENGL_GLEW_LIBRARIES "vendor/glew-windows/lib/Release/x64/glew32.lib")
+  SET(OPENGL_GLEW_PATH "C:/Program Files/GLEW")
+  SET(OPENGL_GLEW_INCLUDE_DIR "${OPENGL_GLEW_PATH}/include")
+  SET(OPENGL_GLEW_LIBRARIES "${OPENGL_GLEW_PATH}/lib/Release/x64/glew32.lib")
+  set(OPENGL_GLEW_DLL "${OPENGL_GLEW_PATH}/bin/Release/x64/glew32.dll")
 
 endif()
 
@@ -43,18 +43,22 @@ endif()
 
 
 # Cross platform paths
+set(GLM_INCLUDE_DIRS "vendor/glm")
 set(SIVPERLIN_INCLUDE_DIRS "vendor/SivPerlinNoise/include")
 set(ENTT_INCLUDE_DIRS "vendor/entt/include")
 set(IMGUI_INCLUDE_DIRS "vendor/imgui")
 set(RES_FOLDER "res")
+set(SHADER_FOLDER "shaders")
 
 # Add the include directories for SDL2
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_TTF_INCLUDE_DIRS})
-include_directories(${ENTT_INCLUDE_DIRS})
-include_directories(${IMGUI_INCLUDE_DIRS})
-include_directories(${SIVPERLIN_INCLUDE_DIRS})
 include_directories(${OPENGL_GLEW_INCLUDE_DIR})
+
+include_directories(${IMGUI_INCLUDE_DIRS})
+include_directories(${GLM_INCLUDE_DIRS})
+include_directories(${SIVPERLIN_INCLUDE_DIRS})
+include_directories(${ENTT_INCLUDE_DIRS})
 
 # Add ImGui
 add_subdirectory ("vendor/imgui")
@@ -74,6 +78,9 @@ if (WIN32)
   # Copy DLL for SDL2_TTF
   add_custom_target(CopySDL2_TTF ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_TTF_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")
   add_dependencies(Spacetorio CopySDL2_TTF)
+  # Copy DLL for GLEW
+  add_custom_target(CopyOPENGL_GLEW ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENGL_GLEW_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")
+  add_dependencies(Spacetorio CopyOPENGL_GLEW)
 endif()
 
 # Add ImGui
@@ -81,6 +88,7 @@ target_link_libraries(Spacetorio PRIVATE imgui)
 
 
 file(COPY "${RES_FOLDER}" DESTINATION "${CMAKE_BINARY_DIR}/Spacetorio")
+file(COPY "${SHADER_FOLDER}" DESTINATION "${CMAKE_BINARY_DIR}/Spacetorio")
 
 # Set std=c++20
 if (CMAKE_VERSION VERSION_GREATER 3.12)
