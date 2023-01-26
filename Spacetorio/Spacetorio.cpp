@@ -37,11 +37,16 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
+    // Use OpenGL 3.1 core
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
     //Create window
     const int TARGET_FPS = 60;
     const int TARGET_TICKS_PER_FRAME = 1000/TARGET_FPS;
     iSize screenRes = {SCREEN_W, SCREEN_H};
-    SDL_WindowFlags wf = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+    SDL_WindowFlags wf = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     SDL_Window* window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenRes.w, screenRes.h, wf);
     if (window == NULL){
         printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());

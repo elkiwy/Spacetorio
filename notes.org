@@ -12,19 +12,73 @@
 - [X] Setup basic biomes on Planets
 - [X] Setup a simple spaceship player
 
-* Next steps
-- [ ] Biome selection through mouse
+- [X] Biome selection through mouse
   - [X] Setup basic collision detection system (Shapes class)
   - [X] Add ClickableComponent
   - [X] Add ColliderComponent (Active/Passive?)
 
-- [ ] Landing option on Biomes
-  - [ ] Detailed ground generation from lowRes biome data
-  - [ ] 2D Terraria-like tile system to place entities
-  - [ ] Scene switching system
+- [X] Landing option on Biomes
+  - [X] Detailed ground generation from lowRes biome data
+  - [X] 2D Terraria-like tile system to place entities
+  - [X] Scene switching system
 
+* Next steps
+- [ ] Block Interactions with mouse
+  - [ ] Tiles digging
+  - [ ] Wall placing
+  - [ ] Door placing
+
+- [ ] Basic Inventory system
+
+- [ ] RoomScene <-> BiomeScene swtiching
+  - [ ] Room recognition system
+
+- [ ] Switch to OpenGL
+
+* Assets (for OpenGL)
+- [ ] Basic dirt Tiling
+- [ ] Basic Player walking animation
 
 * Side steps
 - [ ] Universe minimap
 - [ ] Planets orbiting their Sun in StarSystem
 - [ ] Otimize biomes data by cropping the texture_space image
+
+
+* OpenGL Stuff
+
+** Instancing to batch together tiles in a single draw call
+-
+
+** Texture Atlas
+
+** Other
+- Use Vertex coordinates with world coordinates (so remains mostly fixed)
+- Send the camera data as uniform to render the vertex in the proper screen position
+
+** Pseudocode
+*** Tile Data VBO
+tileDataLayout = {
+  32.0, 32.0,             //World Pos
+   0.0,  0.0,  1.0,  1.0, //Texture Coordinates
+}
+
+*** Setup Renderer
+genericTileVAO = init     (GL_STATIC_DRAW)
+instancedTilesVBO = init  (GL_DYNAMIC_DRAW)
+
+*** Render Loop
+chunksToRender = calculate chunks in camera
+
+//Update tilesDataVBO if necessary
+if chunksToRender != previousChunks:
+    amount = tiles in to render
+    tilesDataVBO.size = amount * tileDataLayout.size
+
+    for tile in tilesToRender:
+        tilesDataVBO.data[i] = tile.worldPos, tile.textCoords
+
+//Draw tiles
+glBindBuffer(instancedTilesVBO)
+glBindVertexArray(genericTileVAO)
+glDrawArraysInstanced(GL_TRIANGLES, 0, 6, amount)

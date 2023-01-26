@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string>
 
+#include "SDL_video.h"
 #include "Scene.hpp"
 
 #include "Utils_math.hpp"
@@ -20,13 +21,46 @@
 #include "PerlinNoise.hpp"
 #include "Texture.hpp"
 
+
+#include "GL/glew.h"
+#include "SDL_opengl.h"
+
+
+
 Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     std::cout << "Renderer initializing..." << std::endl;
     sdlWindow = sdlWin;
+
+
+    /*/
     sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
     if (sdlRenderer == NULL){
         std::cout << "\n\nCouldn't initialize SDL_Renderer, probably will crash soon!\n\n" << std::endl << std::flush;
     }
+    /*/
+    this->glContext = SDL_GL_CreateContext(sdlWindow);
+    if (this->glContext == NULL){
+        std::cout << "\n\nCouldn't initialize SDL_GL_Context, probably will crash soon!"<< SDL_GetError() <<"\n\n" << std::endl << std::flush;
+    }
+
+    GLenum glewError = glewInit();
+    if (glewError != GLEW_OK) {printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError));}
+    if (SDL_GL_SetSwapInterval(1) < 0) {printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());}
+
+
+    //glClearColor(0.f, 0.f, 0.f, 1.f);
+    //GLfloat vertexData[] = {-0.5f, -0.5f, 0.5f,  -0.5f, 0.5f,  0.5f,  -0.5f, 0.5f};
+    //GLuint indexData[] = {0, 1, 2, 3};
+
+    //glGenBuffers(1, &gVBO);
+    //glBindBuffer(GL_ARRAY_BUFFER, gVBO);
+    //glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+
+    //glGenBuffers(1, &gIBO);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
+
+    /**/
     
     currentFont = TTF_OpenFont("Spacetorio/res/fonts/DejaVuSansMono.ttf", 16);
     if (currentFont == NULL){
@@ -37,25 +71,25 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     }
     
 
-    //ImGui Stuff
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-    ImGui_ImplSDL2_InitForSDLRenderer(sdlWin, sdlRenderer);
-    ImGui_ImplSDLRenderer_Init(sdlRenderer);
-    std::cout << "Renderer Initialized." << std::endl;
+    ////ImGui Stuff
+    //IMGUI_CHECKVERSION();
+    //ImGui::CreateContext();
+    //ImGui::StyleColorsDark();
+    //ImGui_ImplSDL2_InitForSDLRenderer(sdlWin, sdlRenderer);
+    //ImGui_ImplSDLRenderer_Init(sdlRenderer);
+    //std::cout << "Renderer Initialized." << std::endl;
 }
 
 
 Renderer::~Renderer(){
+    std::cout << "Renderer destroying..." << std::endl;
     debugTextureFinal.free();
     debugTextureContinentalness.free();
     debugTextureErosion.free();
 
-    std::cout << "Renderer destroying..." << std::endl;
-    ImGui_ImplSDLRenderer_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    //ImGui_ImplSDLRenderer_Shutdown();
+    //ImGui_ImplSDL2_Shutdown();
+    //ImGui::DestroyContext();
 
     TTF_CloseFont(currentFont);
     SDL_DestroyRenderer(sdlRenderer);
@@ -108,26 +142,26 @@ void Renderer::renderScene(Scene* s){
 }
 
 void Renderer::renderGUI(Scene* s){
-    ImGui_ImplSDLRenderer_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
+    //ImGui_ImplSDLRenderer_NewFrame();
+    //ImGui_ImplSDL2_NewFrame();
+    //ImGui::NewFrame();
 
-    //Scene GUI
-    s->renderGUI();
+    ////Scene GUI
+    //s->renderGUI();
 
-    ////Noise Generator debug
-    //if (gen.renderGUI() || debugTextureFinal.initialized == false){
-    //    DebugSurfaces ds;
-    //    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
-    //    debugTextureFinal = Texture(ds.finalSurface, false);
-    //    debugTextureContinentalness = Texture(ds.contSurface, false);
-    //    debugTextureErosion = Texture(ds.erosionSurface, false);
-    //    ds.free();
-    //}
+    //////Noise Generator debug
+    ////if (gen.renderGUI() || debugTextureFinal.initialized == false){
+    ////    DebugSurfaces ds;
+    ////    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
+    ////    debugTextureFinal = Texture(ds.finalSurface, false);
+    ////    debugTextureContinentalness = Texture(ds.contSurface, false);
+    ////    debugTextureErosion = Texture(ds.erosionSurface, false);
+    ////    ds.free();
+    ////}
 
-    //Rendere and complete ImGui
-    ImGui::Render();
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    ////Rendere and complete ImGui
+    //ImGui::Render();
+    //ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Renderer::renderFrameEnd(){

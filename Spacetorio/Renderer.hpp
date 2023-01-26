@@ -7,6 +7,7 @@
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
+#include "SDL_video.h"
 #include "Utils_points.hpp"
 #include "Utils_math.hpp"
 #include "SDL_ttf.h"
@@ -51,6 +52,8 @@ class Renderer {
         Texture debugTextureErosion;
 
         bool imgui_showDemo = true;
+
+        SDL_GLContext glContext = nullptr;
 };
 
 
