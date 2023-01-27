@@ -40,18 +40,30 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
         std::cout << "\n\nCouldn't initialize SDL_Renderer, probably will crash soon!\n\n" << std::endl << std::flush;
     }
     /*/
+
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
     this->glContext = SDL_GL_CreateContext(sdlWindow);
     if (this->glContext == NULL){
         std::cout << "\n\nCouldn't initialize SDL_GL_Context, probably will crash soon!"<< SDL_GetError() <<"\n\n" << std::endl << std::flush;
     }
 
+
+
     GLenum glewError = glewInit();
-    if (glewError != GLEW_OK) {printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError));}
-    if (SDL_GL_SetSwapInterval(1) < 0) {printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());}
+    if (glewError != GLEW_OK) { printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError)); }
+    if (SDL_GL_SetSwapInterval(1) < 0) { printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError()); }
 
 
+
+#ifdef __APPLE__
     this->tileShader = Shader("Spacetorio/shaders/tiles.vert", "Spacetorio/shaders/tiles.frag");
-
+#else
+    this->tileShader = Shader("shaders/tiles.vert", "shaders/tiles.frag");
+#endif
 
     this->setupAbstractTileVAO();
 
@@ -97,24 +109,23 @@ void Renderer::setupAbstractTileVAO(){
     glGenVertexArrays(1, &this->abstractTileVAO);
     glGenBuffers(1, &this->abstractTileVBO);
     glBindVertexArray(this->abstractTileVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, this->abstractTileVBO);
 
+    //Set the VBO data
+    glBindBuffer(GL_ARRAY_BUFFER, this->abstractTileVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(abstractTileData), abstractTileData, GL_STATIC_DRAW);
+    
+    //Enable 0th input as 2 floats
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 
+    //Enable 1st input as 3 floats
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
 
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribDivisor(2, 1);
 
 }
+
+
 
 void Renderer::updateRenderableTilesVBO(){
     //Setup Dummy tiles data
@@ -135,6 +146,16 @@ void Renderer::updateRenderableTilesVBO(){
         glGenBuffers(1, &this->renderableTilesVBO);
         glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &tilesData[0], GL_DYNAMIC_DRAW);
+
+        std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+
+        //Enabled 2nd input as 2 floats
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glVertexAttribDivisor(2, 1);
+
     }else{
         //Bind and update the buffer content
         glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
