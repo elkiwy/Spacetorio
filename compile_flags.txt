@@ -14,6 +14,7 @@
 -ISpacetorio/vendor/imgui
 -ISpacetorio\vendor\imgui
 
+-I/opt/homebrew/Cellar/glew/2.2.0_1/include
 -IC:\Program Files\GLEW\include
 
 -ISpacetorio/vendor/glm

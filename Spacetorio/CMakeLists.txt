@@ -13,11 +13,12 @@ if (APPLE)
   set(SDL2_TTF_PATH "/opt/homebrew/Cellar/sdl2_ttf/2.20.1")
   set(SDL2_TTF_INCLUDE_DIRS "${SDL2_TTF_PATH}/include/SDL2")
   set(SDL2_TTF_LIBRARIES "${SDL2_TTF_PATH}/lib/libSDL2_ttf.a")
-  SET(CMAKE_EXE_LINKER_FLAGS "-v -lfreetype -lharfbuzz")
 
   SET(OPENGL_GLEW_PATH "/opt/homebrew/Cellar/glew/2.2.0_1")
   SET(OPENGL_GLEW_INCLUDE_DIR "${OPENGL_GLEW_PATH}/include")
   SET(OPENGL_GLEW_LIBRARIES "${OPENGL_GLEW_PATH}/lib/libGLEW.a")
+
+  SET(CMAKE_EXE_LINKER_FLAGS "-v -lfreetype -lharfbuzz -framework OpenGL")
 
 elseif (WIN32)
   # Set the path to the SDL2 installation
@@ -71,6 +72,8 @@ add_executable(Spacetorio  ${SOURCE_FILES})
 target_link_libraries(Spacetorio PRIVATE ${SDL2_LIBRARIES})
 target_link_libraries(Spacetorio PRIVATE ${SDL2_TTF_LIBRARIES})
 target_link_libraries(Spacetorio PRIVATE ${OPENGL_GLEW_LIBRARIES})
+
+
 if (WIN32)
   # Copy DLL for SDL2
   add_custom_target(CopySDL2 ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")

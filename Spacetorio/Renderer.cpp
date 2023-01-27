@@ -5,6 +5,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
 #include "SDL_ttf.h"
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <stdio.h>
@@ -14,6 +15,7 @@
 #include "Scene.hpp"
 
 #include "Utils_math.hpp"
+#include "glm/fwd.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_sdlrenderer.h"
@@ -51,77 +53,10 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->tileShader = Shader("Spacetorio/shaders/tiles.vert", "Spacetorio/shaders/tiles.frag");
 
 
-    /*
-    ** Setup tiles data
-    */
-    glm::vec2 tilesData[100];
-    int index = 0;
-    float offset = 0.1f;
-    for(int y=-10;y<10;y+=2){
-        for(int x=-10;x<10;x+=2){
-            glm::vec2 tileData;
-            tileData.x = (float)x / 10.0f + offset;
-            tileData.y = (float)y / 10.0f + offset;
-            tilesData[index++] = tileData;
-        }
-    }
+    this->setupAbstractTileVAO();
 
-    /*
-    ** Create tiles data VBO
-    */
-    glGenBuffers(1, &this->instancedTilesVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, this->instancedTilesVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &tilesData[0], GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    this->updateRenderableTilesVBO();
 
-    /*
-    ** Setup genericTile data
-    */
-    float genericTileData[] = {
-        //Positions       //colors
-        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
-         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
-        -0.05f, -0.05f,   0.0f, 0.0f, 1.0f,
-
-        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
-         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
-         0.05f,  0.05f,   0.0f, 1.0f, 1.0f
-    };
-
-    /*
-    ** Create generic tiles data VAO
-    */
-    glGenVertexArrays(1, &this->genericTileVAO);
-    glGenBuffers(1, &this->genericTileVBO);
-
-    glBindVertexArray(this->genericTileVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, this->genericTileVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(genericTileData), genericTileData, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
-
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, this->instancedTilesVBO);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribDivisor(2, 1);
-
-
-
-    //glClearColor(0.f, 0.f, 0.f, 1.f);
-    //GLfloat vertexData[] = {-0.5f, -0.5f, 0.5f,  -0.5f, 0.5f,  0.5f,  -0.5f, 0.5f};
-    //GLuint indexData[] = {0, 1, 2, 3};
-
-    //glGenBuffers(1, &gVBO);
-    //glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    //glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
-
-    //glGenBuffers(1, &gIBO);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
 
     /**/
     
@@ -142,6 +77,75 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     //ImGui_ImplSDLRenderer_Init(sdlRenderer);
     //std::cout << "Renderer Initialized." << std::endl;
 }
+
+void Renderer::setupAbstractTileVAO(){
+    assert(this->abstractTileVAO == 0 && "ERROR: called setupAbstractTileVAO multiple times!");
+
+    //Setup data
+    float abstractTileData[] = {
+        //Positions       //colors
+        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
+         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
+        -0.05f, -0.05f,   0.0f, 0.0f, 1.0f,
+
+        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
+         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
+         0.05f,  0.05f,   0.0f, 1.0f, 1.0f
+    };
+
+    //Create and bind the VAO and VBO
+    glGenVertexArrays(1, &this->abstractTileVAO);
+    glGenBuffers(1, &this->abstractTileVBO);
+    glBindVertexArray(this->abstractTileVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->abstractTileVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(abstractTileData), abstractTileData, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribDivisor(2, 1);
+
+}
+
+void Renderer::updateRenderableTilesVBO(){
+    //Setup Dummy tiles data
+    glm::vec2 tilesData[100];
+    int index = 0;
+    float offset = 0.1f;
+    for(int y=-10;y<10;y+=2){
+        for(int x=-10;x<10;x+=2){
+            glm::vec2 tileData;
+            tileData.x = (float)x / 10.0f + offset;
+            tileData.y = (float)y / 10.0f + offset;
+            tilesData[index++] = tileData;
+        }
+    }
+
+    if (this->renderableTilesVBO == 0){
+        //Create, bind, and set the buffer
+        glGenBuffers(1, &this->renderableTilesVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &tilesData[0], GL_DYNAMIC_DRAW);
+    }else{
+        //Bind and update the buffer content
+        glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * 100, &tilesData[0]);
+    }
+    //Unbind the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+
 
 
 Renderer::~Renderer(){
@@ -194,12 +198,12 @@ void Renderer::renderFrameBegin(){
 
 void Renderer::renderScene(Scene* s){
 
-    //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     tileShader.use();
 
-    glBindVertexArray(this->genericTileVAO);
+    glBindVertexArray(this->abstractTileVAO);
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
     glBindVertexArray(0);
 

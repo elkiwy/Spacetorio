@@ -31,6 +31,9 @@ class Renderer {
         void renderGUI(Scene* s);
         void renderFrameEnd();
 
+        void setupAbstractTileVAO();
+        void updateRenderableTilesVBO();
+
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
         void drawRect(int cx, int cy, int w, int h, SDL_Color col);
@@ -58,8 +61,9 @@ class Renderer {
         SDL_GLContext glContext = nullptr;
 
         Shader tileShader;
-        unsigned int genericTileVBO, genericTileVAO;
-        unsigned int instancedTilesVBO;
+        unsigned int abstractTileVBO = 0;
+        unsigned int abstractTileVAO = 0;
+        unsigned int renderableTilesVBO = 0;
 };
 
 
