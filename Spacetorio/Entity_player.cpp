@@ -22,7 +22,7 @@ PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
     renderableRect.c = {255,0,0,255};
 
     //Lock camera
-    s->getCamera().setTarget(&posComp);
+    //s->getCamera().setTarget(&posComp);
 }
 
 PlayerComponent::~PlayerComponent(){

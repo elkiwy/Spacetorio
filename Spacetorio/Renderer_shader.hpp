@@ -10,6 +10,9 @@
 #include <sstream>
 #include <iostream>
 
+#include <filesystem>
+
+
 class Shader {
   public:
     unsigned int ID = 0;
@@ -29,6 +32,10 @@ class Shader {
         vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+
+        std::cout << std::filesystem::current_path() << std::endl;
+
         try {
             // open files
             vShaderFile.open(vertexPath);

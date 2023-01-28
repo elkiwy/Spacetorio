@@ -37,11 +37,6 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    // Use OpenGL 3.1 core
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
     //Create window
     const int TARGET_FPS = 60;
     const int TARGET_TICKS_PER_FRAME = 1000/TARGET_FPS;

@@ -14,8 +14,10 @@
 #include "SDL_video.h"
 #include "Scene.hpp"
 
+
+#include <glm/ext/matrix_transform.hpp>
+
 #include "Utils_math.hpp"
-#include "glm/fwd.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_sdlrenderer.h"
@@ -28,58 +30,46 @@
 #include "SDL_opengl.h"
 
 
+//#ifdef __APPLE__
+#define ASSETS_PREFIX std::string("Spacetorio/")
+//#else
+//#define ASSETS_PREFIX std::string("")
+//#endif
 
 Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     std::cout << "Renderer initializing..." << std::endl;
     sdlWindow = sdlWin;
 
-
-    /*/
-    sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
-    if (sdlRenderer == NULL){
-        std::cout << "\n\nCouldn't initialize SDL_Renderer, probably will crash soon!\n\n" << std::endl << std::flush;
-    }
-    /*/
-
-
+    //Predefine GL Versions and attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+    //Initialize GL Context
     this->glContext = SDL_GL_CreateContext(sdlWindow);
     if (this->glContext == NULL){
         std::cout << "\n\nCouldn't initialize SDL_GL_Context, probably will crash soon!"<< SDL_GetError() <<"\n\n" << std::endl << std::flush;
     }
 
-
-
+    //Initialize GLEW
     GLenum glewError = glewInit();
     if (glewError != GLEW_OK) { printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError)); }
     if (SDL_GL_SetSwapInterval(1) < 0) { printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError()); }
 
+    //Prepare transformation matrix to convert from -1 1 to 0 SCREENRES
+    this->transformMatrix = glm::mat4(1.0f);
+    this->transformMatrix = glm::translate(transformMatrix, glm::vec3(-1.0f, -1.0f, 0.0f));
+    this->transformMatrix = glm::scale(transformMatrix, glm::vec3(2.0f/sr.w, 2.0f/sr.h, 1.0f));
 
-
-#ifdef __APPLE__
-    this->tileShader = Shader("Spacetorio/shaders/tiles.vert", "Spacetorio/shaders/tiles.frag");
-#else
-    this->tileShader = Shader("shaders/tiles.vert", "shaders/tiles.frag");
-#endif
-
+    //Initialize Tile Shaders, VAO, and VBO
+    this->tileShader = Shader((ASSETS_PREFIX+"shaders/tiles.vert").c_str(), (ASSETS_PREFIX+"shaders/tiles.frag").c_str());
+    this->tileShader.use();
+    this->tileShader.setMat4("uTransformMatrix", this->transformMatrix);
     this->setupAbstractTileVAO();
-
     this->updateRenderableTilesVBO();
 
-
-    /**/
-    
-    currentFont = TTF_OpenFont("Spacetorio/res/fonts/DejaVuSansMono.ttf", 16);
-    if (currentFont == NULL){
-        currentFont = TTF_OpenFont("res/fonts/DejaVuSansMono.ttf", 16);
-        if (currentFont == NULL) {
-            std::cout << "\n\nCouldn't initialize Font, probably will crash soon!\n\n" << std::endl << std::flush;
-        }
-    }
-    
+    //Initialize Fonts (maybe deprecated)
+    currentFont = TTF_OpenFont((ASSETS_PREFIX+"res/fonts/DejaVuSansMono.ttf").c_str(), 16);
 
     ////ImGui Stuff
     //IMGUI_CHECKVERSION();
@@ -90,19 +80,22 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     //std::cout << "Renderer Initialized." << std::endl;
 }
 
+
+
 void Renderer::setupAbstractTileVAO(){
     assert(this->abstractTileVAO == 0 && "ERROR: called setupAbstractTileVAO multiple times!");
 
     //Setup data
+    float s = TILE_SIZE / 2.0f;
     float abstractTileData[] = {
-        //Positions       //colors
-        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
-         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
-        -0.05f, -0.05f,   0.0f, 0.0f, 1.0f,
+        //Positions     //colors
+        -s,  s,   1.0f, 0.0f, 0.0f,
+         s, -s,   0.0f, 1.0f, 0.0f,
+        -s, -s,   0.0f, 0.0f, 1.0f,
 
-        -0.05f,  0.05f,   1.0f, 0.0f, 0.0f,
-         0.05f, -0.05f,   0.0f, 1.0f, 0.0f,
-         0.05f,  0.05f,   0.0f, 1.0f, 1.0f
+        -s,  s,   1.0f, 0.0f, 0.0f,
+         s, -s,   0.0f, 1.0f, 0.0f,
+         s,  s,   0.0f, 1.0f, 1.0f
     };
 
     //Create and bind the VAO and VBO
@@ -128,16 +121,40 @@ void Renderer::setupAbstractTileVAO(){
 
 
 void Renderer::updateRenderableTilesVBO(){
+    this->tilesToRender = 300;
+
     //Setup Dummy tiles data
-    glm::vec2 tilesData[100];
+    glm::vec2 tilesData[this->tilesToRender];
     int index = 0;
-    float offset = 0.1f;
-    for(int y=-10;y<10;y+=2){
-        for(int x=-10;x<10;x+=2){
+    float offset = 0.00f;
+
+    {
+        glm::vec2 tileData;
+        tileData.x = 100.0f;
+        tileData.y = 200.0f;
+        tilesData[index++] = tileData;
+    }
+    {
+        glm::vec2 tileData;
+        tileData.x = 100.0f;
+        tileData.y = 500.0f;
+        tilesData[index++] = tileData;
+    }
+    {
+        glm::vec2 tileData;
+        tileData.x = 100.0f;
+        tileData.y = 1000.0f;
+        tilesData[index++] = tileData;
+    }
+
+    for(int y=0; y<screenRes.h; y+=TILE_SIZE*2){
+        for(int x=0; x<screenRes.w; x+=TILE_SIZE){
             glm::vec2 tileData;
-            tileData.x = (float)x / 10.0f + offset;
-            tileData.y = (float)y / 10.0f + offset;
-            tilesData[index++] = tileData;
+            tileData.x = (float)x + offset;
+            tileData.y = (float)y + offset + 200;
+            if (index<this->tilesToRender){
+                tilesData[index++] = tileData;
+            }
         }
     }
 
@@ -145,7 +162,7 @@ void Renderer::updateRenderableTilesVBO(){
         //Create, bind, and set the buffer
         glGenBuffers(1, &this->renderableTilesVBO);
         glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &tilesData[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * this->tilesToRender, &tilesData[0], GL_DYNAMIC_DRAW);
 
         std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
@@ -159,7 +176,7 @@ void Renderer::updateRenderableTilesVBO(){
     }else{
         //Bind and update the buffer content
         glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * 100, &tilesData[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * this->tilesToRender, &tilesData[0]);
     }
     //Unbind the buffer
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -223,9 +240,10 @@ void Renderer::renderScene(Scene* s){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     tileShader.use();
+    tileShader.setMat4("uCameraMatrix", s->getCamera().getCameraMatrix());
 
     glBindVertexArray(this->abstractTileVAO);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, this->tilesToRender);
     glBindVertexArray(0);
 
     //renderTest(sdlRenderer, screenRes.w, screenRes.h);

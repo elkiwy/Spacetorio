@@ -157,9 +157,9 @@ void Scene::update(const Uint8* ks){
         float camSpdDx = 0.0f;
         float camSpdDy = 0.0f;
         if (ks[SDL_SCANCODE_RIGHT]) camSpdDx += camSpeedInc;
-        if (ks[SDL_SCANCODE_LEFT]) camSpdDx -= camSpeedInc;
-        if (ks[SDL_SCANCODE_DOWN]) camSpdDy += camSpeedInc;
-        if (ks[SDL_SCANCODE_UP]) camSpdDy -= camSpeedInc;
+        if (ks[SDL_SCANCODE_LEFT])  camSpdDx -= camSpeedInc;
+        if (ks[SDL_SCANCODE_UP])    camSpdDy += camSpeedInc;
+        if (ks[SDL_SCANCODE_DOWN])  camSpdDy -= camSpeedInc;
         cam.addSpd(camSpdDx, camSpdDy);
     }
 
@@ -257,7 +257,6 @@ void Scene::onMouseLeftClick(){
             if (hovered){ implCasted->click(); }
         }
     }
-
 }
 
 

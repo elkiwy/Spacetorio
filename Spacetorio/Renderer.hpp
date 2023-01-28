@@ -10,11 +10,14 @@
 #include "SDL_video.h"
 #include "Utils_points.hpp"
 #include "Utils_math.hpp"
+#include "Utils_data.hpp"
 #include "SDL_ttf.h"
 
 #include "Texture.hpp"
 
 #include "Renderer_shader.hpp"
+
+#include "glm/glm.hpp"
 
 class Scene;
 extern float global_avgFPS;
@@ -64,6 +67,9 @@ class Renderer {
         unsigned int abstractTileVBO = 0;
         unsigned int abstractTileVAO = 0;
         unsigned int renderableTilesVBO = 0;
+        int tilesToRender = 0;
+
+        glm::mat4 transformMatrix = glm::mat4(1.0f);
 };
 
 

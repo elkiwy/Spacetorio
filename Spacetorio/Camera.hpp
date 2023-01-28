@@ -7,6 +7,7 @@
 #include "Entity.hpp"
 #include <ostream>
 
+#include "glm/glm.hpp"
 
 class Renderer;
 extern Renderer* global_renderer;
@@ -36,6 +37,8 @@ class Camera {
 
         const ShapeRectangle& getCameraShape();
 
+        const glm::mat4& getCameraMatrix() { return cameraMatrix; };
+        void updateCameraMatrix();
 
 
         fVec   spd = fVec(0.0f, 0.0f);
@@ -46,6 +49,7 @@ class Camera {
         ShapeRectangle shape;
         PositionComponent* target = nullptr;
 
+        glm::mat4 cameraMatrix = glm::mat4(1.0f);
 };
 
 

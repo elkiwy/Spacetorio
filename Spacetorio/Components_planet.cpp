@@ -153,9 +153,9 @@ PlanetComponent::PlanetComponent(Entity planetEntity, float s):myEntity(planetEn
     //Init test biomes
     addBiome(BIOME_FLATS);
     addBiome(BIOME_MOUNTAIN);
-    addBiome(BIOME_LAKE);
-    addBiome(BIOME_MOUNTAIN);
-    addBiome(BIOME_LAKE);
+    //addBiome(BIOME_LAKE);
+    //addBiome(BIOME_MOUNTAIN);
+    //addBiome(BIOME_LAKE);
 
     //Init all the biomes
     const int nBiomes = biomes.size();

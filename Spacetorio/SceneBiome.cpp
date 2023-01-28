@@ -142,7 +142,7 @@ void SceneBiome::init(SDL_Surface* terrainMap){
     }
 
     //Move the camera to the center of the scene
-    this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
+    //this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
 }
 
 void SceneBiome::render(){
