@@ -123,50 +123,71 @@ void SceneBiome::init(SDL_Surface* terrainMap){
 
     //Load all the entities from the terrainMap
     Uint8* terrainMapData = (Uint8*)terrainMap->pixels;
+    int totTiles = 0;
     for(int j=0; j<mapH; ++j){
         for(int i=0; i<mapW; ++i){
             int chunkX = i/CHUNK_SIZE;
             int chunkY = j/CHUNK_SIZE;
-            Uint8 tileVal = terrainMapData[(i+(mapW*j))*4+0];
+            Uint8 tileVal = terrainMapData[(i+(mapW*((mapH-1) - j)))*4+0];
+            //if (tileVal > 200 || true){
             if (tileVal > 250){
                 //Create the entity
                 Entity e = {this->newEntity(), this};
                 ChunkBiome& ck = chunks[chunkY][chunkX];
-                auto& posComp = e.addComponent<StaticPositionComponent>(i*TILE_SIZE+TILE_SIZE/2, j*TILE_SIZE+TILE_SIZE/2);
-                e.addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE);
+                float posx = i*TILE_SIZE+TILE_SIZE/2.0f;
+                //float posy = ((mapH-1) - j)*TILE_SIZE+TILE_SIZE/2.0f;
+                float posy = j*TILE_SIZE+TILE_SIZE/2.0f;
+                auto& posComp = e.addComponent<StaticPositionComponent>(posx, posy);
+                e.addComponent<RenderableTileComponent>(1);
                 e.addComponent<ColliderRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
 
                 ck.addEntity(e);
+                totTiles++;
             }
         }
     }
+    std::cout << "tot tiles: " << totTiles << std::endl;
 
     //Move the camera to the center of the scene
-    //this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
+    this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
 }
 
 void SceneBiome::render(){
     auto& cam = getCamera();
     auto& reg = getRegistry();
 
-    //Render Static Chunks
+    //Get the chunks I have to render this frame
     int minChunkX,minChunkY,maxChunkX,maxChunkY;
     getChunksInCamera(cam, this->chunks, &minChunkX, &minChunkY, &maxChunkX, &maxChunkY);
-    auto globalView = reg.view<StaticPositionComponent, RenderableComponent>();
-    for(int j=minChunkY;j<=maxChunkY;++j){
-        for(int i=minChunkX;i<=maxChunkX;++i){
-            auto& chunk = chunks[j][i];
-            auto chunkView = (entt::basic_view{chunks[j][i].entities} | globalView);
-            for(auto e: chunkView){
-                auto& pos = chunkView.get<StaticPositionComponent>(e);
-                auto& renderable = chunkView.get<RenderableComponent>(e);
-                for(auto impl: renderable.impls){
-                    if (impl == nullptr){break;}
-                    static_cast<RenderableComponent*>(impl)->render(pos, cam);
+    std::string currentChunkHash = std::to_string(minChunkX) + "_" + std::to_string(minChunkY) + "_" + std::to_string(maxChunkX) + "_" + std::to_string(maxChunkY);
+    if (currentChunkHash != this->chunkHash){
+        std::cout << "Current chunk hash" << currentChunkHash << std::endl;
+
+        //Prepare the vector to hold all the chunk data
+        std::vector<TileRenderData> tilesData;
+
+        //Update the renderableTilesVBO if the chunks changed from the frame before
+        auto globalView = reg.view<StaticPositionComponent, RenderableTileComponent>();
+        for(int j=minChunkY;j<=maxChunkY;++j){
+            for(int i=minChunkX;i<=maxChunkX;++i){
+                auto& chunk = chunks[j][i];
+                auto chunkView = (entt::basic_view{chunks[j][i].entities} | globalView);
+                for(auto e: chunkView){
+                    auto& pos = chunkView.get<StaticPositionComponent>(e);
+                    auto& renderableTile = chunkView.get<RenderableTileComponent>(e);
+                    const TileRenderData& td = renderableTile.getRenderInfo(pos);
+                    tilesData.emplace_back(td);
                 }
             }
         }
+
+        //Send the tilesData to the renderer that will update the VBO on the gpu
+        global_renderer->updateRenderableTilesVBO(tilesData);
+
+        //Update the chunk hash
+        this->chunkHash = currentChunkHash;
     }
+
 
     //Render the other dynamic objects (don't care about chunking since are few)
     auto dynamicEnts = reg.view<DynamicPositionComponent, RenderableComponent>();
@@ -181,6 +202,33 @@ void SceneBiome::render(){
 
 
     renderCameraCrosshair();
+}
+
+void SceneBiome::renderGUI(){
+    Scene::renderGUI();
+
+    ImGui::Begin("SceneBiome");
+    ImGui::Text("SceneBiome");
+    ImGui::Text("RenderableChunks: %s", chunkHash.c_str());
+
+
+    //Get Camera world position
+    fPoint cameraWorldPos = getCamera().getCameraWorldCenter();
+    int chunkX = std::clamp((int)(cameraWorldPos.x / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks[0].size() - 1);
+    int chunkY = std::clamp((int)(cameraWorldPos.y / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks.size()-1);
+    ImGui::Text("Focussed chunk: [ %d, %d ]", chunkX, chunkY);
+
+
+    iPoint mousePos = {0,0};
+    SDL_GetMouseState(&mousePos.x, &mousePos.y);
+    fPoint worldMouse = getCamera().screenToWorld(fPoint(mousePos.x, mousePos.y));
+    int mousechunkX = std::clamp((int)(worldMouse.x / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks[0].size() - 1);
+    int mousechunkY = std::clamp((int)(worldMouse.y / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks.size()-1);
+    ImGui::Text("Chunk under mouse: [ %d, %d ]", mousechunkX, mousechunkY);
+
+    ImGui::Text("Map chunk Size: [ %d, %d ]", (int)chunks[0].size(), (int)chunks.size());
+
+    ImGui::End();
 }
 
 ChunkBiome& SceneBiome::getChunk(float worldX, float worldY){

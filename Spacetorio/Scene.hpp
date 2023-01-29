@@ -65,7 +65,7 @@ class Scene {
         virtual void init();
 
         virtual void render();
-        void renderGUI();
+        virtual void renderGUI();
         void renderCameraCrosshair();
 
         void update(const Uint8* keyState);
@@ -74,7 +74,9 @@ class Scene {
         void onKeyPressed(SDL_Keycode key);
 
         Camera& getCamera() { return cam; }
+        const Camera& getCamera() const { return cam; }
         entt::registry& getRegistry(){ return registry; }
+        const entt::registry& getRegistry() const{ return registry; }
         entt::entity newEntity(){ return registry.create(); }
 
     private:

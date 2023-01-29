@@ -22,6 +22,8 @@ class Camera {
         void init();
         void update(const Uint8* ks);
 
+        void renderGUI();
+
         fPoint getCameraWorldCenter() const;
         void moveTo(float x, float y);
         void moveBy(float dx, float dy);

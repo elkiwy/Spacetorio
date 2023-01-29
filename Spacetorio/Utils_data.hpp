@@ -2,6 +2,7 @@
 #define UTILS_DATA_H_
 
 
+#include "glm/glm.hpp"
 
 #include <cmath>
 #define CHUNK_SIZE 16 //Tiles
@@ -18,6 +19,13 @@ inline int roundChunk(int n){
 
 
 enum PlanetBiomeType { BIOME_FLATS, BIOME_MOUNTAIN, BIOME_LAKE };
+
+
+
+struct TileRenderData{
+    glm::vec2 pos = {0.0f,0.0f};
+    int spriteIndex = 0;
+};
 
 
 

@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <glm/ext/matrix_transform.hpp>
+#include <string>
 
 Camera::Camera() {}
 Camera::~Camera() {}
@@ -15,7 +16,7 @@ void Camera::init(){
     if (global_renderer != nullptr){
         iSize sz = global_renderer->getScreenSize();
         screen_size = fSize(sz.w, sz.h);
-        //moveTo(0, 0);
+        moveTo(0, 0);
     }
     std::cout << "done camera" << std::endl;
 }
@@ -30,6 +31,25 @@ void Camera::update(const Uint8 *ks) {
         this->moveTo(target->pos.x, target->pos.y);
     }
 }
+
+void Camera::renderGUI(){
+    ImGui::Begin("Camera");
+    ImGui::Text("Camera");
+    ImGui::SliderFloat("Cam X:", &pos.x, -9000.0f, 9000.0f);
+    ImGui::SliderFloat("Cam Y:", &pos.y, -9000.0f, 9000.0f);
+    ImGui::SliderFloat("Cam Zoom:", &zoom, 0.0f, 3.0f);
+
+    ImGui::Separator();
+    ImGui::Text("Mouse World Positon:");
+    iPoint mousePos = {0,0};
+    SDL_GetMouseState(&mousePos.x, &mousePos.y);
+    fPoint worldMouse = screenToWorld(fPoint(mousePos.x, mousePos.y));
+    ImGui::Text("X: %s", std::to_string((int)worldMouse.x).c_str());
+    ImGui::Text("Y: %s", std::to_string((int)worldMouse.y).c_str());
+
+    ImGui::End();
+}
+
 
 fPoint Camera::getCameraWorldCenter() const{
     return {

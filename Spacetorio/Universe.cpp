@@ -122,7 +122,8 @@ void Universe::init(){
 
     //Load BiomeScene
     PlanetComponent& pc = p.getComponent<PlanetComponent>();
-    PlanetBiome b = PlanetBiome(pc.biomes[0], &spaceScene);
+    int ind = pc.biomes.size() - 1;
+    PlanetBiome b = PlanetBiome(pc.biomes[ind], &spaceScene);
     PlanetBiomeComponent& pbc = b.getComponent<PlanetBiomeComponent>();
     this->planetScene = pbc.getBiomeScene();
     this->switchScene(this->planetScene);

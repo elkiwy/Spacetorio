@@ -58,5 +58,20 @@ struct RenderableRectComponent : public RenderableComponent{
     }
 };
 
+//Tile Renderer
+struct RenderableTileComponent{
+    TileRenderData renderData;
+
+    RenderableTileComponent() = default;
+    RenderableTileComponent(const RenderableTileComponent&) = default;
+    RenderableTileComponent(int sprInd) { renderData.spriteIndex = sprInd;}
+
+    const TileRenderData& getRenderInfo(const PositionComponent& posComp){
+        renderData.pos.x = posComp.pos.x;
+        renderData.pos.y = posComp.pos.y;
+        return renderData;
+    }
+};
+
 
 #endif // COMPONENTS_RENDERABLES_H_

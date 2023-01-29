@@ -1,33 +1,40 @@
 #include "Renderer.hpp"
+
+//SDL Stuff
 #include "SDL_pixels.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
 #include "SDL_ttf.h"
+#include "SDL_video.h"
+
+//STD stuff
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include <string>
 
-#include "SDL_video.h"
-#include "Scene.hpp"
+//OpenGL Stuff
+#include "GL/glew.h"
+#include "SDL_opengl.h"
 
-
+//GLM stuff
 #include <glm/ext/matrix_transform.hpp>
 
-#include "Utils_math.hpp"
+//ImGui stuff
 #include "imgui.h"
 #include "backends/imgui_impl_sdl.h"
-#include "backends/imgui_impl_sdlrenderer.h"
+#include "backends/imgui_impl_opengl3.h"
 
+//Spacetorio stuff
+#include "Scene.hpp"
+#include "Utils_math.hpp"
 #include "PerlinNoise.hpp"
 #include "Texture.hpp"
 
 
-#include "GL/glew.h"
-#include "SDL_opengl.h"
 
 
 //#ifdef __APPLE__
@@ -41,20 +48,26 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     sdlWindow = sdlWin;
 
     //Predefine GL Versions and attributes
+    const char* glsl_version = "#version 330";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     //Initialize GL Context
     this->glContext = SDL_GL_CreateContext(sdlWindow);
     if (this->glContext == NULL){
         std::cout << "\n\nCouldn't initialize SDL_GL_Context, probably will crash soon!"<< SDL_GetError() <<"\n\n" << std::endl << std::flush;
     }
+    SDL_GL_MakeCurrent(sdlWin, this->glContext);
+    if (SDL_GL_SetSwapInterval(1) < 0) { printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError()); }
+
 
     //Initialize GLEW
     GLenum glewError = glewInit();
     if (glewError != GLEW_OK) { printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError)); }
-    if (SDL_GL_SetSwapInterval(1) < 0) { printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError()); }
+    std::cout << "Initialized OpenGL with version: " << glGetString(GL_VERSION) << std::endl;
 
     //Prepare transformation matrix to convert from -1 1 to 0 SCREENRES
     this->transformMatrix = glm::mat4(1.0f);
@@ -66,18 +79,18 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->tileShader.use();
     this->tileShader.setMat4("uTransformMatrix", this->transformMatrix);
     this->setupAbstractTileVAO();
-    this->updateRenderableTilesVBO();
+    //this->updateRenderableTilesVBO();
 
     //Initialize Fonts (maybe deprecated)
     currentFont = TTF_OpenFont((ASSETS_PREFIX+"res/fonts/DejaVuSansMono.ttf").c_str(), 16);
 
-    ////ImGui Stuff
-    //IMGUI_CHECKVERSION();
-    //ImGui::CreateContext();
-    //ImGui::StyleColorsDark();
-    //ImGui_ImplSDL2_InitForSDLRenderer(sdlWin, sdlRenderer);
-    //ImGui_ImplSDLRenderer_Init(sdlRenderer);
-    //std::cout << "Renderer Initialized." << std::endl;
+    //ImGui Stuff
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplSDL2_InitForOpenGL(this->sdlWindow, this->glContext);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    std::cout << "Renderer Initialized." << std::endl;
 }
 
 
@@ -120,51 +133,34 @@ void Renderer::setupAbstractTileVAO(){
 
 
 
-void Renderer::updateRenderableTilesVBO(){
-    this->tilesToRender = 300;
+void Renderer::updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData){
+    //NOTE: could be better to create a larger buffer and only call glBufferSubData instead of calling glBufferData to resize it
 
-    //Setup Dummy tiles data
-    glm::vec2 tilesData[this->tilesToRender];
+    if (tilesData.size() == 0){
+        return;
+    }
+
+    //Update the count of how many tiles to render
+    this->tilesToRender = tilesData.size();
+    glm::vec2* rawData = new glm::vec2[tilesToRender];
     int index = 0;
-    float offset = 0.00f;
 
-    {
-        glm::vec2 tileData;
-        tileData.x = 100.0f;
-        tileData.y = 200.0f;
-        tilesData[index++] = tileData;
-    }
-    {
-        glm::vec2 tileData;
-        tileData.x = 100.0f;
-        tileData.y = 500.0f;
-        tilesData[index++] = tileData;
-    }
-    {
-        glm::vec2 tileData;
-        tileData.x = 100.0f;
-        tileData.y = 1000.0f;
-        tilesData[index++] = tileData;
+    //Fill in the raw data to send the gpu
+    for (auto &td : tilesData) {
+        glm::vec2 d = {td.pos.x, td.pos.y};
+        rawData[index] = d;
+        index++;
     }
 
-    for(int y=0; y<screenRes.h; y+=TILE_SIZE*2){
-        for(int x=0; x<screenRes.w; x+=TILE_SIZE){
-            glm::vec2 tileData;
-            tileData.x = (float)x + offset;
-            tileData.y = (float)y + offset + 200;
-            if (index<this->tilesToRender){
-                tilesData[index++] = tileData;
-            }
-        }
-    }
+    // DEBUG:  Reference tile
+    //rawData[0].x = 100.0f;
+    //rawData[0].y = 500.0f;
 
     if (this->renderableTilesVBO == 0){
         //Create, bind, and set the buffer
         glGenBuffers(1, &this->renderableTilesVBO);
         glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * this->tilesToRender, &tilesData[0], GL_DYNAMIC_DRAW);
-
-        std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * this->tilesToRender, &rawData[0], GL_DYNAMIC_DRAW);
 
         //Enabled 2nd input as 2 floats
         glEnableVertexAttribArray(2);
@@ -174,10 +170,20 @@ void Renderer::updateRenderableTilesVBO(){
         glVertexAttribDivisor(2, 1);
 
     }else{
-        //Bind and update the buffer content
+        std::cout << "Updating chunk data with " << this->tilesToRender << " tiles " << std::endl;
+
+        std::cout << "rawData[0] : " << rawData[0].x << " " << rawData[0].y << std::endl;
+        std::cout << "rawData[1] : " << rawData[1].x << " " << rawData[1].y << std::endl;
+        std::cout << "rawData[2] : " << rawData[2].x << " " << rawData[2].y << std::endl;
+        std::cout << "rawData[3] : " << rawData[3].x << " " << rawData[3].y << std::endl;
+
+
         glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec2) * this->tilesToRender, &tilesData[0]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * this->tilesToRender, &rawData[0], GL_DYNAMIC_DRAW);
     }
+
+    delete[] rawData;
+
     //Unbind the buffer
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -192,34 +198,15 @@ Renderer::~Renderer(){
     debugTextureContinentalness.free();
     debugTextureErosion.free();
 
-    //ImGui_ImplSDLRenderer_Shutdown();
-    //ImGui_ImplSDL2_Shutdown();
-    //ImGui::DestroyContext();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 
     TTF_CloseFont(currentFont);
     SDL_DestroyRenderer(sdlRenderer);
     currentFont = NULL;
     sdlRenderer = NULL;
     std::cout << "Renderer destroyed." << std::endl;
-}
-
-void renderTest(SDL_Renderer* sdlRenderer, int SCREEN_WIDTH, int SCREEN_HEIGHT){
-    //// Render red filled quad
-    //SDL_Rect fillRect = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
-    //SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0x00, 0x00, 0xFF);
-    //SDL_RenderFillRect(sdlRenderer, &fillRect);
-    // Render green outlined quad
-    //SDL_Rect outlineRect = {SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 2 / 3};
-    //SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0xFF, 0x00, 0xFF);
-    //SDL_RenderDrawRect(sdlRenderer, &outlineRect);
-    //// Draw blue horizontal line
-    //SDL_SetRenderDrawColor(sdlRenderer, 0x00, 0x00, 0xFF, 0xFF);
-    //SDL_RenderDrawLine(sdlRenderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
-    //// Draw vertical line of yellow dots
-    //SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0x00, 0xFF);
-    //for (int i = 0; i < SCREEN_HEIGHT; i += 4) {
-    //    SDL_RenderDrawPoint(sdlRenderer, SCREEN_WIDTH / 2, i);
-    //}
 }
 
 
@@ -235,19 +222,19 @@ void Renderer::renderFrameBegin(){
 }
 
 void Renderer::renderScene(Scene* s){
-
+    //Clear buffer
     glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    //Prepare the render data for Scene
+    s->render();
+
+    //Draw call
     tileShader.use();
     tileShader.setMat4("uCameraMatrix", s->getCamera().getCameraMatrix());
-
     glBindVertexArray(this->abstractTileVAO);
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, this->tilesToRender);
     glBindVertexArray(0);
-
-    //renderTest(sdlRenderer, screenRes.w, screenRes.h);
-    //s->render();
 
     ////Noise Generator debug
     //if (debugTextureFinal.initialized){
@@ -258,31 +245,36 @@ void Renderer::renderScene(Scene* s){
 }
 
 void Renderer::renderGUI(Scene* s){
-    //ImGui_ImplSDLRenderer_NewFrame();
-    //ImGui_ImplSDL2_NewFrame();
-    //ImGui::NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
 
-    ////Scene GUI
-    //s->renderGUI();
+    //Scene GUI
+    s->renderGUI();
 
-    //////Noise Generator debug
-    ////if (gen.renderGUI() || debugTextureFinal.initialized == false){
-    ////    DebugSurfaces ds;
-    ////    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
-    ////    debugTextureFinal = Texture(ds.finalSurface, false);
-    ////    debugTextureContinentalness = Texture(ds.contSurface, false);
-    ////    debugTextureErosion = Texture(ds.erosionSurface, false);
-    ////    ds.free();
-    ////}
+    ////Noise Generator debug
+    //if (gen.renderGUI() || debugTextureFinal.initialized == false){
+    //    DebugSurfaces ds;
+    //    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
+    //    debugTextureFinal = Texture(ds.finalSurface, false);
+    //    debugTextureContinentalness = Texture(ds.contSurface, false);
+    //    debugTextureErosion = Texture(ds.erosionSurface, false);
+    //    ds.free();
+    //}
 
-    ////Rendere and complete ImGui
-    //ImGui::Render();
-    //ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    ImGui::Begin("Renderer");
+    ImGui::Text("Renderer");
+    ImGui::Text("Tiles count: %d", (int)tilesToRender);
+    ImGui::End();
+
+    //Rendere and complete ImGui
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Renderer::renderFrameEnd(){
     //Update the image on screen
-    drawText(8, 8, "FPS: " + std::to_string(global_avgFPS), {0x00, 0x00, 0x00, 0xff});
+    //drawText(8, 8, "FPS: " + std::to_string(global_avgFPS), {0x00, 0x00, 0x00, 0xff});
     //SDL_RenderPresent(sdlRenderer);
     SDL_GL_SwapWindow(sdlWindow);
 }

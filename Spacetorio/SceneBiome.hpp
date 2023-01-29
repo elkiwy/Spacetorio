@@ -56,6 +56,8 @@ class SceneBiome : public Scene {
 
         void init(SDL_Surface* terrain);
         void render() override;
+        void renderGUI() override;
+
 
         void spawnPlayerAt(fPoint pos);
 
@@ -68,6 +70,7 @@ class SceneBiome : public Scene {
 
     private:
         std::vector<std::vector<ChunkBiome>> chunks;
+        std::string chunkHash = "";
 };
 
 #endif // SCENEBIOME_H_

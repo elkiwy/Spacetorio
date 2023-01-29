@@ -24,13 +24,11 @@
 #include "Entity_player.hpp"
 
 
-Scene::Scene(){
-}
+Scene::Scene(){}
 
 Scene::~Scene(){
 
 }
-
 
 void Scene::init(){
     registerGenericComponent<RenderableComponent, RenderableCircleComponent>();
@@ -86,21 +84,21 @@ void Scene::render(){
 
 void Scene::renderCameraCrosshair(){
     int len = 10;
-    iPoint c = iPoint(((int)cam.screen_size.w)/2, ((int)cam.screen_size.h)/2);
-    global_renderer->drawLine(c.x, c.y-len, c.x, c.y+len, {0,0,0,255});
-    global_renderer->drawLine(c.x-len, c.y, c.x+len, c.y, {0,0,0,255});
-    fPoint worldPos = cam.screenToWorld({(float)c.x, (float)c.y});
-    global_renderer->drawText(c.x, c.y,    std::to_string(worldPos.x), {0,0,0,255});
-    global_renderer->drawText(c.x, c.y+16, std::to_string(worldPos.y), {0,0,0,255});
+    //iPoint c = iPoint(((int)cam.screen_size.w)/2, ((int)cam.screen_size.h)/2);
+    //global_renderer->drawLine(c.x, c.y-len, c.x, c.y+len, {0,0,0,255});
+    //global_renderer->drawLine(c.x-len, c.y, c.x+len, c.y, {0,0,0,255});
+    //fPoint worldPos = cam.screenToWorld({(float)c.x, (float)c.y});
+    //global_renderer->drawText(c.x, c.y,    std::to_string(worldPos.x), {0,0,0,255});
+    //global_renderer->drawText(c.x, c.y+16, std::to_string(worldPos.y), {0,0,0,255});
 }
 
 void Scene::renderGUI(){
-    ImGui::Begin("Active Scene GUI");
 
     //
-    ImGui::Text("Entities");
-    ImGui::BeginChild("Scrolling");
     if (false){
+        ImGui::Begin("Active Scene GUI");
+        ImGui::Text("Entities");
+        ImGui::BeginChild("Scrolling");
         auto view = registry.view<TagComponent>();
         for(auto e: view){
             auto& tag  = view.get<TagComponent>(e);
@@ -136,24 +134,19 @@ void Scene::renderGUI(){
                 ImGui::TreePop();
             }
         }
+        ImGui::EndChild();
+        ImGui::End();
     }
-    ImGui::EndChild();
-    ImGui::End();
 
     //Camera
-    ImGui::Begin("Camera");
-    ImGui::Text("Camera");
-    ImGui::SliderFloat("Cam X:", &cam.pos.x, -900.0f, 900.0f);
-    ImGui::SliderFloat("Cam Y:", &cam.pos.y, -900.0f, 900.0f);
-    ImGui::SliderFloat("Cam Zoom:", &cam.zoom, 0.0f, 3.0f);
-    ImGui::End();
+    cam.renderGUI();
 }
 
 
 void Scene::update(const Uint8* ks){
     //Process inputs
     if (ks[SDL_SCANCODE_RIGHT] || ks[SDL_SCANCODE_LEFT] || ks[SDL_SCANCODE_DOWN] || ks[SDL_SCANCODE_UP]) {
-        float camSpeedInc = 0.5f;
+        float camSpeedInc = 2.0f;
         float camSpdDx = 0.0f;
         float camSpdDy = 0.0f;
         if (ks[SDL_SCANCODE_RIGHT]) camSpdDx += camSpeedInc;
@@ -222,7 +215,7 @@ void Scene::update(const Uint8* ks){
         Entity e = {entity, this};
         for(auto impl: updatable.impls){
             if (impl == nullptr){break;}
-            static_cast<UpdatableComponent*>(impl)->update(e, ks);
+    //        static_cast<UpdatableComponent*>(impl)->update(e, ks);
         }
     }
 
@@ -257,6 +250,9 @@ void Scene::onMouseLeftClick(){
             if (hovered){ implCasted->click(); }
         }
     }
+
+
+    std::cout << "World pos " << worldMouse << std::endl;
 }
 
 

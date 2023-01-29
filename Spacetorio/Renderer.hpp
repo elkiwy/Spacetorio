@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <iostream>
 #include <string>
+#include <vector>
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
@@ -35,7 +36,7 @@ class Renderer {
         void renderFrameEnd();
 
         void setupAbstractTileVAO();
-        void updateRenderableTilesVBO();
+        void updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData);
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
