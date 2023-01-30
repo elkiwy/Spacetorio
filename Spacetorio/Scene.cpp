@@ -84,9 +84,12 @@ void Scene::render(){
 
 void Scene::renderCameraCrosshair(){
     int len = 10;
-    //iPoint c = iPoint(((int)cam.screen_size.w)/2, ((int)cam.screen_size.h)/2);
-    //global_renderer->drawLine(c.x, c.y-len, c.x, c.y+len, {0,0,0,255});
-    //global_renderer->drawLine(c.x-len, c.y, c.x+len, c.y, {0,0,0,255});
+    fPoint c = fPoint((cam.screen_size.w)/2.0f, (cam.screen_size.h)/2.0f);
+    fPoint worldPos = cam.screenToWorld({c.x, c.y});
+
+    global_renderer->addLineToRender({worldPos.x, worldPos.y-len}, {worldPos.x, worldPos.y+len}, {0,0,0,255});
+    global_renderer->addLineToRender({worldPos.x-len, worldPos.y}, {worldPos.x+len, worldPos.y}, {0,0,0,255});
+
     //fPoint worldPos = cam.screenToWorld({(float)c.x, (float)c.y});
     //global_renderer->drawText(c.x, c.y,    std::to_string(worldPos.x), {0,0,0,255});
     //global_renderer->drawText(c.x, c.y+16, std::to_string(worldPos.y), {0,0,0,255});
@@ -250,9 +253,6 @@ void Scene::onMouseLeftClick(){
             if (hovered){ implCasted->click(); }
         }
     }
-
-
-    std::cout << "World pos " << worldMouse << std::endl;
 }
 
 

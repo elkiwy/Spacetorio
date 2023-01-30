@@ -36,10 +36,14 @@ class Renderer {
         void renderFrameEnd();
 
         //OpenGL Data Management
+        void setupLinesVAO();
         void setupTilesVAO();
         void setupSpritesVAO();
         void updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData);
         void updateRenderableSpritesVBO(std::vector<SpriteRenderData>& spritesData);
+
+        void addLineToRender(const fPoint& p1, const fPoint& p2, SDL_Color c = {255,0,128,0});
+        void _updateLinesVBO();
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
@@ -79,6 +83,14 @@ class Renderer {
         unsigned int spriteVBO = 0;
         unsigned int spriteVAO = 0;
         int spritesToRender = 0;
+
+
+        //Lines rendering
+        Shader basicShader;
+        unsigned int linesVBO = 0;
+        unsigned int linesVAO = 0;
+        std::vector<LineRenderData> linesRenderData;
+        int linesToRender = 0;
 
 
         glm::mat4 transformMatrix = glm::mat4(1.0f);

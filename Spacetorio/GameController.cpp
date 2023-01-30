@@ -44,14 +44,8 @@ void GameController::quit(){
 }
 
 void GameController::onKeyPressed(SDL_Keycode key){
-    std::cout << "Key down: " << key << std::endl;
     if (key == SDLK_y){
         //Switch scene
-        std::cout << "Biome scene: " << (void*)universe.getBiomeScene() << std::endl;
-        std::cout << "Space scene: " << (void*)universe.getSpaceScene() << std::endl;
-        std::cout << "Active scene: " << (void*)universe.getCurrentScene() << std::endl;
-        std::cout << "check: " << (universe.getCurrentScene() == universe.getBiomeScene()) << std::endl;
-
         Scene* s = (universe.getCurrentScene() == universe.getBiomeScene()) ? universe.getSpaceScene() : universe.getBiomeScene();
         universe.switchScene(s);
     }

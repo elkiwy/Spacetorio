@@ -74,6 +74,12 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->transformMatrix = glm::translate(transformMatrix, glm::vec3(-1.0f, -1.0f, 0.0f));
     this->transformMatrix = glm::scale(transformMatrix, glm::vec3(2.0f/sr.w, 2.0f/sr.h, 1.0f));
 
+    //Initialize Basic Shaders for debug lines
+    this->basicShader = Shader((ASSETS_PREFIX+"shaders/basic.vert").c_str(), (ASSETS_PREFIX+"shaders/basic.frag").c_str());
+    this->basicShader.use();
+    this->basicShader.setMat4("uTransformMatrix", this->transformMatrix);
+    this->setupLinesVAO();
+
     //Initialize Tile Shaders, VAO, and VBO
     this->tileShader = Shader((ASSETS_PREFIX+"shaders/tiles.vert").c_str(), (ASSETS_PREFIX+"shaders/tiles.frag").c_str());
     this->tileShader.use();
@@ -85,6 +91,7 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->spriteShader.use();
     this->spriteShader.setMat4("uTransformMatrix", this->transformMatrix);
     this->setupSpritesVAO();
+
 
 
     //Initialize Fonts (maybe deprecated)
@@ -176,7 +183,7 @@ void Renderer::setupTilesVAO(){
 }
 
 void Renderer::setupSpritesVAO(){
-    assert(this->spriteVAO == 0 && "ERROR: called setupAbstractTileVAO multiple times!");
+    assert(this->spriteVAO == 0 && "ERROR: called setupSpritesVAO multiple times!");
 
     //Create and bind the VAO and VBO for instanced abstract tiles data
     glGenVertexArrays(1, &this->spriteVAO);
@@ -188,6 +195,29 @@ void Renderer::setupSpritesVAO(){
     glBindBuffer(GL_ARRAY_BUFFER, this->spriteVBO);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    //Unbind buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Renderer::setupLinesVAO(){
+    assert(this->linesVAO == 0 && "ERROR: called setupLinesVAO multiple times!");
+
+    //Create and bind the VAO and VBO for instanced abstract tiles data
+    glGenVertexArrays(1, &this->linesVAO);
+    glGenBuffers(1, &this->linesVBO);
+    glBindVertexArray(this->linesVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->linesVBO);
+
+    //Enable 0th input as 2 floats (position)
+    glBindBuffer(GL_ARRAY_BUFFER, this->linesVBO);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+    //Enable 1th input as 3 floats (color)
+    glBindBuffer(GL_ARRAY_BUFFER, this->linesVBO);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
 
     //Unbind buffer
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -217,22 +247,16 @@ void Renderer::updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData){
 }
 
 void Renderer::updateRenderableSpritesVBO(std::vector<SpriteRenderData>& spritesData){
-    //NOTE: could be better to create a larger buffer and only call glBufferSubData instead of calling glBufferData to resize it
     if (spritesData.size() == 0){return;}
 
     //Update the count of how many tiles to render
     this->spritesToRender = spritesData.size();
     glm::vec2* rawData = new glm::vec2[6*spritesToRender];
     int index = 0;
-    std::cout << "------------------" << std::endl;
-    std::cout << "spritesData[0] pos: " << spritesData[0].pos.x << " " << spritesData[0].pos.y << std::endl;
-    std::cout << "spritesData[0] size: " << spritesData[0].size.x << " " << spritesData[0].size.y << std::endl;
-    std::cout << "spritesData[0] sprite: " << spritesData[0].spriteIndex << std::endl;
     for (auto &sd : spritesData) {
         float w2 = sd.size.x/2.0f;
         float h2 = sd.size.y/2.0f;
         float sp = sd.spriteIndex;
-
 
         rawData[index] = {-w2+sd.pos.x,  h2+sd.pos.y}; index++;
         rawData[index] = { w2+sd.pos.x, -h2+sd.pos.y}; index++;
@@ -243,13 +267,6 @@ void Renderer::updateRenderableSpritesVBO(std::vector<SpriteRenderData>& sprites
     }
 
 
-    std::cout << "rawData[0]: " << rawData[0].x << " " << rawData[0].y << std::endl;
-    std::cout << "rawData[1]: " << rawData[1].x << " " << rawData[1].y << std::endl;
-    std::cout << "rawData[2]: " << rawData[2].x << " " << rawData[2].y << std::endl;
-    std::cout << "rawData[3]: " << rawData[3].x << " " << rawData[3].y << std::endl;
-    std::cout << "rawData[4]: " << rawData[4].x << " " << rawData[4].y << std::endl;
-    std::cout << "rawData[5]: " << rawData[5].x << " " << rawData[5].y << std::endl;
-
     //Bind the buffer and update it's data by creating a new one and make the old one an orphan
     glBindBuffer(GL_ARRAY_BUFFER, this->spriteVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 6 * this->spritesToRender, &rawData[0], GL_DYNAMIC_DRAW);
@@ -257,6 +274,49 @@ void Renderer::updateRenderableSpritesVBO(std::vector<SpriteRenderData>& sprites
     //Clear the temp data and unbind the buffer
     delete[] rawData;
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+void Renderer::addLineToRender(const fPoint& p1, const fPoint& p2, SDL_Color c){
+    LineRenderData rd;
+    rd.p1.x = p1.x; rd.p1.y = p1.y;
+    rd.p2.x = p2.x; rd.p2.y = p2.y;
+    rd.col.r = c.r; rd.col.g = c.g; rd.col.b = c.b;
+    this->linesRenderData.push_back(rd);
+}
+
+void Renderer::_updateLinesVBO(){
+    if (linesRenderData.size() == 0){return;}
+
+    //Update the count of how many tiles to render
+    this->linesToRender = linesRenderData.size();
+    float* rawData = new float[2*5*linesToRender];
+    int index = 0;
+    for (auto &rd : linesRenderData) {
+        rawData[index] = rd.p1.x; index++;
+        rawData[index] = rd.p1.y; index++;
+        rawData[index] = rd.col.r/255.0f; index++;
+        rawData[index] = rd.col.g/255.0f; index++;
+        rawData[index] = rd.col.b/255.0f; index++;
+
+        rawData[index] = rd.p2.x; index++;
+        rawData[index] = rd.p2.y; index++;
+        rawData[index] = rd.col.r/255.0f; index++;
+        rawData[index] = rd.col.g/255.0f; index++;
+        rawData[index] = rd.col.b/255.0f; index++;
+    }
+
+
+    //Bind the buffer and update it's data by creating a new one and make the old one an orphan
+    glBindBuffer(GL_ARRAY_BUFFER, this->linesVBO);
+    glBufferData(GL_ARRAY_BUFFER, (sizeof(float) * 5) * 2 * this->linesToRender, &rawData[0], GL_DYNAMIC_DRAW);
+
+    //Clear the temp data and unbind the buffer
+    delete[] rawData;
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //Clean the linesRenderData for the next frame
+    linesRenderData.clear();
 }
 
 
@@ -292,6 +352,16 @@ void Renderer::renderScene(Scene* s){
     glBindVertexArray(this->spriteVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6 * this->spritesToRender);
     glBindVertexArray(0);
+
+    //Lines draw call
+    this->_updateLinesVBO();
+    basicShader.use();
+    basicShader.setMat4("uCameraMatrix", s->getCamera().getCameraMatrix());
+    glBindVertexArray(this->linesVAO);
+    glDrawArrays(GL_LINES, 0, 2 * this->linesToRender);
+    glBindVertexArray(0);
+
+
 
 
     ////Noise Generator debug

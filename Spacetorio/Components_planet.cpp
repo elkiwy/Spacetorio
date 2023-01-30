@@ -91,10 +91,8 @@ SceneBiome* PlanetBiomeComponent::getBiomeScene(){
         iSize sz = iSize(this->chunkData_lowRes_sizeW, this->chunkData_lowRes_sizeH);
         biomeScene = new SceneBiome();
         biomeScene->init(surface_flat);
-        biomeScene->spawnPlayerAt(fPoint(sz.w*TILE_SIZE*0.5f,sz.h*TILE_SIZE*0.25f));
-    std::cout << "pizzo" << std::endl;
+        biomeScene->spawnPlayerAt(fPoint(sz.w*TILE_SIZE*0.5f,sz.h*TILE_SIZE*0.75f));
     }
-    std::cout << "cippoppa" << std::endl;
     return biomeScene;
 }
 

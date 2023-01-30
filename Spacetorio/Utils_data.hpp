@@ -33,6 +33,12 @@ struct SpriteRenderData{
     glm::vec2 size = {0.0f, 0.0f};
 };
 
+struct LineRenderData{
+    glm::vec2 p1 = {0.0f,0.0f};
+    glm::vec2 p2 = {0.0f,0.0f};
+    glm::vec3 col = {0.0f,0.0f,0.0f};
+};
+
 
 
 #endif // UTILS_DATA_H_

@@ -99,6 +99,7 @@ SceneBiome::~SceneBiome(){
 }
 
 void SceneBiome::spawnPlayerAt(fPoint pos){
+    std::cout << "Spawning player at " << pos << std::endl;
     PlayerEntity player = PlayerEntity(this, pos);
 }
 
