@@ -18,8 +18,8 @@ PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
     posComp.automaticUpdates = false;
 
     //Attach renderable rectangle
-    auto& renderableRect = addComponent<RenderableRectComponent>(TILE_SIZE, TILE_SIZE*2);
-    renderableRect.c = {255,0,0,255};
+    auto& renderableRect = addComponent<RenderableSpriteComponent>(1, fSize(24.0f, 32.0f));
+    //renderableRect.c = {255,0,0,255};
 
     //Lock camera
     //s->getCamera().setTarget(&posComp);

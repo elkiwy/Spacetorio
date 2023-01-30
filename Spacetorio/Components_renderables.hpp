@@ -73,5 +73,25 @@ struct RenderableTileComponent{
     }
 };
 
+//Sprite Renderer
+struct RenderableSpriteComponent{
+    SpriteRenderData renderData;
+
+    RenderableSpriteComponent() = default;
+    RenderableSpriteComponent(const RenderableSpriteComponent&) = default;
+    RenderableSpriteComponent(int sprInd, fSize spriteSize) {
+        renderData.spriteIndex = sprInd;
+        renderData.size.x = spriteSize.w;
+        renderData.size.y = spriteSize.h;
+    }
+
+    const SpriteRenderData& getRenderInfo(const PositionComponent& posComp){
+        renderData.pos.x = posComp.pos.x;
+        renderData.pos.y = posComp.pos.y;
+        return renderData;
+    }
+};
+
+
 
 #endif // COMPONENTS_RENDERABLES_H_

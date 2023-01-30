@@ -35,8 +35,11 @@ class Renderer {
         void renderGUI(Scene* s);
         void renderFrameEnd();
 
-        void setupAbstractTileVAO();
+        //OpenGL Data Management
+        void setupTilesVAO();
+        void setupSpritesVAO();
         void updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData);
+        void updateRenderableSpritesVBO(std::vector<SpriteRenderData>& spritesData);
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
@@ -64,11 +67,19 @@ class Renderer {
 
         SDL_GLContext glContext = nullptr;
 
+        //Tile rendering
         Shader tileShader;
         unsigned int abstractTileVBO = 0;
         unsigned int abstractTileVAO = 0;
         unsigned int renderableTilesVBO = 0;
         int tilesToRender = 0;
+
+        //Sprite rendering
+        Shader spriteShader;
+        unsigned int spriteVBO = 0;
+        unsigned int spriteVAO = 0;
+        int spritesToRender = 0;
+
 
         glm::mat4 transformMatrix = glm::mat4(1.0f);
 };

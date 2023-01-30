@@ -123,7 +123,6 @@ void SceneBiome::init(SDL_Surface* terrainMap){
 
     //Load all the entities from the terrainMap
     Uint8* terrainMapData = (Uint8*)terrainMap->pixels;
-    int totTiles = 0;
     for(int j=0; j<mapH; ++j){
         for(int i=0; i<mapW; ++i){
             int chunkX = i/CHUNK_SIZE;
@@ -142,11 +141,9 @@ void SceneBiome::init(SDL_Surface* terrainMap){
                 e.addComponent<ColliderRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
 
                 ck.addEntity(e);
-                totTiles++;
             }
         }
     }
-    std::cout << "tot tiles: " << totTiles << std::endl;
 
     //Move the camera to the center of the scene
     this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
@@ -161,8 +158,6 @@ void SceneBiome::render(){
     getChunksInCamera(cam, this->chunks, &minChunkX, &minChunkY, &maxChunkX, &maxChunkY);
     std::string currentChunkHash = std::to_string(minChunkX) + "_" + std::to_string(minChunkY) + "_" + std::to_string(maxChunkX) + "_" + std::to_string(maxChunkY);
     if (currentChunkHash != this->chunkHash){
-        std::cout << "Current chunk hash" << currentChunkHash << std::endl;
-
         //Prepare the vector to hold all the chunk data
         std::vector<TileRenderData> tilesData;
 
@@ -189,6 +184,7 @@ void SceneBiome::render(){
     }
 
 
+    /*/
     //Render the other dynamic objects (don't care about chunking since are few)
     auto dynamicEnts = reg.view<DynamicPositionComponent, RenderableComponent>();
     for(auto e: dynamicEnts){
@@ -200,6 +196,19 @@ void SceneBiome::render(){
         }
     }
 
+    /*/
+
+    std::vector<SpriteRenderData> spritesData;
+    auto dynamicEnts = reg.view<DynamicPositionComponent, RenderableSpriteComponent>();
+    for(auto e: dynamicEnts){
+        auto& pos = dynamicEnts.get<DynamicPositionComponent>(e);
+        auto& renderableSprite = dynamicEnts.get<RenderableSpriteComponent>(e);
+        const SpriteRenderData& sp = renderableSprite.getRenderInfo(pos);
+        spritesData.emplace_back(sp);
+    }
+    global_renderer->updateRenderableSpritesVBO(spritesData);
+
+    /**/
 
     renderCameraCrosshair();
 }
