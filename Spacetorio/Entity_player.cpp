@@ -2,8 +2,11 @@
 #include "SceneBiome.hpp"
 #include "Components.hpp"
 #include "Components_colliders.hpp"
-#include "Components_position.hpp"
-#include "Utils_data.hpp"
+
+
+/*
+** Player Entity
+*/
 
 PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
     this->scene = static_cast<Scene*>(s);
@@ -19,17 +22,18 @@ PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
 
     //Attach renderable rectangle
     auto& renderableRect = addComponent<RenderableSpriteComponent>(1, fSize(24.0f, 32.0f));
-    //renderableRect.c = {255,0,0,255};
 
     //Lock camera
     //s->getCamera().setTarget(&posComp);
 }
 
-PlayerComponent::~PlayerComponent(){
-
-}
 
 
+
+
+/*
+** Player Component
+*/
 
 PlayerComponent::PlayerComponent(SceneBiome* s, entt::entity e){
     this->scene = s;

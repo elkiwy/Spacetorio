@@ -45,6 +45,15 @@
 - [ ] Otimize biomes data by cropping the texture_space image
 
 
+
+** Code Organization improvements
+- Rework collider components to have only one component with different shapes
+
+
+
+
+
+
 * OpenGL Stuff
 
 ** Instancing to batch together tiles in a single draw call

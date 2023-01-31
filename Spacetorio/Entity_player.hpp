@@ -32,7 +32,7 @@ struct PlayerComponent : public UpdatableComponent{
     PlayerComponent() = default;
     PlayerComponent(const PlayerComponent&) = default;
     PlayerComponent(SceneBiome* s, entt::entity e);
-    ~PlayerComponent();
+    ~PlayerComponent(){};
 
     void updateColliders(fPoint wPos);
 

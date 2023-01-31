@@ -20,4 +20,7 @@
 -ISpacetorio/vendor/glm
 -ISpacetorio\vendor\glm
 
+-ISpacetorio/vendor/stb
+-ISpacetorio\vendor\stb
+
 -std=c++20

@@ -9,6 +9,7 @@
 #include "Components_colliders.hpp"
 
 #include "Entity_player.hpp"
+#include "Entity_tile.hpp"
 
 
 /*
@@ -90,14 +91,6 @@ void ChunkBiome::addEntity(Entity e){
 ** SceneBiome
 */
 
-SceneBiome::SceneBiome(){
-
-}
-
-SceneBiome::~SceneBiome(){
-
-}
-
 void SceneBiome::spawnPlayerAt(fPoint pos){
     std::cout << "Spawning player at " << pos << std::endl;
     PlayerEntity player = PlayerEntity(this, pos);
@@ -129,19 +122,14 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             int chunkX = i/CHUNK_SIZE;
             int chunkY = j/CHUNK_SIZE;
             Uint8 tileVal = terrainMapData[(i+(mapW*((mapH-1) - j)))*4+0];
-            //if (tileVal > 200 || true){
             if (tileVal > 250){
                 //Create the entity
-                Entity e = {this->newEntity(), this};
-                ChunkBiome& ck = chunks[chunkY][chunkX];
                 float posx = i*TILE_SIZE+TILE_SIZE/2.0f;
-                //float posy = ((mapH-1) - j)*TILE_SIZE+TILE_SIZE/2.0f;
                 float posy = j*TILE_SIZE+TILE_SIZE/2.0f;
-                auto& posComp = e.addComponent<StaticPositionComponent>(posx, posy);
-                e.addComponent<RenderableTileComponent>(1);
-                e.addComponent<ColliderRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
+                TileEntity e = TileEntity(this, fPoint(posx, posy));
 
-                ck.addEntity(e);
+                //Add the entity to its chunk
+                chunks[chunkY][chunkX].addEntity(e);
             }
         }
     }
@@ -151,6 +139,17 @@ void SceneBiome::init(SDL_Surface* terrainMap){
 }
 
 void SceneBiome::render(){
+
+    this->_renderChunkedTiles();
+
+    this->_renderOtherSprites();
+
+    //Add camera crosshair on top of everything
+    renderCameraCrosshair();
+}
+
+
+void SceneBiome::_renderChunkedTiles(){
     auto& cam = getCamera();
     auto& reg = getRegistry();
 
@@ -183,22 +182,12 @@ void SceneBiome::render(){
         //Update the chunk hash
         this->chunkHash = currentChunkHash;
     }
+}
 
+void SceneBiome::_renderOtherSprites(){
+    auto& reg = getRegistry();
 
-    /*/
     //Render the other dynamic objects (don't care about chunking since are few)
-    auto dynamicEnts = reg.view<DynamicPositionComponent, RenderableComponent>();
-    for(auto e: dynamicEnts){
-        auto& pos = dynamicEnts.get<DynamicPositionComponent>(e);
-        auto& renderable = dynamicEnts.get<RenderableComponent>(e);
-        for(auto impl: renderable.impls){
-            if (impl == nullptr){break;}
-            static_cast<RenderableComponent*>(impl)->render(pos, cam);
-        }
-    }
-
-    /*/
-
     std::vector<SpriteRenderData> spritesData;
     auto dynamicEnts = reg.view<DynamicPositionComponent, RenderableSpriteComponent>();
     for(auto e: dynamicEnts){
@@ -208,10 +197,6 @@ void SceneBiome::render(){
         spritesData.emplace_back(sp);
     }
     global_renderer->updateRenderableSpritesVBO(spritesData);
-
-    /**/
-
-    renderCameraCrosshair();
 }
 
 void SceneBiome::renderGUI(){
@@ -248,8 +233,6 @@ ChunkBiome& SceneBiome::getChunk(float worldX, float worldY){
     int chunkY = tileY / CHUNK_SIZE;
     return chunks[chunkY][chunkX];
 }
-
-
 
 TileBiome& SceneBiome::getTileAtWorldPos(float worldX, float worldY, iVec offset){
     int tileX = (((int)worldX) / TILE_SIZE) + offset.x;

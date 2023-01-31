@@ -51,8 +51,8 @@ struct ChunkBiome{
 
 class SceneBiome : public Scene {
     public:
-        SceneBiome();
-        virtual ~SceneBiome();
+        SceneBiome() {};
+        virtual ~SceneBiome() {};
 
         void init(SDL_Surface* terrain);
         void render() override;
@@ -71,6 +71,10 @@ class SceneBiome : public Scene {
     private:
         std::vector<std::vector<ChunkBiome>> chunks;
         std::string chunkHash = "";
+
+    private:
+        void _renderChunkedTiles();
+        void _renderOtherSprites();
 };
 
 #endif // SCENEBIOME_H_

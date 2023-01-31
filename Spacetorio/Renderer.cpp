@@ -23,6 +23,10 @@
 //GLM stuff
 #include <glm/ext/matrix_transform.hpp>
 
+//STB stuff
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 //ImGui stuff
 #include "imgui.h"
 #include "backends/imgui_impl_sdl.h"
@@ -84,6 +88,18 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->tileShader = Shader((ASSETS_PREFIX+"shaders/tiles.vert").c_str(), (ASSETS_PREFIX+"shaders/tiles.frag").c_str());
     this->tileShader.use();
     this->tileShader.setMat4("uTransformMatrix", this->transformMatrix);
+    this->tilesTextureId = this->_loadTexture((ASSETS_PREFIX+"res/dirt.png").c_str());
+    //this->tilesTextureId = this->_loadTexture((ASSETS_PREFIX+"res/cane.png").c_str());
+    //this->tilesTextureId2 = this->_loadTexture((ASSETS_PREFIX+"res/cane.png").c_str());
+
+
+
+    auto loc = glGetUniformLocation(this->tileShader.ID, "uTexture");
+    int samplers[1] = {0};
+    glUniform1iv(loc, 1, samplers);
+    //this->tileShader.setTexture("uTexture", this->tilesTextureId);
+
+
     this->setupTilesVAO();
 
     //Initialize Tile Shaders, VAO, and VBO
@@ -91,8 +107,6 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->spriteShader.use();
     this->spriteShader.setMat4("uTransformMatrix", this->transformMatrix);
     this->setupSpritesVAO();
-
-
 
     //Initialize Fonts (maybe deprecated)
     currentFont = TTF_OpenFont((ASSETS_PREFIX+"res/fonts/DejaVuSansMono.ttf").c_str(), 16);
@@ -134,15 +148,31 @@ void Renderer::setupTilesVAO(){
 
     //Setup data
     float s = TILE_SIZE / 2.0f;
-    float abstractTileData[] = {
-        //Positions     //colors
-        -s,  s,   1.0f, 0.0f, 0.0f,
-         s, -s,   0.0f, 1.0f, 0.0f,
-        -s, -s,   0.0f, 0.0f, 1.0f,
+    float spriteSizePixels = 8.0f;
+    float spriteSizePixelsWithGap = 8.0f;
+    float sheetSize = 7.0f*spriteSizePixels;
+    float ssf = spriteSizePixels / sheetSize; //SpriteSizeFloat
+    float ssfwg = spriteSizePixelsWithGap / sheetSize; //SpriteSizeFloat
 
-        -s,  s,   1.0f, 0.0f, 0.0f,
-         s, -s,   0.0f, 1.0f, 0.0f,
-         s,  s,   0.0f, 1.0f, 1.0f
+    fVec offset = {5*ssfwg,0*ssfwg};
+
+    float abstractTileData[] = {
+        //Positions    //TexCoord
+        -s,  s,          offset.x,     offset.y,
+         s, -s,      ssf+offset.x, ssf+offset.y,
+        -s, -s,          offset.x, ssf+offset.y,
+        -s,  s,          offset.x,     offset.y,
+         s, -s,      ssf+offset.x, ssf+offset.y,
+         s,  s,      ssf+offset.x,     offset.y,
+
+        ////Positions    //TexCoord
+        //-s,  s,        0.0f, 0.0f,
+        // s, -s,        0.1f, 0.1f,
+        //-s, -s,        0.0f, 0.1f,
+
+        //-s,  s,        0.0f, 0.0f,
+        // s, -s,        0.1f, 0.1f,
+        // s,  s,        0.1f, 0.0f,
     };
 
     //Create and bind the VAO and VBO for instanced abstract tiles data
@@ -157,12 +187,12 @@ void Renderer::setupTilesVAO(){
     //Enable 0th input as 2 floats
     glBindBuffer(GL_ARRAY_BUFFER, this->abstractTileVBO);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 
-    //Enable 1st input as 3 floats
+    //Enable 1st input as 2 floats
     glBindBuffer(GL_ARRAY_BUFFER, this->abstractTileVBO);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2*sizeof(float)));
 
     //Create, bind, and set the buffer for individual tile data (updated later when necessary)
     const int defaultSize = 1;
@@ -276,7 +306,6 @@ void Renderer::updateRenderableSpritesVBO(std::vector<SpriteRenderData>& sprites
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-
 void Renderer::addLineToRender(const fPoint& p1, const fPoint& p2, SDL_Color c){
     LineRenderData rd;
     rd.p1.x = p1.x; rd.p1.y = p1.y;
@@ -284,6 +313,22 @@ void Renderer::addLineToRender(const fPoint& p1, const fPoint& p2, SDL_Color c){
     rd.col.r = c.r; rd.col.g = c.g; rd.col.b = c.b;
     this->linesRenderData.push_back(rd);
 }
+
+void Renderer::addRectToRenderP1P2(const fPoint& p1, const fPoint& p2, SDL_Color c){
+    this->addLineToRender({p1.x, p1.y}, {p2.x, p1.y}, c);
+    this->addLineToRender({p2.x, p1.y}, {p2.x, p2.y}, c);
+    this->addLineToRender({p2.x, p2.y}, {p1.x, p2.y}, c);
+    this->addLineToRender({p1.x, p2.y}, {p1.x, p1.y}, c);
+}
+
+void Renderer::addRectToRenderCentered(const fPoint& center, const fSize& size, SDL_Color c){
+    float w2 = size.w/2.0f;float h2 = size.h/2.0f;
+    this->addLineToRender({center.x-w2, center.y-h2}, {center.x+w2, center.y-h2}, c);
+    this->addLineToRender({center.x+w2, center.y-h2}, {center.x+w2, center.y+h2}, c);
+    this->addLineToRender({center.x+w2, center.y+h2}, {center.x-w2, center.y+h2}, c);
+    this->addLineToRender({center.x-w2, center.y+h2}, {center.x-w2, center.y-h2}, c);
+}
+
 
 void Renderer::_updateLinesVBO(){
     if (linesRenderData.size() == 0){return;}
@@ -321,6 +366,32 @@ void Renderer::_updateLinesVBO(){
 
 
 
+
+
+glm::uint Renderer::_loadTexture(const std::string& path){
+    std::cout << "Loading texture from file " << path << std::endl;
+    int w, h, bits;
+    //stbi_set_flip_vertically_on_load(1);
+    auto* pixels = stbi_load(path.c_str(), &w, &h, &bits, STBI_rgb_alpha);
+    glm::uint textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    stbi_image_free(pixels);
+    std::cout << "Loaded at id " << textureId << std::endl;
+    return textureId;
+}
+
+
+
 /*
 ** Render Events
 */
@@ -341,6 +412,11 @@ void Renderer::renderScene(Scene* s){
 
     //Tiles draw call
     tileShader.use();
+
+    glActiveTexture(GL_TEXTURE0);
+    //glBindTextureUnit(0, this->tilesTextureId);
+    glBindTexture(GL_TEXTURE_2D, this->tilesTextureId);
+
     tileShader.setMat4("uCameraMatrix", s->getCamera().getCameraMatrix());
     glBindVertexArray(this->abstractTileVAO);
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, this->tilesToRender);

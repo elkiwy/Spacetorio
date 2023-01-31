@@ -43,7 +43,12 @@ class Renderer {
         void updateRenderableSpritesVBO(std::vector<SpriteRenderData>& spritesData);
 
         void addLineToRender(const fPoint& p1, const fPoint& p2, SDL_Color c = {255,0,128,0});
+        void addRectToRenderP1P2(const fPoint& p1, const fPoint& p2, SDL_Color c = {255,0,128,0});
+        void addRectToRenderCentered(const fPoint& center, const fSize& size, SDL_Color c = {255,0,128,0});
         void _updateLinesVBO();
+
+
+        glm::uint _loadTexture(const std::string& path);
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
@@ -73,22 +78,24 @@ class Renderer {
 
         //Tile rendering
         Shader tileShader;
-        unsigned int abstractTileVBO = 0;
-        unsigned int abstractTileVAO = 0;
-        unsigned int renderableTilesVBO = 0;
+        glm::uint abstractTileVBO = 0;
+        glm::uint abstractTileVAO = 0;
+        glm::uint renderableTilesVBO = 0;
         int tilesToRender = 0;
+        glm::uint tilesTextureId = 0;
+        glm::uint tilesTextureId2 = 0;
 
         //Sprite rendering
         Shader spriteShader;
-        unsigned int spriteVBO = 0;
-        unsigned int spriteVAO = 0;
+        glm::uint spriteVBO = 0;
+        glm::uint spriteVAO = 0;
         int spritesToRender = 0;
 
 
         //Lines rendering
         Shader basicShader;
-        unsigned int linesVBO = 0;
-        unsigned int linesVAO = 0;
+        glm::uint linesVBO = 0;
+        glm::uint linesVAO = 0;
         std::vector<LineRenderData> linesRenderData;
         int linesToRender = 0;
 

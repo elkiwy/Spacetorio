@@ -50,6 +50,7 @@ set(ENTT_INCLUDE_DIRS "vendor/entt/include")
 set(IMGUI_INCLUDE_DIRS "vendor/imgui")
 set(RES_FOLDER "res")
 set(SHADER_FOLDER "shaders")
+set(STB_INCLUDE_DIRS "vendor/stb")
 
 # Add the include directories for SDL2
 include_directories(${SDL2_INCLUDE_DIRS})
@@ -58,6 +59,7 @@ include_directories(${OPENGL_GLEW_INCLUDE_DIR})
 
 include_directories(${IMGUI_INCLUDE_DIRS})
 include_directories(${GLM_INCLUDE_DIRS})
+include_directories(${STB_INCLUDE_DIRS})
 include_directories(${SIVPERLIN_INCLUDE_DIRS})
 include_directories(${ENTT_INCLUDE_DIRS})
 
