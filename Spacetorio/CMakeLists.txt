@@ -76,9 +76,10 @@ target_link_libraries(Spacetorio PRIVATE ${SDL2_TTF_LIBRARIES})
 target_link_libraries(Spacetorio PRIVATE ${OPENGL_GLEW_LIBRARIES})
 
 
-target_link_libraries(Spacetorio PRIVATE opengl32)
 
 if (WIN32)
+  target_link_libraries(Spacetorio PRIVATE opengl32)
+
   # Copy DLL for SDL2
   add_custom_target(CopySDL2 ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")
   add_dependencies(Spacetorio CopySDL2)
