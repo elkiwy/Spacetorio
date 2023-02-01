@@ -147,8 +147,8 @@ class Shader {
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void setTexture(const std::string &name, glm::uint textureId) const {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), textureId);
+    void setTextures(const std::string &name, int size, int* textureIds) const {
+        glUniform1iv(glGetUniformLocation(ID, name.c_str()), size, textureIds);
     }
 
   private:

@@ -89,17 +89,9 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->tileShader.use();
     this->tileShader.setMat4("uTransformMatrix", this->transformMatrix);
     this->tilesTextureId = this->_loadTexture((ASSETS_PREFIX+"res/dirt.png").c_str());
-    //this->tilesTextureId = this->_loadTexture((ASSETS_PREFIX+"res/cane.png").c_str());
-    //this->tilesTextureId2 = this->_loadTexture((ASSETS_PREFIX+"res/cane.png").c_str());
-
-
-
-    auto loc = glGetUniformLocation(this->tileShader.ID, "uTexture");
-    int samplers[1] = {0};
-    glUniform1iv(loc, 1, samplers);
-    //this->tileShader.setTexture("uTexture", this->tilesTextureId);
-
-
+    const int samplersCount = 1;
+    int samplers[samplersCount] = {0};
+    this->tileShader.setTextures("uTextures", samplersCount, samplers);
     this->setupTilesVAO();
 
     //Initialize Tile Shaders, VAO, and VBO
