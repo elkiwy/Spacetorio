@@ -1,4 +1,5 @@
 #include "SceneBiome.hpp"
+#include "Camera.hpp"
 #include "Entity.hpp"
 #include "SDL_stdinc.h"
 #include <string>
@@ -126,7 +127,7 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             Uint8 tileVal = terrainMapData[(i+(mapW*((mapH-1) - j)))*4+0];
 
 
-            bool randomTest = randInt(0,100) < 50;
+            bool randomTest = randInt(0,100) < 60;
 
 
             if (tileVal > 250 || randomTest){
@@ -162,6 +163,16 @@ void SceneBiome::render(){
 
     //Add camera crosshair on top of everything
     renderCameraCrosshair();
+
+
+
+    iPoint mousePos = {0,0};
+    SDL_GetMouseState(&mousePos.x, &mousePos.y);
+    fPoint worldMouse = getCamera().screenToWorld(fPoint(mousePos.x, mousePos.y));
+    global_renderer->addRectToRenderCentered(worldMouse, {TILE_SIZE*0.75, TILE_SIZE*0.75}, {0,255,0,255});
+
+    iPoint tileMouse = {(int)floor(worldMouse.x/TILE_SIZE), (int)floor(worldMouse.y/TILE_SIZE)};
+    global_renderer->addRectToRenderCentered(fPoint(tileMouse.x*TILE_SIZE+TILE_SIZE*0.5f, tileMouse.y*TILE_SIZE+TILE_SIZE*0.5f), {TILE_SIZE*0.5, TILE_SIZE*0.5}, {0,200,255,255});
 }
 
 void SceneBiome::_renderChunkedTiles(){
