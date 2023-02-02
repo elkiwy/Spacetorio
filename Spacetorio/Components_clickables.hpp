@@ -16,6 +16,7 @@ struct ClickableComponent : public GenericComponent{
 
     bool active = true;
     std::function<void()> onclick = nullptr;
+    std::function<void()> onleftmousedown = nullptr;
     bool hovered = false;
 
     SDL_Color debug_color_normal = {128,64,0,255};
@@ -35,6 +36,11 @@ struct ClickableComponent : public GenericComponent{
     void click(){
         if (onclick == nullptr){std::cout << "WARNING: Called click() on a nullptr!" << std::endl;
         }else{this->onclick();}
+    }
+
+    void leftMouseDown(){
+        if (onleftmousedown == nullptr){std::cout << "WARNING: Called onleftmousedown() on a nullptr!" << std::endl;
+        }else{this->onleftmousedown();}
     }
 
 };

@@ -102,7 +102,9 @@ int main(int argc, char* args[]) {
 
             //Update logic
             const Uint8* keyState = SDL_GetKeyboardState(NULL);
-            gc.update(keyState);
+            int mouseX, mouseY;
+            const Uint32 mouseState = SDL_GetMouseState(&mouseX, &mouseY);
+            gc.update(keyState, mouseState, iPoint(mouseX, mouseY));
 
             //Render updates on screen
             gc.renderBegin();

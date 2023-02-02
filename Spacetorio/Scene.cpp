@@ -145,8 +145,7 @@ void Scene::renderGUI(){
     cam.renderGUI();
 }
 
-
-void Scene::update(const Uint8* ks){
+void Scene::update(const Uint8* ks, const Uint32 mouseState, const iPoint& mousePos){
     //Process inputs
     if (ks[SDL_SCANCODE_RIGHT] || ks[SDL_SCANCODE_LEFT] || ks[SDL_SCANCODE_DOWN] || ks[SDL_SCANCODE_UP]) {
         float camSpeedInc = 2.0f;
@@ -195,8 +194,6 @@ void Scene::update(const Uint8* ks){
     }
 
     //Check for hovered clickables
-    iPoint mousePos = {0,0};
-    SDL_GetMouseState(&mousePos.x, &mousePos.y);
     fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
     ShapePoint worldMousePt = ShapePoint(worldMouse);
     auto viewClickables = registry.view<ClickableComponent>();
@@ -206,7 +203,10 @@ void Scene::update(const Uint8* ks){
         for(auto impl: clickable.impls){
             if (impl == nullptr){break;}
             ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
-            implCasted->checkHovered(worldMousePt);
+            bool hovered = implCasted->checkHovered(worldMousePt);
+            if (hovered && (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))){
+                implCasted->leftMouseDown();
+            }
         }
     }
 
@@ -218,14 +218,13 @@ void Scene::update(const Uint8* ks){
         Entity e = {entity, this};
         for(auto impl: updatable.impls){
             if (impl == nullptr){break;}
-    //        static_cast<UpdatableComponent*>(impl)->update(e, ks);
+            //static_cast<UpdatableComponent*>(impl)->update(e, ks);
         }
     }
 
     //Update camera
     cam.update(ks);
 }
-
 
 void Scene::onMouseWheel(float dy){
     const float zoomFactor = 0.1f;
@@ -234,7 +233,6 @@ void Scene::onMouseWheel(float dy){
     cam.zoomBy(dy*zoomFactor, {(float)mousePos.x, (float)mousePos.y});
     //cam.testZoom(dy*zoomFactor);
 }
-
 
 void Scene::onMouseLeftClick(){
     //Check for hovered clickables
@@ -254,7 +252,6 @@ void Scene::onMouseLeftClick(){
         }
     }
 }
-
 
 void Scene::onKeyPressed(SDL_Keycode key){
     //Update all the updatable entities

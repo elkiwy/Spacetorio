@@ -17,8 +17,8 @@ void GameController::init(){
     universe.init();
 }
 
-void GameController::update(const Uint8* keyState){
-    universe.update(keyState);
+void GameController::update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos){
+    universe.update(keyState, mouseState, mousePos);
 }
 
 void GameController::renderBegin(){

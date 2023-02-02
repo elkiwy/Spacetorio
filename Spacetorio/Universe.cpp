@@ -133,8 +133,8 @@ void Universe::init(){
 
 
 
-void Universe::update(const Uint8 *keyState) {
-    activeScene->update(keyState);
+void Universe::update(const Uint8 *keyState, const Uint32 mouseState, const iPoint& mousePos) {
+    activeScene->update(keyState, mouseState, mousePos);
 }
 
 

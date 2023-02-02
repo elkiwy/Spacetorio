@@ -68,7 +68,7 @@ class Scene {
         virtual void renderGUI();
         void renderCameraCrosshair();
 
-        void update(const Uint8* keyState);
+        void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos);
         void onMouseWheel(float dy);
         void onMouseLeftClick();
         void onKeyPressed(SDL_Keycode key);

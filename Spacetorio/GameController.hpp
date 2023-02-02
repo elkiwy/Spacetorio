@@ -16,7 +16,7 @@ class GameController {
 
         //Game events
         void init();
-        void update(const Uint8* keyState);
+        void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos);
         void renderBegin();
         void render();
         void renderGUI();

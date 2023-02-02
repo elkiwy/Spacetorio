@@ -8,6 +8,7 @@
 
 #include "Utils_time.hpp"
 #include "Components_colliders.hpp"
+#include "Components_clickables.hpp"
 
 #include "Entity_player.hpp"
 #include "Entity_tile.hpp"
@@ -159,15 +160,12 @@ void SceneBiome::render(){
     //Add camera crosshair on top of everything
     renderCameraCrosshair();
 
-
-
     iPoint mousePos = {0,0};
     SDL_GetMouseState(&mousePos.x, &mousePos.y);
     fPoint worldMouse = getCamera().screenToWorld(fPoint(mousePos.x, mousePos.y));
-    global_renderer->addRectToRenderCentered(worldMouse, {TILE_SIZE*0.75, TILE_SIZE*0.75}, {0,255,0,255});
-
+    global_renderer->addRectToRenderCentered(worldMouse, {TILE_SIZE*0.25, TILE_SIZE*0.25}, {0,255,0,255});
     iPoint tileMouse = {(int)floor(worldMouse.x/TILE_SIZE), (int)floor(worldMouse.y/TILE_SIZE)};
-    global_renderer->addRectToRenderCentered(fPoint(tileMouse.x*TILE_SIZE+TILE_SIZE*0.5f, tileMouse.y*TILE_SIZE+TILE_SIZE*0.5f), {TILE_SIZE*0.5, TILE_SIZE*0.5}, {0,200,255,255});
+    global_renderer->addRectToRenderCentered(fPoint(tileMouse.x*TILE_SIZE+TILE_SIZE*0.5f, tileMouse.y*TILE_SIZE+TILE_SIZE*0.5f), {TILE_SIZE*1.05f, TILE_SIZE*1.05f}, {0,200,255,255});
 }
 
 void SceneBiome::_renderChunkedTiles(){
@@ -196,6 +194,21 @@ void SceneBiome::_renderChunkedTiles(){
                 }
             }
         }
+
+        ////Draw the clickable areas
+        //auto clickablesView = reg.view<StaticPositionComponent, ClickableRectangleComponent>();
+        //for(int j=minChunkY;j<=maxChunkY;++j){
+        //    for(int i=minChunkX;i<=maxChunkX;++i){
+        //        auto& chunk = chunks[j][i];
+        //        auto chunkView = (entt::basic_view{chunks[j][i].entities} | clickablesView);
+        //        for(auto e: chunkView){
+        //            //Render Clickable area
+        //            auto& pos = chunkView.get<StaticPositionComponent>(e);
+        //            auto& renderableClickable = chunkView.get<ClickableRectangleComponent>(e);
+        //            renderableClickable.render(pos, cam);
+        //        }
+        //    }
+        //}
 
         //Send the tilesData to the renderer that will update the VBO on the gpu
         global_renderer->updateRenderableTilesVBO(tilesData);
@@ -275,20 +288,6 @@ TileBiome& SceneBiome::getTileAtTilePos(int tX, int tY){
     int tileInChunkY = tY % CHUNK_SIZE;
     return chunks[chunkY][chunkX].tiles[tileInChunkY][tileInChunkX];
 }
-
-
-/*
-    Ref: http://www.cr31.co.uk/stagecast/wang/blob.html
-
- +------+------+------+
- | 128  |  1   |  2   |
- +------+------+------+
- |  64  |      |  4   |
- +------+------+------+
- |  32  |  16  |  8   |
- +------+------+------+
-
-*/
 
 int SceneBiome::getTileSurroundingValue(int tx, int ty){
     int v = 0;

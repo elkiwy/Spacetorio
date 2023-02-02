@@ -62,7 +62,7 @@ class Universe {
         virtual ~Universe(){}
 
         void init();
-        void update(const Uint8* keyState);
+        void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos);
 
         Scene* getCurrentScene();
         void switchScene(Scene* s);

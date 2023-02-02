@@ -2,6 +2,7 @@
 
 #include "Components.hpp"
 #include "Components_colliders.hpp"
+#include "Components_clickables.hpp"
 #include "SceneBiome.hpp"
 #include <cmath>
 
@@ -17,6 +18,17 @@ TileEntity::TileEntity(SceneBiome* s, fPoint pos) {
     auto& posComp = addComponent<StaticPositionComponent>(pos);
     auto& renderableRect = addComponent<RenderableTileComponent>(1);
     auto& collider = addComponent<ColliderRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
+    auto& clickable = addComponent<ClickableRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
+
+    clickable.onclick = [](){
+        std::cout << "Ciaoooo" << std::endl;
+    };
+
+    entt::entity e = this->enttHandle;
+    clickable.onleftmousedown = [e](){
+        std::cout << "Click down! " << (int)e << std::endl;
+    };
+
 }
 
 
