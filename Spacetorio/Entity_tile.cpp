@@ -3,6 +3,7 @@
 #include "Components.hpp"
 #include "Components_colliders.hpp"
 #include "SceneBiome.hpp"
+#include <cmath>
 
 /*
 ** Tile Entity
@@ -30,5 +31,12 @@ TileComponent::TileComponent(SceneBiome* s, entt::entity e){
 }
 
 void TileComponent::updateSprite(){
-    //TODO
+    Entity e = {this->enttHandle, this->scene};
+    auto& renderableTile = e.getComponent<RenderableTileComponent>();
+    auto& pos = e.getComponent<StaticPositionComponent>();
+    int surroundingVal = this->scene->getTileSurroundingValue((int)floor(pos.pos.x/TILE_SIZE), (int)floor(pos.pos.y/TILE_SIZE));
+    float offx, offy;
+    getSpriteOffsetFromTileSurroundingValue(surroundingVal, &offx, &offy);
+    renderableTile.renderData.spriteOffset.x = offx;
+    renderableTile.renderData.spriteOffset.y = offy;
 }

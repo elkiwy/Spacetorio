@@ -142,30 +142,26 @@ void Renderer::setupTilesVAO(){
     //Setup data
     float s = TILE_SIZE / 2.0f;
     float spriteSizePixels = 8.0f;
-    float spriteSizePixelsWithGap = 8.0f;
     float sheetSize = 7.0f*spriteSizePixels;
     float ssf = spriteSizePixels / sheetSize; //SpriteSizeFloat
-    float ssfwg = spriteSizePixelsWithGap / sheetSize; //SpriteSizeFloat
-
-    fVec offset = {5*ssfwg,0*ssfwg};
 
     float abstractTileData[] = {
-        //Positions    //TexCoord
-        -s,  s,          offset.x,     offset.y,
-         s, -s,      ssf+offset.x, ssf+offset.y,
-        -s, -s,          offset.x, ssf+offset.y,
-        -s,  s,          offset.x,     offset.y,
-         s, -s,      ssf+offset.x, ssf+offset.y,
-         s,  s,      ssf+offset.x,     offset.y,
-
         ////Positions    //TexCoord
-        //-s,  s,        0.0f, 0.0f,
-        // s, -s,        0.1f, 0.1f,
-        //-s, -s,        0.0f, 0.1f,
+        //-s,  s,          offset.x,     offset.y,
+        // s, -s,      ssf+offset.x, ssf+offset.y,
+        //-s, -s,          offset.x, ssf+offset.y,
+        //-s,  s,          offset.x,     offset.y,
+        // s, -s,      ssf+offset.x, ssf+offset.y,
+        // s,  s,      ssf+offset.x,     offset.y,
 
-        //-s,  s,        0.0f, 0.0f,
-        // s, -s,        0.1f, 0.1f,
-        // s,  s,        0.1f, 0.0f,
+        //Positions   //TexCoord
+        -s,  s,       0.0f, 0.0f,
+         s, -s,        ssf,  ssf,
+        -s, -s,       0.0f,  ssf,
+        -s,  s,       0.0f, 0.0f,
+         s, -s,        ssf,  ssf,
+         s,  s,        ssf, 0.0f,
+
     };
 
     //Create and bind the VAO and VBO for instanced abstract tiles data
@@ -189,20 +185,26 @@ void Renderer::setupTilesVAO(){
 
     //Create, bind, and set the buffer for individual tile data (updated later when necessary)
     const int defaultSize = 1;
-    glm::vec2 rawData[defaultSize];
-    rawData[0].x = 0; rawData[0].y = 0;
+    float* rawData = new float[2*2*defaultSize];
+    rawData[0] = 0.0f; rawData[1] = 0.0f; rawData[2] = 0.0f; rawData[3] = 0.0f;
     glGenBuffers(1, &this->renderableTilesVBO);
     glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * defaultSize, &rawData[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (sizeof(float)*2*2) * defaultSize, &rawData[0], GL_DYNAMIC_DRAW);
 
     //Enabled 2nd input as 2 floats
     glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribDivisor(2, 1);
+
+    //Enabled 3rd input as 2 floats
+    glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2*sizeof(float)));
+    glVertexAttribDivisor(3, 1);
 
     //Unbind buffer and set instanced vertex attrib advancement rate
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribDivisor(2, 1);
 }
 
 void Renderer::setupSpritesVAO(){
@@ -252,17 +254,19 @@ void Renderer::updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData){
 
     //Update the count of how many tiles to render
     this->tilesToRender = tilesData.size();
-    glm::vec2* rawData = new glm::vec2[tilesToRender];
+    float* rawData = new float[2*2*this->tilesToRender];
+    float textureUnit = 8.0f/(7.0f*8.0f);
     int index = 0;
     for (auto &td : tilesData) {
-        glm::vec2 d = {td.pos.x, td.pos.y};
-        rawData[index] = d;
-        index++;
+        rawData[index] = td.pos.x; index++;
+        rawData[index] = td.pos.y; index++;
+        rawData[index] = td.spriteOffset.x * textureUnit; index++;
+        rawData[index] = td.spriteOffset.y * textureUnit; index++;
     }
 
     //Bind the buffer and update it's data by creating a new one and make the old one an orphan
     glBindBuffer(GL_ARRAY_BUFFER, this->renderableTilesVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * this->tilesToRender, &rawData[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (sizeof(float)*2*2) * this->tilesToRender, &rawData[0], GL_DYNAMIC_DRAW);
 
     //Clear the temp data and unbind the buffer
     delete[] rawData;
@@ -322,7 +326,6 @@ void Renderer::addRectToRenderCentered(const fPoint& center, const fSize& size, 
     this->addLineToRender({center.x-w2, center.y+h2}, {center.x-w2, center.y-h2}, c);
 }
 
-
 void Renderer::_updateLinesVBO(){
     if (linesRenderData.size() == 0){return;}
 
@@ -356,10 +359,6 @@ void Renderer::_updateLinesVBO(){
     //Clean the linesRenderData for the next frame
     linesRenderData.clear();
 }
-
-
-
-
 
 glm::uint Renderer::_loadTexture(const std::string& path){
     std::cout << "Loading texture from file " << path << std::endl;

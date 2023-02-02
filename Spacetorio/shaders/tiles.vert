@@ -5,6 +5,7 @@ layout (location = 1) in vec2 aTexCoord;
 
 //From renderable Tiles VBO
 layout (location = 2) in vec2 aOffset;
+layout (location = 3) in vec2 aTexOffset;
 
 
 uniform mat4 uTransformMatrix;
@@ -14,9 +15,7 @@ uniform mat4 uCameraMatrix;
 out vec2 fTexCoord;
 
 void main() {
-    //fColor = aColor;
-    fTexCoord = aTexCoord;
-    //gl_Position = vec4(aPos + aOffset, 0.0, 1.0);
-    //gl_Position = uTransformMatrix * vec4(aPos + aOffset, 0.0, 1.0);
+    fTexCoord = aTexCoord+aTexOffset;
+    //fTexCoord = aTexCoord;
     gl_Position = uTransformMatrix * uCameraMatrix * vec4(aPos + aOffset, 0.0, 1.0);
 }

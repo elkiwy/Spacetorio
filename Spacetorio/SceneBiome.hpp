@@ -63,6 +63,7 @@ class SceneBiome : public Scene {
 
         TileBiome& getTileAtWorldPos(float worldX, float worldY, iVec offset = {0,0});
         TileBiome& getTileAtTilePos(int tX, int tY);
+        int getTileSurroundingValue(int tx, int ty);
         ChunkBiome& getChunk(float worldX, float worldY);
 
         std::vector<TileBiome*> getTilesInRect(const ShapeRectangle& rect);
@@ -71,6 +72,9 @@ class SceneBiome : public Scene {
     private:
         std::vector<std::vector<ChunkBiome>> chunks;
         std::string chunkHash = "";
+
+        size_t numTilesX = 0;
+        size_t numTilesY = 0;
 
     private:
         void _renderChunkedTiles();

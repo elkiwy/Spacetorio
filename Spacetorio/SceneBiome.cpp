@@ -105,6 +105,8 @@ void SceneBiome::init(SDL_Surface* terrainMap){
     int mapH = terrainMap->h;
     int chunkCountW = mapW/CHUNK_SIZE;
     int chunkCountH = mapH/CHUNK_SIZE;
+    this->numTilesX = mapW;
+    this->numTilesY = mapH;
 
     //Instanciate all the empty chunks
     entt::registry& reg = getRegistry();
@@ -122,7 +124,12 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             int chunkX = i/CHUNK_SIZE;
             int chunkY = j/CHUNK_SIZE;
             Uint8 tileVal = terrainMapData[(i+(mapW*((mapH-1) - j)))*4+0];
-            if (tileVal > 250){
+
+
+            bool randomTest = randInt(0,100) < 50;
+
+
+            if (tileVal > 250 || randomTest){
                 //Create the entity
                 float posx = i*TILE_SIZE+TILE_SIZE/2.0f;
                 float posy = j*TILE_SIZE+TILE_SIZE/2.0f;
@@ -133,6 +140,15 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             }
         }
     }
+
+
+    //Update the tiles sprites
+    auto tilesView = reg.view<TileComponent>();
+    for(auto& tile : tilesView){
+        auto& tileComp = tilesView.get<TileComponent>(tile);
+        tileComp.updateSprite();
+    }
+
 
     //Move the camera to the center of the scene
     this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
@@ -147,7 +163,6 @@ void SceneBiome::render(){
     //Add camera crosshair on top of everything
     renderCameraCrosshair();
 }
-
 
 void SceneBiome::_renderChunkedTiles(){
     auto& cam = getCamera();
@@ -206,7 +221,6 @@ void SceneBiome::renderGUI(){
     ImGui::Text("SceneBiome");
     ImGui::Text("RenderableChunks: %s", chunkHash.c_str());
 
-
     //Get Camera world position
     fPoint cameraWorldPos = getCamera().getCameraWorldCenter();
     int chunkX = std::clamp((int)(cameraWorldPos.x / TILE_SIZE) / CHUNK_SIZE, 0, (int)chunks[0].size() - 1);
@@ -222,6 +236,10 @@ void SceneBiome::renderGUI(){
     ImGui::Text("Chunk under mouse: [ %d, %d ]", mousechunkX, mousechunkY);
 
     ImGui::Text("Map chunk Size: [ %d, %d ]", (int)chunks[0].size(), (int)chunks.size());
+
+
+
+    ImGui::Text("Tile value at mouse: [ %d ]", getTileSurroundingValue(worldMouse.x/TILE_SIZE, worldMouse.y/TILE_SIZE));
 
     ImGui::End();
 }
@@ -250,6 +268,33 @@ TileBiome& SceneBiome::getTileAtTilePos(int tX, int tY){
     int tileInChunkX = tX % CHUNK_SIZE;
     int tileInChunkY = tY % CHUNK_SIZE;
     return chunks[chunkY][chunkX].tiles[tileInChunkY][tileInChunkX];
+}
+
+
+/*
+    Ref: http://www.cr31.co.uk/stagecast/wang/blob.html
+
+ +------+------+------+
+ | 128  |  1   |  2   |
+ +------+------+------+
+ |  64  |      |  4   |
+ +------+------+------+
+ |  32  |  16  |  8   |
+ +------+------+------+
+
+*/
+
+int SceneBiome::getTileSurroundingValue(int tx, int ty){
+    int v = 0;
+    if (                    ty < numTilesY-1 && getTileAtTilePos(  tx, ty+1).isEmpty() == false){ v +=   1; }
+    if (tx < numTilesX-1 && ty < numTilesY-1 && getTileAtTilePos(tx+1, ty+1).isEmpty() == false){ v +=   2; }
+    if (tx < numTilesX-1                     && getTileAtTilePos(tx+1,   ty).isEmpty() == false){ v +=   4; }
+    if (tx < numTilesX-1 &&           ty > 0 && getTileAtTilePos(tx+1, ty-1).isEmpty() == false){ v +=   8; }
+    if (                              ty > 0 && getTileAtTilePos(  tx, ty-1).isEmpty() == false){ v +=  16; }
+    if (          tx > 0 &&           ty > 0 && getTileAtTilePos(tx-1, ty-1).isEmpty() == false){ v +=  32; }
+    if (          tx > 0                     && getTileAtTilePos(tx-1,   ty).isEmpty() == false){ v +=  64; }
+    if (          tx > 0 && ty < numTilesY-1 && getTileAtTilePos(tx-1, ty+1).isEmpty() == false){ v += 128; }
+    return v;
 }
 
 std::vector<TileBiome*> SceneBiome::getTilesInRect(const ShapeRectangle& rect){
