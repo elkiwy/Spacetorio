@@ -78,14 +78,15 @@ struct ClickableRectangleComponent : public ClickableComponent, public Renderabl
     ClickableRectangleComponent(fSize size, PositionComponent* posRef, fPoint offset = {0.0f, 0.0f})
         : posRef(posRef), shape(ShapeRectangle(posRef->pos, size)), offset(offset) {}
 
-    const Shape& getShape() override{shape.pos = posRef->pos+offset; return shape;}
+    const Shape& getShape() override{
+        shape.pos.x = posRef->pos.x + offset.x - (shape.size.w/2.0f);
+        shape.pos.y = posRef->pos.y + offset.y - (shape.size.h/2.0f);
+        return shape;
+    }
 
     void render(const PositionComponent& posComp, const Camera& cam) const override{
         auto& pos = posComp.pos;
-        const fPoint screenPos = cam.worldToScreen({pos.x+offset.x, pos.y+offset.y});
-        const fPoint center = {screenPos.x + (cam.zoom*shape.size.w/2), screenPos.y + (cam.zoom*shape.size.h/2)};
-        SDL_Color col = (hovered) ? debug_color_hovered : debug_color_normal;
-        global_renderer->drawRect(center.x, center.y, shape.size.w*cam.zoom, shape.size.h*cam.zoom, col);
+        global_renderer->addRectToRenderCentered(pos, fSize(shape.size.w, shape.size.h));
     }
 
     bool checkHovered(const ShapePoint& mouseWorldPt) override{
