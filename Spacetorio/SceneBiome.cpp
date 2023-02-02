@@ -125,12 +125,7 @@ void SceneBiome::init(SDL_Surface* terrainMap){
             int chunkX = i/CHUNK_SIZE;
             int chunkY = j/CHUNK_SIZE;
             Uint8 tileVal = terrainMapData[(i+(mapW*((mapH-1) - j)))*4+0];
-
-
-            bool randomTest = randInt(0,100) < 60;
-
-
-            if (tileVal > 250 || randomTest){
+            if (tileVal > 250){
                 //Create the entity
                 float posx = i*TILE_SIZE+TILE_SIZE/2.0f;
                 float posy = j*TILE_SIZE+TILE_SIZE/2.0f;
