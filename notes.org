@@ -22,22 +22,42 @@
   - [X] 2D Terraria-like tile system to place entities
   - [X] Scene switching system
 
+- [X] Switch to OpenGL
+
+
+
 * Next steps
 - [ ] Block Interactions with mouse
-  - [ ] Tiles digging
-  - [ ] Wall placing
-  - [ ] Door placing
+  - [ ] Tiles digging (Right mouse hold)
+  - [ ] Wall placing (Left click)
+
+- [ ] Font rendering in OpenGL
 
 - [ ] Basic Inventory system
+  - [ ] Dropping tile on floor after digging
+  - [ ] Picking up tiles from floor
+  - [ ] Minimal custom UI
 
 - [ ] RoomScene <-> BiomeScene swtiching
   - [ ] Room recognition system
 
-- [ ] Switch to OpenGL
+- [ ] Add Plants on terrain
+
+- [ ] Maybe try nuklear ?
+
+* Entities
+- [ ] Tile (Dirt, wood, concrete)
+- [ ] Door
+- [ ] Background Wall
+- [ ] Chest
+
+
 
 * Assets (for OpenGL)
-- [ ] Basic dirt Tiling
+- [X] Basic dirt Tiling
 - [ ] Basic Player walking animation
+
+
 
 * Side steps
 - [ ] Universe minimap

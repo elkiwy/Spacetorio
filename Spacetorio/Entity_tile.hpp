@@ -1,6 +1,7 @@
 #ifndef ENTITY_TILE_H_
 #define ENTITY_TILE_H_
 
+#include "Data_materials.hpp"
 #include "Utils_points.hpp"
 #include "Components_position.hpp"
 #include "Components_updatable.hpp"
@@ -25,6 +26,7 @@ struct TileComponent{
     fSize size = {TILE_SIZE, TILE_SIZE};
     SceneBiome* scene = nullptr;
     entt::entity enttHandle;
+    MaterialData material;
 
     TileComponent() = default;
     TileComponent(const TileComponent&) = default;
