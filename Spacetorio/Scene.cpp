@@ -193,23 +193,9 @@ void Scene::update(const Uint8* ks, const Uint32 mouseState, const iPoint& mouse
         }
     }
 
-    //Check for hovered clickables
-    fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
-    ShapePoint worldMousePt = ShapePoint(worldMouse);
-    auto viewClickables = registry.view<ClickableComponent>();
-    for(auto entity: viewClickables){
-        auto& clickable = viewClickables.get<ClickableComponent>(entity);
-        if (clickable.active == false){continue;}
-        for(auto impl: clickable.impls){
-            if (impl == nullptr){break;}
-            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
-            bool hovered = implCasted->checkHovered(worldMousePt);
-            if (hovered && (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))){
-                implCasted->leftMouseDown();
-            }
-        }
-    }
 
+    //Check for hovered clickables
+    this->_checkClickables(mouseState, mousePos);
 
     //Update all the updatable entities
     auto view = registry.view<UpdatableComponent>();
@@ -225,6 +211,27 @@ void Scene::update(const Uint8* ks, const Uint32 mouseState, const iPoint& mouse
     //Update camera
     cam.update(ks);
 }
+
+
+void Scene::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
+    //Rough and unoptimized checks, use only in SpaceScene
+    fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
+    ShapePoint worldMousePt = ShapePoint(worldMouse);
+    auto viewClickables = registry.view<ClickableComponent>();
+    for(auto entity: viewClickables){
+        auto& clickable = viewClickables.get<ClickableComponent>(entity);
+        if (clickable.active == false){continue;}
+        for(auto impl: clickable.impls){
+            if (impl == nullptr){break;}
+            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
+            bool hovered = implCasted->checkHovered(worldMousePt);
+            if (hovered && (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))){
+                implCasted->leftMouseDown();
+            }
+        }
+    }
+}
+
 
 void Scene::onMouseWheel(float dy){
     const float zoomFactor = 0.1f;

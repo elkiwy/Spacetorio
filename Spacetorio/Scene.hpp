@@ -73,6 +73,8 @@ class Scene {
         void onMouseLeftClick();
         void onKeyPressed(SDL_Keycode key);
 
+        virtual void _checkClickables(const Uint32 mouseState, const iPoint& mousePos);
+
         Camera& getCamera() { return cam; }
         const Camera& getCamera() const { return cam; }
         entt::registry& getRegistry(){ return registry; }

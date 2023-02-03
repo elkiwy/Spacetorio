@@ -59,6 +59,8 @@ class SceneBiome : public Scene {
         void renderGUI() override;
 
 
+        void _checkClickables(const Uint32 mouseState, const iPoint& mousePos) override;
+
         void spawnPlayerAt(fPoint pos);
 
         TileBiome& getTileAtWorldPos(float worldX, float worldY, iVec offset = {0,0});

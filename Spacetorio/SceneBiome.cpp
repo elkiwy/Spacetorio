@@ -100,9 +100,7 @@ void SceneBiome::spawnPlayerAt(fPoint pos){
 
 void SceneBiome::init(SDL_Surface* terrainMap){
     Scene::init();
-
     std::cout << "Initializing SceneBiome " << std::endl;
-
     int mapW = terrainMap->w;
     int mapH = terrainMap->h;
     int chunkCountW = mapW/CHUNK_SIZE;
@@ -138,7 +136,6 @@ void SceneBiome::init(SDL_Surface* terrainMap){
         }
     }
 
-
     //Update the tiles sprites
     auto tilesView = reg.view<TileComponent>();
     for(auto& tile : tilesView){
@@ -146,10 +143,32 @@ void SceneBiome::init(SDL_Surface* terrainMap){
         tileComp.updateSprite();
     }
 
-
     //Move the camera to the center of the scene
     this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
 }
+
+
+void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
+    //Optimized check to cycle through only the entities in the tile pos
+    Camera& cam = this->getCamera();
+    entt::registry& registry = this->getRegistry();
+    fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
+    ShapePoint worldMousePt = ShapePoint(worldMouse);
+    TileBiome& tile = this->getTileAtWorldPos(worldMouse.x, worldMouse.y);
+    for (auto e: tile.entities){
+        auto& clickable = registry.get<ClickableComponent>(e);
+        if (clickable.active == false){continue;}
+        for(auto impl: clickable.impls){
+            if (impl == nullptr){break;}
+            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
+            bool hovered = implCasted->checkHovered(worldMousePt);
+            if (hovered && (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))){
+                implCasted->leftMouseDown();
+            }
+        }
+    }
+}
+
 
 void SceneBiome::render(){
 
