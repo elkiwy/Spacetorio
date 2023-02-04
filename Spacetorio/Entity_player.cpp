@@ -21,10 +21,10 @@ PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
     posComp.automaticUpdates = false;
 
     //Attach renderable rectangle
-    auto& renderableRect = addComponent<RenderableSpriteComponent>(1, fSize(24.0f, 32.0f));
+    auto& renderableRect = addComponent<RenderableSpriteComponent>(1, playerComp.size);
 
     //Lock camera
-    //s->getCamera().setTarget(&posComp);
+    s->getCamera().setTarget(&posComp);
 }
 
 
@@ -43,19 +43,19 @@ PlayerComponent::PlayerComponent(SceneBiome* s, entt::entity e){
 
 void PlayerComponent::updateColliders(fPoint wPos){
     groundCollider.p1.x = wPos.x - size.w*0.5f + 1;
-    groundCollider.p1.y = wPos.y + size.h*0.5f;
+    groundCollider.p1.y = wPos.y - size.h*0.5f;
     groundCollider.p2.x = wPos.x + size.w*0.5f - 1;
-    groundCollider.p2.y = wPos.y + size.h*0.5f;
+    groundCollider.p2.y = wPos.y - size.h*0.5f;
 
     wallLCollider.p1.x = wPos.x - size.w*0.5f;
-    wallLCollider.p1.y = wPos.y - size.h*0.5f;
+    wallLCollider.p1.y = wPos.y + size.h*0.5f;
     wallLCollider.p2.x = wPos.x - size.w*0.5f;
-    wallLCollider.p2.y = wPos.y + size.h*0.5f - 2;
+    wallLCollider.p2.y = wPos.y - size.h*0.5f + 2;
 
     wallRCollider.p1.x = wPos.x + size.w*0.5f;
-    wallRCollider.p1.y = wPos.y - size.h*0.5f;
+    wallRCollider.p1.y = wPos.y + size.h*0.5f;
     wallRCollider.p2.x = wPos.x + size.w*0.5f;
-    wallRCollider.p2.y = wPos.y + size.h*0.5f - 2;
+    wallRCollider.p2.y = wPos.y - size.h*0.5f + 2;
 }
 
 
@@ -89,15 +89,15 @@ void PlayerComponent::update(Entity& player, const Uint8* ks){
     auto& posComp = player.getComponent<DynamicPositionComponent>();
 
     //Gravity update
-    fVec gravityForce = {0.0f, 0.80f};
-    float terminalVelocity = 20.0f;
-    posComp.spd += gravityForce;
+    fVec gravityForce = {0.0f, 0.60f};
+    float terminalVelocity = 30.0f;
+    posComp.spd -= gravityForce;
     posComp.spd.y = fmin(terminalVelocity, posComp.spd.y);
 
     //Left+Right update
     float v = 0.0f;
-    if (ks[SDL_SCANCODE_D]) v += 4.0f;
-    if (ks[SDL_SCANCODE_A]) v -= 4.0f;
+    if (ks[SDL_SCANCODE_D]) v += 5.0f;
+    if (ks[SDL_SCANCODE_A]) v -= 5.0f;
     posComp.spd.x = v;
 
     //Update the colliders to be in the position + speed location
@@ -114,6 +114,7 @@ void PlayerComponent::update(Entity& player, const Uint8* ks){
     }
 
     if (testCollisionWithLine(groundCollider)){
+        std::cout << "collision ground" << std::endl;
         posComp.spd.y = 0;
     }
 
@@ -127,7 +128,7 @@ void PlayerComponent::onKeyPressed(SDL_Keycode key){
     if (key == SDLK_w) {
         Entity player = {enttHandle, scene};
         auto &posComp = player.getComponent<DynamicPositionComponent>();
-        fVec jumpForce = {0.0f, -20.0f};
+        fVec jumpForce = {0.0f, 12.0f};
         posComp.spd += jumpForce;
     }
 }

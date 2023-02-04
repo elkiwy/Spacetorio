@@ -204,14 +204,13 @@ void Scene::update(const Uint8* ks, const Uint32 mouseState, const iPoint& mouse
         Entity e = {entity, this};
         for(auto impl: updatable.impls){
             if (impl == nullptr){break;}
-            //static_cast<UpdatableComponent*>(impl)->update(e, ks);
+            static_cast<UpdatableComponent*>(impl)->update(e, ks);
         }
     }
 
     //Update camera
     cam.update(ks);
 }
-
 
 void Scene::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
     //Rough and unoptimized checks, use only in SpaceScene
@@ -231,7 +230,6 @@ void Scene::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
         }
     }
 }
-
 
 void Scene::onMouseWheel(float dy){
     const float zoomFactor = 0.1f;

@@ -147,7 +147,6 @@ void SceneBiome::init(SDL_Surface* terrainMap){
     this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
 }
 
-
 void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
     //Optimized check to cycle through only the entities in the tile pos
     Camera& cam = this->getCamera();
@@ -168,7 +167,6 @@ void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePo
         }
     }
 }
-
 
 void SceneBiome::render(){
 

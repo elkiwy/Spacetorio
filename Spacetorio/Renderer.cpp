@@ -460,6 +460,8 @@ void Renderer::renderGUI(Scene* s){
 
     ImGui::Begin("Renderer");
     ImGui::Text("Renderer");
+    ImGui::Text("Avg Fps: %f", global_avgFPS);
+    ImGui::Separator();
     ImGui::Text("Tiles count: %d", tilesToRender);
     ImGui::Text("Sprites count: %d", spritesToRender);
     ImGui::End();
