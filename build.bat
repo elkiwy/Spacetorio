@@ -1,6 +1,8 @@
 @echo off
 
 
+cd C:\Users\stefa\source\repos\Spacetorio
+
 
 if "%1" == "--clean" (
 	rmdir /s /q .\out\build\x64-debug-commandline
