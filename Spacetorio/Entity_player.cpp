@@ -29,8 +29,6 @@ PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
 
 
 
-
-
 /*
 ** Player Component
 */
@@ -39,7 +37,6 @@ PlayerComponent::PlayerComponent(SceneBiome* s, entt::entity e){
     this->scene = s;
     this->enttHandle = e;
 }
-
 
 void PlayerComponent::updateColliders(fPoint wPos){
     groundCollider.p1.x = wPos.x - size.w*0.5f + 1;
@@ -57,7 +54,6 @@ void PlayerComponent::updateColliders(fPoint wPos){
     wallRCollider.p2.x = wPos.x + size.w*0.5f;
     wallRCollider.p2.y = wPos.y - size.h*0.5f + 2;
 }
-
 
 bool PlayerComponent::testCollisionWithLine(const ShapeLine& line) const{
     //Get the tiles where the lines is
@@ -106,7 +102,6 @@ void PlayerComponent::update(Entity& player, const Uint8* ks){
 
     //Test collision to see if there is space to move with my current speed
     if (posComp.spd.x != 0 && (testCollisionWithLine(wallLCollider) || testCollisionWithLine(wallRCollider))){
-        std::cout << "collision left/right" << std::endl;
         posComp.spd.x = 0;
 
         simulatedNextPos = posComp.pos + posComp.spd;
@@ -114,11 +109,8 @@ void PlayerComponent::update(Entity& player, const Uint8* ks){
     }
 
     if (testCollisionWithLine(groundCollider)){
-        std::cout << "collision ground" << std::endl;
         posComp.spd.y = 0;
     }
-
-
 
     //Update position with speed
     posComp.pos += posComp.spd;

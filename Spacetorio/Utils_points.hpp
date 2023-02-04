@@ -16,12 +16,26 @@ inline float deg2rad(float d);
 inline float rad2deg(float r);
 
 /*
+** iPoint
+*/
+
+class iPoint {
+    public:
+        iPoint(int x, int y) : x(x), y(y) {}
+        virtual ~iPoint() = default;
+
+        int x;
+        int y;
+};
+
+/*
 ** fPoint
 */
 
 class fPoint {
     public:
         fPoint(float x, float y) : x(x), y(y) {}
+        fPoint(const iPoint& ip) : x((float)ip.x), y((float)ip.y) {}
         virtual ~fPoint() = default;
 
         float distTo(const fPoint other) const;
@@ -47,18 +61,6 @@ class fPoint {
         float y;
 };
 
-/*
-** iPoint
-*/
-
-class iPoint {
-    public:
-        iPoint(int x, int y) : x(x), y(y) {}
-        virtual ~iPoint() = default;
-
-        int x;
-        int y;
-};
 
 /*
 ** fSize

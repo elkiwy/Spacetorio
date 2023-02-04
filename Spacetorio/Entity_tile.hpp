@@ -27,11 +27,15 @@ struct TileComponent{
     SceneBiome* scene = nullptr;
     entt::entity enttHandle;
     MaterialData material;
+    float hp = 1.0f;
 
     TileComponent() = default;
     TileComponent(const TileComponent&) = default;
-    TileComponent(SceneBiome* s, entt::entity e);
+    TileComponent(SceneBiome* s, entt::entity e, MaterialType matType);
     ~TileComponent(){};
+
+    void onLeftMouseDown();
+    void destroyTile();
 
     void updateSprite();
 };

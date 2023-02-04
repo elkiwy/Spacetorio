@@ -32,6 +32,7 @@ struct TileBiome{
     std::vector<entt::entity> entities;
 
     void addEntity(entt::entity e);
+    void removeEntity(entt::entity e);
     inline bool isEmpty() const{return entities.size() == 0;}
 };
 
@@ -45,6 +46,7 @@ struct ChunkBiome{
 
     ChunkBiome(int x, int y, entt::registry& reg);
     void addEntity(Entity e);
+    void removeEntity(Entity e);
 };
 
 
@@ -58,8 +60,11 @@ class SceneBiome : public Scene {
         void render() override;
         void renderGUI() override;
 
+        void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos) override;
+        void removeTile(entt::entity e);
 
         void _checkClickables(const Uint32 mouseState, const iPoint& mousePos) override;
+        void _updateTile(int tX, int tY);
 
         void spawnPlayerAt(fPoint pos);
 
@@ -74,6 +79,7 @@ class SceneBiome : public Scene {
     private:
         std::vector<std::vector<ChunkBiome>> chunks;
         std::string chunkHash = "";
+        bool dirtyChunks = false;
 
         size_t numTilesX = 0;
         size_t numTilesY = 0;

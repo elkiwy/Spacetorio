@@ -58,6 +58,10 @@ void TileBiome::addEntity(entt::entity e){
     this->entities.emplace_back(e);
 }
 
+void TileBiome::removeEntity(entt::entity e){
+    entities.erase(std::remove(entities.begin(), entities.end(), e), entities.end());
+}
+
 
 
 /*
@@ -86,6 +90,15 @@ void ChunkBiome::addEntity(Entity e){
     tiles[tileY][tileX].addEntity(e.enttHandle);
 }
 
+void ChunkBiome::removeEntity(Entity e){
+    this->entities.remove(e.enttHandle);
+
+    //Remove it also from the TileBiome object
+    auto& posComp = e.getComponent<StaticPositionComponent>();
+    int tileX = (((int)posComp.pos.x) / TILE_SIZE) % CHUNK_SIZE;
+    int tileY = (((int)posComp.pos.y) / TILE_SIZE) % CHUNK_SIZE;
+    tiles[tileY][tileX].removeEntity(e.enttHandle);
+}
 
 
 
@@ -168,6 +181,48 @@ void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePo
     }
 }
 
+void SceneBiome::update(const Uint8 *keyState, const Uint32 mouseState, const iPoint &mousePos){
+    Scene::update(keyState, mouseState, mousePos);
+}
+
+void SceneBiome::removeTile(entt::entity e){
+    //Remove the entity from the chunk and the tile
+    Entity tileEnt = {e, this};
+    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
+    int tX = ((int)posComp.pos.x) / TILE_SIZE;
+    int tY = ((int)posComp.pos.y) / TILE_SIZE;
+    ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
+    chunk.removeEntity(tileEnt);
+
+    //Set the chunks dirty to force an update of the graphics
+    this->dirtyChunks = true;
+
+    //Update the neighbor tiles
+    this->_updateTile(tX-1, tY-1);
+    this->_updateTile(tX-1,   tY);
+    this->_updateTile(tX-1, tY+1);
+    this->_updateTile(  tX, tY-1);
+    this->_updateTile(  tX,   tY);
+    this->_updateTile(  tX, tY+1);
+    this->_updateTile(tX+1, tY-1);
+    this->_updateTile(tX+1,   tY);
+    this->_updateTile(tX+1, tY+1);
+}
+
+void SceneBiome::_updateTile(int tX, int tY){
+    auto& reg = getRegistry();
+    TileBiome& tile = getTileAtTilePos(tX, tY);
+    for(auto& entitiesInTile : tile.entities){
+        Entity ent = {entitiesInTile, this};
+        if (ent.hasComponent<TileComponent>()){
+           TileComponent& tileComp = ent.getComponent<TileComponent>();
+           tileComp.updateSprite();
+        }
+    }
+}
+
+
+
 void SceneBiome::render(){
 
     this->_renderChunkedTiles();
@@ -193,7 +248,7 @@ void SceneBiome::_renderChunkedTiles(){
     int minChunkX,minChunkY,maxChunkX,maxChunkY;
     getChunksInCamera(cam, this->chunks, &minChunkX, &minChunkY, &maxChunkX, &maxChunkY);
     std::string currentChunkHash = std::to_string(minChunkX) + "_" + std::to_string(minChunkY) + "_" + std::to_string(maxChunkX) + "_" + std::to_string(maxChunkY);
-    if (currentChunkHash != this->chunkHash){
+    if (currentChunkHash != this->chunkHash || this->dirtyChunks){
         //Prepare the vector to hold all the chunk data
         std::vector<TileRenderData> tilesData;
 
@@ -232,6 +287,7 @@ void SceneBiome::_renderChunkedTiles(){
 
         //Update the chunk hash
         this->chunkHash = currentChunkHash;
+        this->dirtyChunks = false;
     }
 }
 

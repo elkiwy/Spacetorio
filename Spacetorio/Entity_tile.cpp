@@ -14,22 +14,16 @@ TileEntity::TileEntity(SceneBiome* s, fPoint pos) {
     this->scene = static_cast<Scene*>(s);
     this->enttHandle = this->scene->newEntity();
     addComponent<TagComponent>("Tile");
-    auto& tileComp = addComponent<TileComponent>(s, this->enttHandle);
+    auto& tileComp = addComponent<TileComponent>(s, this->enttHandle, MAT_DIRT);
     auto& posComp = addComponent<StaticPositionComponent>(pos);
     auto& renderableRect = addComponent<RenderableTileComponent>(1);
     auto& collider = addComponent<ColliderRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
+
     auto& clickable = addComponent<ClickableRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
-
-    clickable.onclick = [](){
-        std::cout << "Ciaoooo" << std::endl;
-    };
-
-    entt::entity e = this->enttHandle;
-    clickable.onleftmousedown = [e](){
-        std::cout << "Click down! " << (int)e << std::endl;
-    };
-
+    clickable.onleftmousedown = [&tileComp](){tileComp.onLeftMouseDown();};
 }
+
+
 
 
 
@@ -37,9 +31,20 @@ TileEntity::TileEntity(SceneBiome* s, fPoint pos) {
 ** Tile Component
 */
 
-TileComponent::TileComponent(SceneBiome* s, entt::entity e){
+TileComponent::TileComponent(SceneBiome* s, entt::entity e, MaterialType matType){
     this->scene = s;
     this->enttHandle = e;
+    this->material = getMaterialDataForType(matType);
+    this->hp = material.hp;
+}
+
+void TileComponent::onLeftMouseDown(){
+    this->hp -= 0.5f;
+    if (this->hp <= 0.0f){destroyTile();}
+}
+
+void TileComponent::destroyTile(){
+    this->scene->removeTile(this->enttHandle);
 }
 
 void TileComponent::updateSprite(){
