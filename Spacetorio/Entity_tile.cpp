@@ -25,8 +25,6 @@ TileEntity::TileEntity(SceneBiome* s, fPoint pos) {
 
 
 
-
-
 /*
 ** Tile Component
 */

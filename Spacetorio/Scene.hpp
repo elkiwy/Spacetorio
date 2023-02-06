@@ -70,7 +70,7 @@ class Scene {
 
         virtual void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos);
         void onMouseWheel(float dy);
-        void onMouseLeftClick();
+        virtual void onMouseLeftClick(iPoint mousePos);
         void onKeyPressed(SDL_Keycode key);
 
         virtual void _checkClickables(const Uint32 mouseState, const iPoint& mousePos);

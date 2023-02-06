@@ -239,10 +239,8 @@ void Scene::onMouseWheel(float dy){
     //cam.testZoom(dy*zoomFactor);
 }
 
-void Scene::onMouseLeftClick(){
+void Scene::onMouseLeftClick(iPoint mousePos){
     //Check for hovered clickables
-    iPoint mousePos = {0,0};
-    SDL_GetMouseState(&mousePos.x, &mousePos.y);
     fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
     ShapePoint worldMousePt = ShapePoint(worldMouse);
     auto viewClickables = registry.view<ClickableComponent>();

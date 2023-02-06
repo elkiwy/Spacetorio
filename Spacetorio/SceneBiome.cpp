@@ -162,11 +162,9 @@ void SceneBiome::init(SDL_Surface* terrainMap){
 
 void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
     //Optimized check to cycle through only the entities in the tile pos
-    Camera& cam = this->getCamera();
     entt::registry& registry = this->getRegistry();
-    fPoint worldMouse = cam.screenToWorld(fPoint(mousePos.x, mousePos.y));
-    ShapePoint worldMousePt = ShapePoint(worldMouse);
-    TileBiome& tile = this->getTileAtWorldPos(worldMouse.x, worldMouse.y);
+    ShapePoint worldMousePt = ShapePoint(this->getCamera().screenToWorld(fPoint(mousePos.x, mousePos.y)));
+    TileBiome& tile = this->getTileUnderMouse();
     for (auto e: tile.entities){
         auto& clickable = registry.get<ClickableComponent>(e);
         if (clickable.active == false){continue;}
@@ -185,6 +183,32 @@ void SceneBiome::update(const Uint8 *keyState, const Uint32 mouseState, const iP
     Scene::update(keyState, mouseState, mousePos);
 }
 
+void SceneBiome::onMouseLeftClick(iPoint mousePos){
+    Scene::onMouseLeftClick(mousePos);
+
+    TileBiome& tile = this->getTileUnderMouse();
+    if(tile.isEmpty()){
+        //Add the entity to its chunk
+        fPoint worldPos = getCamera().screenToWorld(mousePos);
+        float posx = floorf(worldPos.x/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
+        float posy = floorf(worldPos.y/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
+        TileEntity e = TileEntity(this, fPoint(posx, posy));
+        this->addTile(e.enttHandle);
+
+    }
+}
+
+void SceneBiome::addTile(entt::entity e){
+    Entity tileEnt = {e, this};
+    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
+    int tX = ((int)posComp.pos.x) / TILE_SIZE;
+    int tY = ((int)posComp.pos.y) / TILE_SIZE;
+    ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
+    chunk.addEntity(tileEnt);
+
+    this->_updateTileSurroundings(tX, tY);
+}
+
 void SceneBiome::removeTile(entt::entity e){
     //Remove the entity from the chunk and the tile
     Entity tileEnt = {e, this};
@@ -194,6 +218,11 @@ void SceneBiome::removeTile(entt::entity e){
     ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
     chunk.removeEntity(tileEnt);
 
+    this->_updateTileSurroundings(tX, tY);
+}
+
+
+void SceneBiome::_updateTileSurroundings(int tX, int tY){
     //Set the chunks dirty to force an update of the graphics
     this->dirtyChunks = true;
 
@@ -342,6 +371,14 @@ ChunkBiome& SceneBiome::getChunk(float worldX, float worldY){
     int chunkX = tileX / CHUNK_SIZE;
     int chunkY = tileY / CHUNK_SIZE;
     return chunks[chunkY][chunkX];
+}
+
+TileBiome& SceneBiome::getTileUnderMouse(){
+    Camera& cam = this->getCamera();
+    int mouseX, mouseY;
+    SDL_GetMouseState(&mouseX, &mouseY);
+    fPoint worldMouse = cam.screenToWorld(fPoint(mouseX, mouseY));
+    return this->getTileAtWorldPos(worldMouse.x, worldMouse.y);
 }
 
 TileBiome& SceneBiome::getTileAtWorldPos(float worldX, float worldY, iVec offset){

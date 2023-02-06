@@ -89,7 +89,9 @@ int main(int argc, char* args[]) {
                     gc.onMouseWheel(e.wheel.y);
                 }else if(e.type == SDL_MOUSEBUTTONDOWN){
                     if (e.button.button == SDL_BUTTON_LEFT){
-                        gc.onMouseLeftClick();
+                        int mouseX, mouseY;
+                        SDL_GetMouseState(&mouseX, &mouseY);
+                        gc.onMouseLeftClick(iPoint(mouseX, mouseY));
                     }
                 }
             }

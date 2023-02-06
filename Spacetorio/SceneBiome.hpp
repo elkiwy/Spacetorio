@@ -61,13 +61,18 @@ class SceneBiome : public Scene {
         void renderGUI() override;
 
         void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos) override;
+        void onMouseLeftClick(iPoint mousePos) override;
+
+        void addTile(entt::entity e);
         void removeTile(entt::entity e);
+        void _updateTileSurroundings(int tX, int tY);
 
         void _checkClickables(const Uint32 mouseState, const iPoint& mousePos) override;
         void _updateTile(int tX, int tY);
 
         void spawnPlayerAt(fPoint pos);
 
+        TileBiome& getTileUnderMouse();
         TileBiome& getTileAtWorldPos(float worldX, float worldY, iVec offset = {0,0});
         TileBiome& getTileAtTilePos(int tX, int tY);
         int getTileSurroundingValue(int tx, int ty);

@@ -59,7 +59,7 @@ void GameController::onMouseWheel(float dy){
     activeScene->onMouseWheel(dy);
 }
 
-void GameController::onMouseLeftClick(){
+void GameController::onMouseLeftClick(iPoint mousePos){
     Scene* activeScene = universe.getCurrentScene();
-    activeScene->onMouseLeftClick();
+    activeScene->onMouseLeftClick(mousePos);
 }
