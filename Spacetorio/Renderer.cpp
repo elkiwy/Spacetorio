@@ -74,6 +74,12 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     if (glewError != GLEW_OK) { printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError)); }
     std::cout << "Initialized OpenGL with version: " << glGetString(GL_VERSION) << std::endl;
 
+    //Initialize TextureManger and Texture Atlas
+    textureManager.init();
+    textureManager.addImage(ASSETS_PREFIX+"res/dirt.png");
+    textureManager.addImage(ASSETS_PREFIX+"res/concrete.png");
+    textureManager.createTextureAtlas();
+
     //Prepare transformation matrix to convert from -1 1 to 0 SCREENRES
     this->transformMatrix = glm::mat4(1.0f);
     this->transformMatrix = glm::translate(transformMatrix, glm::vec3(-1.0f, -1.0f, 0.0f));

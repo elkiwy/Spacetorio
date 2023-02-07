@@ -17,6 +17,7 @@
 #include "Texture.hpp"
 
 #include "Renderer_shader.hpp"
+#include "TextureManager.hpp"
 
 #include "glm/glm.hpp"
 
@@ -76,6 +77,10 @@ class Renderer {
 
         SDL_GLContext glContext = nullptr;
 
+
+        //Texture Manager
+        TextureManager textureManager;
+
         //Tile rendering
         Shader tileShader;
         glm::uint abstractTileVBO = 0;
@@ -90,7 +95,6 @@ class Renderer {
         glm::uint spriteVBO = 0;
         glm::uint spriteVAO = 0;
         int spritesToRender = 0;
-
 
         //Lines rendering
         Shader basicShader;

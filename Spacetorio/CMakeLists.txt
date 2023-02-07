@@ -32,6 +32,11 @@ elseif (WIN32)
   set(SDL2_TTF_LIBRARIES "${SDL2_TTF_PATH}/lib/x64/SDL2_ttf.lib")
   set(SDL2_TTF_DLL "${SDL2_TTF_PATH}/lib/x64/SDL2_ttf.dll")
 
+  set(SDL2_IMAGE_PATH "C:/Program Files/SDL2/SDL2_image-2.6.2")
+  set(SDL2_IMAGE_INCLUDE_DIRS "${SDL2_IMAGE_PATH}/include")
+  set(SDL2_IMAGE_LIBRARIES "${SDL2_IMAGE_PATH}/lib/x64/SDL2_image.lib")
+  set(SDL2_IMAGE_DLL "${SDL2_IMAGE_PATH}/lib/x64/SDL2_image.dll")
+
   SET(OPENGL_GLEW_PATH "C:/Program Files/GLEW")
   SET(OPENGL_GLEW_INCLUDE_DIR "${OPENGL_GLEW_PATH}/include")
   SET(OPENGL_GLEW_LIBRARIES "${OPENGL_GLEW_PATH}/lib/Release/x64/glew32.lib")
@@ -55,6 +60,7 @@ set(STB_INCLUDE_DIRS "vendor/stb")
 # Add the include directories for SDL2
 include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${SDL2_TTF_INCLUDE_DIRS})
+include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
 include_directories(${OPENGL_GLEW_INCLUDE_DIR})
 
 include_directories(${IMGUI_INCLUDE_DIRS})
@@ -73,6 +79,7 @@ add_executable(Spacetorio  ${SOURCE_FILES})
 # Link against the SDL2 libraries
 target_link_libraries(Spacetorio PRIVATE ${SDL2_LIBRARIES})
 target_link_libraries(Spacetorio PRIVATE ${SDL2_TTF_LIBRARIES})
+target_link_libraries(Spacetorio PRIVATE ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(Spacetorio PRIVATE ${OPENGL_GLEW_LIBRARIES})
 
 
@@ -86,6 +93,9 @@ if (WIN32)
   # Copy DLL for SDL2_TTF
   add_custom_target(CopySDL2_TTF ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_TTF_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")
   add_dependencies(Spacetorio CopySDL2_TTF)
+  # Copy DLL for SDL2_IMAGE
+  add_custom_target(CopySDL2_IMAGE ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_IMAGE_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")
+  add_dependencies(Spacetorio CopySDL2_IMAGE)
   # Copy DLL for GLEW
   add_custom_target(CopyOPENGL_GLEW ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different "${OPENGL_GLEW_DLL}" "${CMAKE_BINARY_DIR}/Spacetorio")
   add_dependencies(Spacetorio CopyOPENGL_GLEW)

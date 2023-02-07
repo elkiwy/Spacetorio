@@ -27,23 +27,27 @@
 
 
 * Next steps
-- [ ] Block Interactions with mouse
-  - [ ] Tiles digging (Right mouse hold)
-  - [ ] Wall placing (Left click)
+- [X] Block Interactions with mouse
+  - [X] Tiles digging (Right mouse hold)
+  - [X] Wall placing (Left click)
 
 - [ ] Font rendering in OpenGL
+
+
+- [ ] TextureManager
+  - [ ]
 
 - [ ] Basic Inventory system
   - [ ] Dropping tile on floor after digging
   - [ ] Picking up tiles from floor
   - [ ] Minimal custom UI
+  - [ ] Maybe try nuklear ?
 
 - [ ] RoomScene <-> BiomeScene swtiching
   - [ ] Room recognition system
 
 - [ ] Add Plants on terrain
 
-- [ ] Maybe try nuklear ?
 
 * Entities
 - [ ] Tile (Dirt, wood, concrete)
