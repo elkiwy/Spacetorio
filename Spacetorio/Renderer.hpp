@@ -49,7 +49,8 @@ class Renderer {
         void _updateLinesVBO();
 
 
-        glm::uint _loadTexture(const std::string& path);
+        glm::uint _loadTextureFromFile(const std::string& path);
+        glm::uint _loadTextureFromSurface(SDL_Surface* s);
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);

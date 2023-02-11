@@ -76,9 +76,12 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
 
     //Initialize TextureManger and Texture Atlas
     textureManager.init();
-    textureManager.addImage(ASSETS_PREFIX+"res/dirt.png");
     textureManager.addImage(ASSETS_PREFIX+"res/concrete.png");
-    textureManager.createTextureAtlas();
+    textureManager.addImage(ASSETS_PREFIX+"res/dirt.png");
+    SDL_Surface* textureAtlasSurf = textureManager.createTextureAtlasSurface();
+    this->tilesTextureId = this->_loadTextureFromSurface(textureAtlasSurf);
+    SDL_FreeSurface(textureAtlasSurf);
+    const int samplersCount = 1; int samplers[samplersCount] = {0};
 
     //Prepare transformation matrix to convert from -1 1 to 0 SCREENRES
     this->transformMatrix = glm::mat4(1.0f);
@@ -95,9 +98,6 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->tileShader = Shader((ASSETS_PREFIX+"shaders/tiles.vert").c_str(), (ASSETS_PREFIX+"shaders/tiles.frag").c_str());
     this->tileShader.use();
     this->tileShader.setMat4("uTransformMatrix", this->transformMatrix);
-    this->tilesTextureId = this->_loadTexture((ASSETS_PREFIX+"res/dirt.png").c_str());
-    const int samplersCount = 1;
-    int samplers[samplersCount] = {0};
     this->tileShader.setTextures("uTextures", samplersCount, samplers);
     this->setupTilesVAO();
 
@@ -148,7 +148,8 @@ void Renderer::setupTilesVAO(){
     //Setup data
     float s = TILE_SIZE / 2.0f;
     float spriteSizePixels = 8.0f;
-    float sheetSize = 7.0f*spriteSizePixels;
+    //float sheetSize = 16.0f*spriteSizePixels;
+    float sheetSize = 256;
     float ssf = spriteSizePixels / sheetSize; //SpriteSizeFloat
 
     float abstractTileData[] = {
@@ -169,6 +170,8 @@ void Renderer::setupTilesVAO(){
          s,  s,        ssf, 0.0f,
 
     };
+
+    std::cout << "ssf " << ssf << std::endl;
 
     //Create and bind the VAO and VBO for instanced abstract tiles data
     glGenVertexArrays(1, &this->abstractTileVAO);
@@ -261,7 +264,8 @@ void Renderer::updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData){
     //Update the count of how many tiles to render
     this->tilesToRender = tilesData.size();
     float* rawData = new float[2*2*this->tilesToRender];
-    float textureUnit = 8.0f/(7.0f*8.0f);
+    //float textureUnit = 8.0f/(7.0f*8.0f);
+    float textureUnit = 8.0f/2048.0f;
     int index = 0;
     for (auto &td : tilesData) {
         rawData[index] = td.pos.x; index++;
@@ -366,24 +370,35 @@ void Renderer::_updateLinesVBO(){
     linesRenderData.clear();
 }
 
-glm::uint Renderer::_loadTexture(const std::string& path){
+glm::uint Renderer::_loadTextureFromFile(const std::string& path){
     std::cout << "Loading texture from file " << path << std::endl;
     int w, h, bits;
-    //stbi_set_flip_vertically_on_load(1);
     auto* pixels = stbi_load(path.c_str(), &w, &h, &bits, STBI_rgb_alpha);
-    glm::uint textureId;
-    glGenTextures(1, &textureId);
+    glm::uint textureId; glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+    glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     stbi_image_free(pixels);
+    std::cout << "Loaded at id " << textureId << std::endl;
+    return textureId;
+}
+
+glm::uint Renderer::_loadTextureFromSurface(SDL_Surface* s){
+    int w = s->w; int h = s->h; int bits = s->format->BitsPerPixel;
+    std::cout << "Loading texture from surface " << (void*)s << " of ["<<w<<","<<h<<"] and "<<bits<< " bits" << std::endl;
+    auto* pixels = s->pixels;
+    glm::uint textureId; glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     std::cout << "Loaded at id " << textureId << std::endl;
     return textureId;
 }

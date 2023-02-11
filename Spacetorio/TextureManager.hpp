@@ -24,7 +24,7 @@ class TextureManager{
 
         void init();
         void addImage(const std::string& path);
-        void createTextureAtlas();
+        SDL_Surface* createTextureAtlasSurface();
 
     private:
         std::vector<std::string> imagesToLoad;

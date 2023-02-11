@@ -56,7 +56,6 @@
 - [ ] Chest
 
 
-
 * Assets (for OpenGL)
 - [X] Basic dirt Tiling
 - [ ] Basic Player walking animation

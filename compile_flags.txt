@@ -1,5 +1,6 @@
 -I/opt/homebrew/Cellar/sdl2/2.24.2/include/SDL2
 -I/opt/homebrew/Cellar/sdl2_ttf/2.20.1/include/SDL2
+-I/opt/homebrew/Cellar/sdl2_image/2.6.2/include/SDL2
 
 -IC:\Program Files\SDL2\SDL2-2.26.1\include
 -IC:\Program Files\SDL2\SDL2_ttf-2.20.1\include

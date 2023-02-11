@@ -10,7 +10,7 @@ void TextureManager::addImage(const std::string& path){
     imagesToLoad.push_back(path);
 }
 
-void TextureManager::createTextureAtlas(){
+SDL_Surface* TextureManager::createTextureAtlasSurface(){
     //Create the new empty atlas
     SDL_Surface* textureAtlas = SDL_CreateRGBSurface(0, TEXTURE_ATLAS_SIZE, TEXTURE_ATLAS_SIZE, 32, 0, 0, 0, 0);
 
@@ -38,4 +38,6 @@ void TextureManager::createTextureAtlas(){
 
     //Debug save atlas
     SDL_SaveBMP(textureAtlas, "TextureAtlas.bmp");
+
+    return textureAtlas;
 }
