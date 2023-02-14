@@ -57,27 +57,31 @@ class SceneBiome : public Scene {
         virtual ~SceneBiome() {};
 
         void init(SDL_Surface* terrain);
+
+        //Render functions
         void render() override;
+        void _renderChunkedTiles();
+        void _renderOtherSprites();
         void renderGUI() override;
 
+        //Updates and events handling
         void update(const Uint8* keyState, const Uint32 mouseState, const iPoint& mousePos) override;
         void onMouseLeftClick(iPoint mousePos) override;
-
-        void addTile(entt::entity e);
-        void removeTile(entt::entity e);
-        void _updateTileSurroundings(int tX, int tY);
-
         void _checkClickables(const Uint32 mouseState, const iPoint& mousePos) override;
-        void _updateTile(int tX, int tY);
 
+        //Player
         void spawnPlayerAt(fPoint pos);
 
+        //Tiles
+        void addTile(entt::entity e, bool withTilesUpdates = true);
+        void removeTile(entt::entity e, bool withTilesUpdates = true);
+        void _updateTileSurroundings(int tX, int tY);
+        void _updateTile(int tX, int tY);
         TileBiome& getTileUnderMouse();
         TileBiome& getTileAtWorldPos(float worldX, float worldY, iVec offset = {0,0});
         TileBiome& getTileAtTilePos(int tX, int tY);
         int getTileSurroundingValue(int tx, int ty);
         ChunkBiome& getChunk(float worldX, float worldY);
-
         std::vector<TileBiome*> getTilesInRect(const ShapeRectangle& rect);
         std::vector<TileBiome*> getTilesInLine(const ShapeLine& line);
 
@@ -89,9 +93,6 @@ class SceneBiome : public Scene {
         size_t numTilesX = 0;
         size_t numTilesY = 0;
 
-    private:
-        void _renderChunkedTiles();
-        void _renderOtherSprites();
 };
 
 #endif // SCENEBIOME_H_

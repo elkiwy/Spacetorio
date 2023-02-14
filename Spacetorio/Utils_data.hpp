@@ -12,6 +12,17 @@
 #define TILE_SIZE 32 //WorldCoordinates
 
 
+#define TEXTURE_ATLAS_SIZE 2048.0f
+
+
+
+//#ifdef __APPLE__
+#define ASSETS_PREFIX std::string("Spacetorio/")
+//#else
+//#define ASSETS_PREFIX std::string("")
+//#endif
+
+
 inline int roundTo(int n, int group){
     return floor(n/group)*group;
 }
@@ -28,7 +39,7 @@ enum PlanetBiomeType { BIOME_FLATS, BIOME_MOUNTAIN, BIOME_LAKE };
 struct TileRenderData{
     glm::vec2 pos = {0.0f,0.0f};
     glm::vec2 spriteOffset = {0.0f,0.0f};
-    int spriteIndex = 0;
+    glm::vec2 textureAtlasOffset = {0.0f,0.0f};
 };
 
 struct SpriteRenderData{

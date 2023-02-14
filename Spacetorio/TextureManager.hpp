@@ -1,18 +1,20 @@
 #ifndef TEXTUREMANAGER_H_
 #define TEXTUREMANAGER_H_
 
+
+#include "Utils_data.hpp"
+
 #include "Texture.hpp"
 #include "glm/glm.hpp"
 #include <map>
 #include <vector>
 
 
-#define TEXTURE_ATLAS_SIZE 2048
 
 
 struct TextureRefInAtlas{
     glm::uint textureIndex = 0;
-    glm::uint  offX = 0; glm::uint  offY = 0;
+    float offX = 0; float offY = 0;
     glm::uint sizeW = 0; glm::uint sizeH = 0;
 };
 
@@ -25,6 +27,8 @@ class TextureManager{
         void init();
         void addImage(const std::string& path);
         SDL_Surface* createTextureAtlasSurface();
+
+        const TextureRefInAtlas& getInfoAbout(const std::string& originalPath);
 
     private:
         std::vector<std::string> imagesToLoad;

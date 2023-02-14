@@ -63,6 +63,8 @@ class Renderer {
         SDL_Renderer* getSdlRenderer(){return sdlRenderer;};
         iSize getScreenSize(){return screenRes;};
 
+        TextureManager& getTextureManager(){return textureManager;};
+
     private:
         iSize screenRes;
         TTF_Font* currentFont = nullptr;

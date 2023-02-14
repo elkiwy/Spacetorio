@@ -16,7 +16,7 @@ class TileEntity : public Entity{
         TileEntity() {}
         TileEntity(const TileEntity &p) = default;
         TileEntity(entt::entity handle, Scene *s) {enttHandle = handle; scene = s;}
-        TileEntity(SceneBiome *s, fPoint pos);
+        TileEntity(SceneBiome *s, fPoint pos, MaterialType matType);
         virtual ~TileEntity() {}
 };
 

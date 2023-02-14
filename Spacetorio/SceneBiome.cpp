@@ -102,6 +102,9 @@ void ChunkBiome::removeEntity(Entity e){
 
 
 
+
+
+
 /*
 ** SceneBiome
 */
@@ -141,10 +144,8 @@ void SceneBiome::init(SDL_Surface* terrainMap){
                 //Create the entity
                 float posx = i*TILE_SIZE+TILE_SIZE/2.0f;
                 float posy = j*TILE_SIZE+TILE_SIZE/2.0f;
-                TileEntity e = TileEntity(this, fPoint(posx, posy));
-
-                //Add the entity to its chunk
-                chunks[chunkY][chunkX].addEntity(e);
+                TileEntity e = TileEntity(this, fPoint(posx, posy), MAT_DIRT);
+                this->addTile(e.enttHandle, false);
             }
         }
     }
@@ -160,97 +161,8 @@ void SceneBiome::init(SDL_Surface* terrainMap){
     this->getCamera().moveTo((mapW*TILE_SIZE)/2.0f, (mapH*TILE_SIZE)/2.0f);
 }
 
-void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
-    //Optimized check to cycle through only the entities in the tile pos
-    entt::registry& registry = this->getRegistry();
-    ShapePoint worldMousePt = ShapePoint(this->getCamera().screenToWorld(fPoint(mousePos.x, mousePos.y)));
-    TileBiome& tile = this->getTileUnderMouse();
-    for (auto e: tile.entities){
-        auto& clickable = registry.get<ClickableComponent>(e);
-        if (clickable.active == false){continue;}
-        for(auto impl: clickable.impls){
-            if (impl == nullptr){break;}
-            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
-            bool hovered = implCasted->checkHovered(worldMousePt);
-            if (hovered && (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))){
-                implCasted->leftMouseDown();
-            }
-        }
-    }
-}
 
-void SceneBiome::update(const Uint8 *keyState, const Uint32 mouseState, const iPoint &mousePos){
-    Scene::update(keyState, mouseState, mousePos);
-}
-
-void SceneBiome::onMouseLeftClick(iPoint mousePos){
-    Scene::onMouseLeftClick(mousePos);
-
-    TileBiome& tile = this->getTileUnderMouse();
-    if(tile.isEmpty()){
-        //Add the entity to its chunk
-        fPoint worldPos = getCamera().screenToWorld(mousePos);
-        float posx = floorf(worldPos.x/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
-        float posy = floorf(worldPos.y/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
-        TileEntity e = TileEntity(this, fPoint(posx, posy));
-        this->addTile(e.enttHandle);
-
-    }
-}
-
-void SceneBiome::addTile(entt::entity e){
-    Entity tileEnt = {e, this};
-    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
-    int tX = ((int)posComp.pos.x) / TILE_SIZE;
-    int tY = ((int)posComp.pos.y) / TILE_SIZE;
-    ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
-    chunk.addEntity(tileEnt);
-
-    this->_updateTileSurroundings(tX, tY);
-}
-
-void SceneBiome::removeTile(entt::entity e){
-    //Remove the entity from the chunk and the tile
-    Entity tileEnt = {e, this};
-    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
-    int tX = ((int)posComp.pos.x) / TILE_SIZE;
-    int tY = ((int)posComp.pos.y) / TILE_SIZE;
-    ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
-    chunk.removeEntity(tileEnt);
-
-    this->_updateTileSurroundings(tX, tY);
-}
-
-
-void SceneBiome::_updateTileSurroundings(int tX, int tY){
-    //Set the chunks dirty to force an update of the graphics
-    this->dirtyChunks = true;
-
-    //Update the neighbor tiles
-    this->_updateTile(tX-1, tY-1);
-    this->_updateTile(tX-1,   tY);
-    this->_updateTile(tX-1, tY+1);
-    this->_updateTile(  tX, tY-1);
-    this->_updateTile(  tX,   tY);
-    this->_updateTile(  tX, tY+1);
-    this->_updateTile(tX+1, tY-1);
-    this->_updateTile(tX+1,   tY);
-    this->_updateTile(tX+1, tY+1);
-}
-
-void SceneBiome::_updateTile(int tX, int tY){
-    auto& reg = getRegistry();
-    TileBiome& tile = getTileAtTilePos(tX, tY);
-    for(auto& entitiesInTile : tile.entities){
-        Entity ent = {entitiesInTile, this};
-        if (ent.hasComponent<TileComponent>()){
-           TileComponent& tileComp = ent.getComponent<TileComponent>();
-           tileComp.updateSprite();
-        }
-    }
-}
-
-
+/* Render */
 
 void SceneBiome::render(){
 
@@ -363,6 +275,100 @@ void SceneBiome::renderGUI(){
     ImGui::Text("Tile value at mouse: [ %d ]", getTileSurroundingValue(worldMouse.x/TILE_SIZE, worldMouse.y/TILE_SIZE));
 
     ImGui::End();
+}
+
+
+/* Updates and event handling */
+
+void SceneBiome::update(const Uint8 *keyState, const Uint32 mouseState, const iPoint &mousePos){
+    Scene::update(keyState, mouseState, mousePos);
+}
+
+void SceneBiome::onMouseLeftClick(iPoint mousePos){
+    Scene::onMouseLeftClick(mousePos);
+
+    TileBiome& tile = this->getTileUnderMouse();
+    if(tile.isEmpty()){
+        //Add the entity to its chunk
+        fPoint worldPos = getCamera().screenToWorld(mousePos);
+        float posx = floorf(worldPos.x/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
+        float posy = floorf(worldPos.y/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
+        TileEntity e = TileEntity(this, fPoint(posx, posy), MAT_CONCRETE);
+        this->addTile(e.enttHandle);
+    }
+}
+
+void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePos){
+    //Optimized check to cycle through only the entities in the tile pos
+    entt::registry& registry = this->getRegistry();
+    ShapePoint worldMousePt = ShapePoint(this->getCamera().screenToWorld(fPoint(mousePos.x, mousePos.y)));
+    TileBiome& tile = this->getTileUnderMouse();
+    for (auto e: tile.entities){
+        auto& clickable = registry.get<ClickableComponent>(e);
+        if (clickable.active == false){continue;}
+        for(auto impl: clickable.impls){
+            if (impl == nullptr){break;}
+            ClickableComponent* implCasted = static_cast<ClickableComponent*>(impl);
+            bool hovered = implCasted->checkHovered(worldMousePt);
+            if (hovered && (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))){
+                implCasted->leftMouseDown();
+            }
+        }
+    }
+}
+
+
+/* Tiles */
+
+void SceneBiome::addTile(entt::entity e, bool withTilesUpdates){
+    Entity tileEnt = {e, this};
+    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
+    int tX = ((int)posComp.pos.x) / TILE_SIZE;
+    int tY = ((int)posComp.pos.y) / TILE_SIZE;
+    ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
+    chunk.addEntity(tileEnt);
+
+    if (withTilesUpdates){this->_updateTileSurroundings(tX, tY);}
+}
+
+void SceneBiome::removeTile(entt::entity e, bool withTilesUpdates){
+    //Remove the entity from the chunk and the tile
+    Entity tileEnt = {e, this};
+    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
+    int tX = ((int)posComp.pos.x) / TILE_SIZE;
+    int tY = ((int)posComp.pos.y) / TILE_SIZE;
+    ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
+    chunk.removeEntity(tileEnt);
+
+    if (withTilesUpdates){this->_updateTileSurroundings(tX, tY);}
+}
+
+void SceneBiome::_updateTileSurroundings(int tX, int tY){
+    //Set the chunks dirty to force an update of the graphics
+    this->dirtyChunks = true;
+
+    //Update the neighbor tiles
+    this->_updateTile(tX-1, tY-1);
+    this->_updateTile(tX-1,   tY);
+    this->_updateTile(tX-1, tY+1);
+    this->_updateTile(  tX, tY-1);
+    this->_updateTile(  tX,   tY);
+    this->_updateTile(  tX, tY+1);
+    this->_updateTile(tX+1, tY-1);
+    this->_updateTile(tX+1,   tY);
+    this->_updateTile(tX+1, tY+1);
+}
+
+void SceneBiome::_updateTile(int tX, int tY){
+    auto& reg = getRegistry();
+    TileBiome& tile = getTileAtTilePos(tX, tY);
+    for(auto& entitiesInTile : tile.entities){
+        Entity ent = {entitiesInTile, this};
+        if (ent.hasComponent<TileComponent>()){
+           TileComponent& tileComp = ent.getComponent<TileComponent>();
+           tileComp.updateSprite();
+        }
+    }
 }
 
 ChunkBiome& SceneBiome::getChunk(float worldX, float worldY){

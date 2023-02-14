@@ -64,7 +64,7 @@ struct RenderableTileComponent{
 
     RenderableTileComponent() = default;
     RenderableTileComponent(const RenderableTileComponent&) = default;
-    RenderableTileComponent(int sprInd) { renderData.spriteIndex = sprInd;}
+    RenderableTileComponent(float ox, float oy) { renderData.textureAtlasOffset = {ox, oy};}
 
     const TileRenderData& getRenderInfo(const PositionComponent& posComp){
         renderData.pos.x = posComp.pos.x;

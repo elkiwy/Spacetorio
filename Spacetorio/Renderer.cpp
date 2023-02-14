@@ -22,6 +22,7 @@
 
 //GLM stuff
 #include <glm/ext/matrix_transform.hpp>
+#include <vector>
 
 //STB stuff
 #define STB_IMAGE_IMPLEMENTATION
@@ -37,15 +38,11 @@
 #include "Utils_math.hpp"
 #include "PerlinNoise.hpp"
 #include "Texture.hpp"
+#include "Data_materials.hpp"
 
 
 
 
-//#ifdef __APPLE__
-#define ASSETS_PREFIX std::string("Spacetorio/")
-//#else
-//#define ASSETS_PREFIX std::string("")
-//#endif
 
 Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     std::cout << "Renderer initializing..." << std::endl;
@@ -76,8 +73,7 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
 
     //Initialize TextureManger and Texture Atlas
     textureManager.init();
-    textureManager.addImage(ASSETS_PREFIX+"res/concrete.png");
-    textureManager.addImage(ASSETS_PREFIX+"res/dirt.png");
+    for (auto& imagePath : getMaterialsSprites()){textureManager.addImage(imagePath);}
     SDL_Surface* textureAtlasSurf = textureManager.createTextureAtlasSurface();
     this->tilesTextureId = this->_loadTextureFromSurface(textureAtlasSurf);
     SDL_FreeSurface(textureAtlasSurf);
@@ -149,18 +145,10 @@ void Renderer::setupTilesVAO(){
     float s = TILE_SIZE / 2.0f;
     float spriteSizePixels = 8.0f;
     //float sheetSize = 16.0f*spriteSizePixels;
-    float sheetSize = 256;
+    float sheetSize = TEXTURE_ATLAS_SIZE;
     float ssf = spriteSizePixels / sheetSize; //SpriteSizeFloat
 
     float abstractTileData[] = {
-        ////Positions    //TexCoord
-        //-s,  s,          offset.x,     offset.y,
-        // s, -s,      ssf+offset.x, ssf+offset.y,
-        //-s, -s,          offset.x, ssf+offset.y,
-        //-s,  s,          offset.x,     offset.y,
-        // s, -s,      ssf+offset.x, ssf+offset.y,
-        // s,  s,      ssf+offset.x,     offset.y,
-
         //Positions   //TexCoord
         -s,  s,       0.0f, 0.0f,
          s, -s,        ssf,  ssf,
@@ -265,13 +253,13 @@ void Renderer::updateRenderableTilesVBO(std::vector<TileRenderData>& tilesData){
     this->tilesToRender = tilesData.size();
     float* rawData = new float[2*2*this->tilesToRender];
     //float textureUnit = 8.0f/(7.0f*8.0f);
-    float textureUnit = 8.0f/2048.0f;
+    float textureUnit = 8.0f/TEXTURE_ATLAS_SIZE;
     int index = 0;
     for (auto &td : tilesData) {
         rawData[index] = td.pos.x; index++;
         rawData[index] = td.pos.y; index++;
-        rawData[index] = td.spriteOffset.x * textureUnit; index++;
-        rawData[index] = td.spriteOffset.y * textureUnit; index++;
+        rawData[index] = td.textureAtlasOffset.x + td.spriteOffset.x * textureUnit; index++;
+        rawData[index] = td.textureAtlasOffset.y + td.spriteOffset.y * textureUnit; index++;
     }
 
     //Bind the buffer and update it's data by creating a new one and make the old one an orphan

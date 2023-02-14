@@ -10,13 +10,16 @@
 ** Tile Entity
 */
 
-TileEntity::TileEntity(SceneBiome* s, fPoint pos) {
+TileEntity::TileEntity(SceneBiome* s, fPoint pos, MaterialType matType) {
     this->scene = static_cast<Scene*>(s);
     this->enttHandle = this->scene->newEntity();
     addComponent<TagComponent>("Tile");
-    auto& tileComp = addComponent<TileComponent>(s, this->enttHandle, MAT_DIRT);
+    auto& tileComp = addComponent<TileComponent>(s, this->enttHandle, matType);
     auto& posComp = addComponent<StaticPositionComponent>(pos);
-    auto& renderableRect = addComponent<RenderableTileComponent>(1);
+
+    const TextureRefInAtlas& textureRef = global_renderer->getTextureManager().getInfoAbout(tileComp.material.spritePath);
+    auto& renderableRect = addComponent<RenderableTileComponent>(textureRef.offX, textureRef.offY);
+
     auto& collider = addComponent<ColliderRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
 
     auto& clickable = addComponent<ClickableRectangleComponent>(fSize(TILE_SIZE, TILE_SIZE), &posComp);
