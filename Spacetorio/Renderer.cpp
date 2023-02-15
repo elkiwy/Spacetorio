@@ -90,6 +90,12 @@ Renderer::Renderer(SDL_Window* sdlWin, iSize sr) : screenRes(sr){
     this->basicShader.setMat4("uTransformMatrix", this->transformMatrix);
     this->setupLinesVAO();
 
+    //Initialize Basic Texture Shaders for debug textures
+    this->basicTextureShader = Shader((ASSETS_PREFIX+"shaders/basicTexture.vert").c_str(), (ASSETS_PREFIX+"shaders/basicTexture.frag").c_str());
+    this->basicTextureShader.use();
+    this->basicTextureShader.setMat4("uTransformMatrix", this->transformMatrix);
+    this->basicTextureShader.setTextures("uTextures", samplersCount, samplers);
+
     //Initialize Tile Shaders, VAO, and VBO
     this->tileShader = Shader((ASSETS_PREFIX+"shaders/tiles.vert").c_str(), (ASSETS_PREFIX+"shaders/tiles.frag").c_str());
     this->tileShader.use();
@@ -392,6 +398,14 @@ glm::uint Renderer::_loadTextureFromSurface(SDL_Surface* s){
 }
 
 
+void Renderer::_updateTextureFromSurface(glm::uint textureId, SDL_Surface* s){
+    int w = s->w; int h = s->h; int bits = s->format->BitsPerPixel;
+    auto* pixels = s->pixels;
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+}
+
+
 
 /*
 ** Render Events
@@ -439,14 +453,19 @@ void Renderer::renderScene(Scene* s){
     glBindVertexArray(0);
 
 
+    //Noise Generator debug
+    if (debugTextureFinal.initialized){
+        basicTextureShader.use();
 
+        basicTextureShader.setMat4("uCameraMatrix", glm::mat4(1.0f));
+        debugTextureFinal.renderUnoptimized(debugTextureFinal.w/2.0f+10.0f, screenRes.h - (debugTextureFinal.h/2.0f+10.0f));
+        debugTextureContinentalness.renderUnoptimized(debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
+        debugTextureErosion.renderUnoptimized(debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
 
-    ////Noise Generator debug
-    //if (debugTextureFinal.initialized){
-    //    drawTexture(debugTextureFinal, debugTextureFinal.w/2.0f+10.0f, debugTextureFinal.h/2.0f+10.0f);
-    //    drawTexture(debugTextureContinentalness, debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
-    //    drawTexture(debugTextureErosion, debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
-    //}
+        //drawTexture(debugTextureFinal, debugTextureFinal.w/2.0f+10.0f, debugTextureFinal.h/2.0f+10.0f);
+        //drawTexture(debugTextureContinentalness, debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
+        //drawTexture(debugTextureErosion, debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
+    }
 }
 
 void Renderer::renderGUI(Scene* s){
@@ -457,15 +476,16 @@ void Renderer::renderGUI(Scene* s){
     //Scene GUI
     s->renderGUI();
 
-    ////Noise Generator debug
-    //if (gen.renderGUI() || debugTextureFinal.initialized == false){
-    //    DebugSurfaces ds;
-    //    gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
-    //    debugTextureFinal = Texture(ds.finalSurface, false);
-    //    debugTextureContinentalness = Texture(ds.contSurface, false);
-    //    debugTextureErosion = Texture(ds.erosionSurface, false);
-    //    ds.free();
-    //}
+    //Noise Generator debug
+    if (gen.renderGUI() || debugTextureFinal.initialized == false){
+        DebugSurfaces ds;
+        gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
+        debugTextureFinal = TextureGL(ds.finalSurface);
+        debugTextureContinentalness = TextureGL(ds.contSurface);
+        debugTextureErosion = TextureGL(ds.erosionSurface);
+        ds.free();
+        std::cout << "pippozzo" << std::endl;
+    }
 
     ImGui::Begin("Renderer");
     ImGui::Text("Renderer");
@@ -538,7 +558,12 @@ void Renderer::drawTexture(const Texture& t, int cx, int cy, float angleDeg, flo
     int ULCornerY = cy - scaledH/2.0f;
 
     SDL_Rect dstRect = {ULCornerX, ULCornerY, scaledW, scaledH};
-    SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, angleDeg, NULL, SDL_FLIP_NONE);
+
+
+
+
+
+    //SDL_RenderCopyEx(sdlRenderer, t.sdlTexture, NULL, &dstRect, angleDeg, NULL, SDL_FLIP_NONE);
 }
 
 void Renderer::drawCircle(int cx, int cy, int radius, SDL_Color col){

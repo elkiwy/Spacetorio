@@ -51,6 +51,7 @@ class Renderer {
 
         glm::uint _loadTextureFromFile(const std::string& path);
         glm::uint _loadTextureFromSurface(SDL_Surface* s);
+        void _updateTextureFromSurface(glm::uint id, SDL_Surface* s);
 
         //Drawing operations
         void drawLine(int x1, int y1, int x2, int y2, SDL_Color col);
@@ -72,9 +73,9 @@ class Renderer {
         SDL_Renderer* sdlRenderer = nullptr;
 
         NoiseSurfaceGenerator gen;
-        Texture debugTextureFinal;
-        Texture debugTextureContinentalness;
-        Texture debugTextureErosion;
+        TextureGL debugTextureFinal;
+        TextureGL debugTextureContinentalness;
+        TextureGL debugTextureErosion;
 
         bool imgui_showDemo = true;
 
@@ -106,6 +107,8 @@ class Renderer {
         std::vector<LineRenderData> linesRenderData;
         int linesToRender = 0;
 
+        //Simple Textures rendering
+        Shader basicTextureShader;
 
         glm::mat4 transformMatrix = glm::mat4(1.0f);
 };
