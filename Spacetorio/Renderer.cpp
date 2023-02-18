@@ -454,17 +454,13 @@ void Renderer::renderScene(Scene* s){
 
 
     //Noise Generator debug
-    if (debugTextureFinal.initialized){
+    if (debugTextureFinal.initialized && false){
         basicTextureShader.use();
 
         basicTextureShader.setMat4("uCameraMatrix", glm::mat4(1.0f));
         debugTextureFinal.renderUnoptimized(debugTextureFinal.w/2.0f+10.0f, screenRes.h - (debugTextureFinal.h/2.0f+10.0f));
         debugTextureContinentalness.renderUnoptimized(debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
         debugTextureErosion.renderUnoptimized(debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
-
-        //drawTexture(debugTextureFinal, debugTextureFinal.w/2.0f+10.0f, debugTextureFinal.h/2.0f+10.0f);
-        //drawTexture(debugTextureContinentalness, debugTextureContinentalness.w/2.0f+10.0f, debugTextureContinentalness.h/2.0f+10.0f + debugTextureFinal.h + 10.0f);
-        //drawTexture(debugTextureErosion, debugTextureErosion.w/2.0f+10.0f, debugTextureErosion.h/2.0f+10.0f + debugTextureFinal.h + 10.0f + debugTextureContinentalness.h + 10.0f);
     }
 }
 
@@ -479,7 +475,7 @@ void Renderer::renderGUI(Scene* s){
     //Noise Generator debug
     if (gen.renderGUI() || debugTextureFinal.initialized == false){
         DebugSurfaces ds;
-        gen.generateTerrainInstanceSettings({1200,400}, 3, &ds);
+        gen.generateTerrainInstanceSettings_test({1200,400}, 3, &ds);
         debugTextureFinal = TextureGL(ds.finalSurface);
         debugTextureContinentalness = TextureGL(ds.contSurface);
         debugTextureErosion = TextureGL(ds.erosionSurface);
