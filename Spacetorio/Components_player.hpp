@@ -1,6 +1,0 @@
-#ifndef COMPONENTS_PLAYER_H_
-#define COMPONENTS_PLAYER_H_
-
-
-
-#endif // COMPONENTS_PLAYER_H_

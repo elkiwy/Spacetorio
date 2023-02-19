@@ -92,8 +92,9 @@ void PlayerComponent::update(Entity& player, const Uint8* ks){
 
     //Left+Right update
     float v = 0.0f;
-    if (ks[SDL_SCANCODE_D]) v += 5.0f;
-    if (ks[SDL_SCANCODE_A]) v -= 5.0f;
+    const float hspeed = 15.0f;
+    if (ks[SDL_SCANCODE_D]) v += hspeed;
+    if (ks[SDL_SCANCODE_A]) v -= hspeed;
     posComp.spd.x = v;
 
     //Update the colliders to be in the position + speed location

@@ -7,7 +7,8 @@
 #include <string>
 #include <vector>
 
-enum MaterialType {MAT_UNKOWN, MAT_DIRT, MAT_WOOD, MAT_CONCRETE,};
+enum MaterialType {MAT_UNKOWN, MAT_DIRT, MAT_WOOD, MAT_CONCRETE,
+                   MAT_RAWIRON, MAT_RAWCOPPER};
 
 struct MaterialData{
     MaterialType type = MAT_UNKOWN;
@@ -32,6 +33,26 @@ static std::map<MaterialType, MaterialData> matTypeToMaterialData = {
                 MAT_DIRT,
             //SpritePath
                 ASSETS_PREFIX+"res/dirt.png",
+            //HP
+                10.0f,
+        },
+    },
+    {
+        MAT_RAWIRON, {
+            //Type
+                MAT_RAWIRON,
+            //SpritePath
+                ASSETS_PREFIX+"res/iron.png",
+            //HP
+                10.0f,
+        },
+    },
+    {
+        MAT_RAWCOPPER, {
+            //Type
+                MAT_RAWCOPPER,
+            //SpritePath
+                ASSETS_PREFIX+"res/copper.png",
             //HP
                 10.0f,
         },

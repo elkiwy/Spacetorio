@@ -135,6 +135,7 @@ void SceneBiome::init(SDL_Surface* terrainMap){
 
     //Load all the entities from the terrainMap
     Uint8* terrainMapData = (Uint8*)terrainMap->pixels;
+    const siv::PerlinNoise resource_perlin{(siv::PerlinNoise::seed_type)(1)};
     for(int j=0; j<mapH; ++j){
         for(int i=0; i<mapW; ++i){
             int chunkX = i/CHUNK_SIZE;
@@ -144,7 +145,14 @@ void SceneBiome::init(SDL_Surface* terrainMap){
                 //Create the entity
                 float posx = i*TILE_SIZE+TILE_SIZE/2.0f;
                 float posy = j*TILE_SIZE+TILE_SIZE/2.0f;
-                TileEntity e = TileEntity(this, fPoint(posx, posy), MAT_DIRT);
+
+                MaterialType matType = MAT_DIRT;
+                const float noiseSz = 1.0f/50.0f;
+                const float RESOURCES_NOISE = resource_perlin.octave2D_01(((float)i)*noiseSz, ((float)j)*noiseSz, 3, 0.5f);
+                if (RESOURCES_NOISE > 0.85f){matType = MAT_RAWIRON;}
+                if (RESOURCES_NOISE < 0.15f){matType = MAT_RAWCOPPER;}
+
+                TileEntity e = TileEntity(this, fPoint(posx, posy), matType);
                 this->addTile(e.enttHandle, false);
             }
         }
@@ -293,7 +301,7 @@ void SceneBiome::onMouseLeftClick(iPoint mousePos){
         fPoint worldPos = getCamera().screenToWorld(mousePos);
         float posx = floorf(worldPos.x/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
         float posy = floorf(worldPos.y/TILE_SIZE)*TILE_SIZE+TILE_SIZE/2.0f;
-        TileEntity e = TileEntity(this, fPoint(posx, posy), MAT_CONCRETE);
+        TileEntity e = TileEntity(this, fPoint(posx, posy), MAT_RAWIRON);
         this->addTile(e.enttHandle);
     }
 }
