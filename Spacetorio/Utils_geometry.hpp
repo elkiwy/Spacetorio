@@ -101,6 +101,8 @@ class ShapeCircle : public Shape{
         bool checkCollisionWithCircle(const ShapeCircle& other) const;
         bool checkCollisionWithRectangle(const ShapeRectangle& other) const;
 
+        ShapeRectangle toRectangle() const;
+
         fPoint c = {0.0f, 0.0f};
         float r = 0.0f;
 };

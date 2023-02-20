@@ -1,6 +1,7 @@
 #include "TextureManager.hpp"
 #include "SDL_surface.h"
 #include "SDL_image.h"
+#include "Utils_data.hpp"
 
 void TextureManager::init(){
 

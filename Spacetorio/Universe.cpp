@@ -18,8 +18,8 @@ PlanetBiome::PlanetBiome(Entity planetEntity, PlanetBiomeType t) {
     scene = planetEntity.scene; enttHandle = planetEntity.scene->newEntity();
     addComponent<TagComponent>("_UnnamedBiome_");
     addComponent<PlanetBiomeComponent>(t);
-    auto& posComp = planetEntity.getComponent<DynamicPositionComponent>();
-    auto& myPosComp = addComponent<DynamicPositionComponent>(posComp.pos);
+    auto& posComp = planetEntity.getComponent<PositionComponent>();
+    auto& myPosComp = addComponent<PositionComponent>(posComp.pos);
     addComponent<ClickableCircleComponent>(100.0f, &myPosComp);
     //addComponent<RenderableCircleComponent>(size);
 }
@@ -32,7 +32,7 @@ PlanetBiome::PlanetBiome(Entity planetEntity, PlanetBiomeType t) {
 Planet::Planet(Scene *s, std::string name, fPoint pos, float size) {
     scene = s; enttHandle = s->getRegistry().create();
     addComponent<TagComponent>((name.empty()) ? "_UnnamedPlanet_" : name);
-    addComponent<DynamicPositionComponent>(pos);
+    addComponent<PositionComponent>(pos);
     Entity myEntity = {enttHandle, scene};
     addComponent<PlanetComponent>(myEntity, size);
     //addComponent<RenderableCircleComponent>(size);
@@ -47,7 +47,7 @@ Planet::Planet(Scene *s, std::string name, fPoint pos, float size) {
 StarSystem::StarSystem(Scene *s, std::string name, fPoint pos) {
     scene = s; enttHandle = s->getRegistry().create();
     addComponent<TagComponent>((name.empty()) ? "_UnnamedStarSystem_" : name);
-    addComponent<DynamicPositionComponent>(pos);
+    addComponent<PositionComponent>(pos);
     addComponent<StarSystemComponent>();
 }
 
@@ -74,7 +74,7 @@ Planet StarSystem::addRandomPlanet() {
 PlayerSpaceship::PlayerSpaceship(Scene *s, fPoint pos) {
     scene = s; enttHandle = s->getRegistry().create();
     addComponent<TagComponent>("PlayerSpaceship");
-    addComponent<DynamicPositionComponent>(pos);
+    addComponent<PositionComponent>(pos);
     addComponent<PlayerSpaceshipComponent>();
     addComponent<RenderableRectComponent>(20.0f, 20.0f);
     std::cout << "Created playerspaceship at " << (int)enttHandle << std::endl;
@@ -97,8 +97,8 @@ void loadTestScene(Scene* s){
     {
       TestEntity t = TestEntity(s);
       t.addComponent<TagComponent>("TestEntity mouse circle");
-      DynamicPositionComponent &posComp = t.addComponent<DynamicPositionComponent>(0.0f, 0.0f);
-      posComp.lockToMouse();
+      PositionComponent &posComp = t.addComponent<PositionComponent>(0.0f, 0.0f);
+      //posComp.lockToMouse();
       ColliderCircleComponent& coll = t.addComponent<ColliderCircleComponent>(100.0f, &posComp);
       ColliderComponent& genericcoll = t.getComponent<ColliderComponent>();
       genericcoll.active = true;

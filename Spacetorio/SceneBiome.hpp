@@ -13,6 +13,7 @@
 
 #define CT CHUNK_SIZE*TILE_SIZE
 
+
 /*
 
    /-----+-----+-----+-----\
@@ -84,6 +85,9 @@ class SceneBiome : public Scene {
         ChunkBiome& getChunk(float worldX, float worldY);
         std::vector<TileBiome*> getTilesInRect(const ShapeRectangle& rect);
         std::vector<TileBiome*> getTilesInLine(const ShapeLine& line);
+
+        fVec BIOME_GRAVITY = {0.0f, 0.60f};
+        float BIOME_TERMVELOCITY = 30.0f;
 
     private:
         std::vector<std::vector<ChunkBiome>> chunks;

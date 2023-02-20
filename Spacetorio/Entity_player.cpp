@@ -17,8 +17,7 @@ PlayerEntity::PlayerEntity(SceneBiome* s, fPoint pos) {
     auto& playerComp = addComponent<PlayerComponent>(s, this->enttHandle);
 
     //Attach position component
-    auto& posComp = addComponent<DynamicPositionComponent>(pos);
-    posComp.automaticUpdates = false;
+    auto& posComp = addComponent<PositionComponent>(pos);
 
     //Attach renderable rectangle
     auto& renderableRect = addComponent<RenderableSpriteComponent>(1, playerComp.size);
@@ -81,14 +80,10 @@ bool PlayerComponent::testCollisionWithLine(const ShapeLine& line) const{
 }
 
 void PlayerComponent::update(Entity& player, const Uint8* ks){
-    //Position setup
-    auto& posComp = player.getComponent<DynamicPositionComponent>();
-
     //Gravity update
-    fVec gravityForce = {0.0f, 0.60f};
-    float terminalVelocity = 30.0f;
-    posComp.spd -= gravityForce;
-    posComp.spd.y = fmin(terminalVelocity, posComp.spd.y);
+    auto& posComp = player.getComponent<PositionComponent>();
+    posComp.spd -= scene->BIOME_GRAVITY;
+    posComp.spd.y = fmin(scene->BIOME_TERMVELOCITY, posComp.spd.y);
 
     //Left+Right update
     float v = 0.0f;
@@ -120,7 +115,7 @@ void PlayerComponent::update(Entity& player, const Uint8* ks){
 void PlayerComponent::onKeyPressed(SDL_Keycode key){
     if (key == SDLK_w) {
         Entity player = {enttHandle, scene};
-        auto &posComp = player.getComponent<DynamicPositionComponent>();
+        auto &posComp = player.getComponent<PositionComponent>();
         fVec jumpForce = {0.0f, 12.0f};
         posComp.spd += jumpForce;
     }

@@ -114,6 +114,11 @@ bool ShapeCircle::checkCollisionWithRectangle(const ShapeRectangle& other) const
     return checkCircleRectangle(*this, other);
 }
 
+ShapeRectangle ShapeCircle::toRectangle() const{
+    return {c.x-r, c.y-r, r*2.0f, r*2.0f};
+}
+
+
 /*
 ** ShapeRectangle
 */

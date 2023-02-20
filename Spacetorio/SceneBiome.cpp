@@ -12,6 +12,7 @@
 
 #include "Entity_player.hpp"
 #include "Entity_tile.hpp"
+#include "Entity_drop.hpp"
 
 
 /*
@@ -83,8 +84,7 @@ ChunkBiome::ChunkBiome(int x, int y, entt::registry& reg)
 void ChunkBiome::addEntity(Entity e){
     this->entities.emplace(e.enttHandle);
 
-    auto& genericPosition = e.getComponent<PositionComponent>();
-    auto& pos = static_cast<PositionComponent*>(genericPosition.impl)->pos;
+    auto& pos = e.getComponent<PositionComponent>().pos;
     int tileX = (((int)pos.x) / TILE_SIZE) % CHUNK_SIZE;
     int tileY = (((int)pos.y) / TILE_SIZE) % CHUNK_SIZE;
     tiles[tileY][tileX].addEntity(e.enttHandle);
@@ -94,7 +94,7 @@ void ChunkBiome::removeEntity(Entity e){
     this->entities.remove(e.enttHandle);
 
     //Remove it also from the TileBiome object
-    auto& posComp = e.getComponent<StaticPositionComponent>();
+    auto& posComp = e.getComponent<PositionComponent>();
     int tileX = (((int)posComp.pos.x) / TILE_SIZE) % CHUNK_SIZE;
     int tileY = (((int)posComp.pos.y) / TILE_SIZE) % CHUNK_SIZE;
     tiles[tileY][tileX].removeEntity(e.enttHandle);
@@ -202,13 +202,13 @@ void SceneBiome::_renderChunkedTiles(){
         std::vector<TileRenderData> tilesData;
 
         //Update the renderableTilesVBO if the chunks changed from the frame before
-        auto globalView = reg.view<StaticPositionComponent, RenderableTileComponent>();
+        auto globalView = reg.view<PositionComponent, RenderableTileComponent>();
         for(int j=minChunkY;j<=maxChunkY;++j){
             for(int i=minChunkX;i<=maxChunkX;++i){
                 auto& chunk = chunks[j][i];
                 auto chunkView = (entt::basic_view{chunks[j][i].entities} | globalView);
                 for(auto e: chunkView){
-                    auto& pos = chunkView.get<StaticPositionComponent>(e);
+                    auto& pos = chunkView.get<PositionComponent>(e);
                     auto& renderableTile = chunkView.get<RenderableTileComponent>(e);
                     const TileRenderData& td = renderableTile.getRenderInfo(pos);
                     tilesData.emplace_back(td);
@@ -217,14 +217,14 @@ void SceneBiome::_renderChunkedTiles(){
         }
 
         ////Draw the clickable areas
-        //auto clickablesView = reg.view<StaticPositionComponent, ClickableRectangleComponent>();
+        //auto clickablesView = reg.view<PositionComponent, ClickableRectangleComponent>();
         //for(int j=minChunkY;j<=maxChunkY;++j){
         //    for(int i=minChunkX;i<=maxChunkX;++i){
         //        auto& chunk = chunks[j][i];
         //        auto chunkView = (entt::basic_view{chunks[j][i].entities} | clickablesView);
         //        for(auto e: chunkView){
         //            //Render Clickable area
-        //            auto& pos = chunkView.get<StaticPositionComponent>(e);
+        //            auto& pos = chunkView.get<PositionComponent>(e);
         //            auto& renderableClickable = chunkView.get<ClickableRectangleComponent>(e);
         //            renderableClickable.render(pos, cam);
         //        }
@@ -245,9 +245,9 @@ void SceneBiome::_renderOtherSprites(){
 
     //Render the other dynamic objects (don't care about chunking since are few)
     std::vector<SpriteRenderData> spritesData;
-    auto dynamicEnts = reg.view<DynamicPositionComponent, RenderableSpriteComponent>();
+    auto dynamicEnts = reg.view<PositionComponent, RenderableSpriteComponent>();
     for(auto e: dynamicEnts){
-        auto& pos = dynamicEnts.get<DynamicPositionComponent>(e);
+        auto& pos = dynamicEnts.get<PositionComponent>(e);
         auto& renderableSprite = dynamicEnts.get<RenderableSpriteComponent>(e);
         const SpriteRenderData& sp = renderableSprite.getRenderInfo(pos);
         spritesData.emplace_back(sp);
@@ -330,7 +330,7 @@ void SceneBiome::_checkClickables(const Uint32 mouseState, const iPoint& mousePo
 
 void SceneBiome::addTile(entt::entity e, bool withTilesUpdates){
     Entity tileEnt = {e, this};
-    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
+    auto& posComp = tileEnt.getComponent<PositionComponent>();
     int tX = ((int)posComp.pos.x) / TILE_SIZE;
     int tY = ((int)posComp.pos.y) / TILE_SIZE;
     ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
@@ -342,12 +342,19 @@ void SceneBiome::addTile(entt::entity e, bool withTilesUpdates){
 void SceneBiome::removeTile(entt::entity e, bool withTilesUpdates){
     //Remove the entity from the chunk and the tile
     Entity tileEnt = {e, this};
-    auto& posComp = tileEnt.getComponent<StaticPositionComponent>();
-    int tX = ((int)posComp.pos.x) / TILE_SIZE;
-    int tY = ((int)posComp.pos.y) / TILE_SIZE;
+    auto& posComp = tileEnt.getComponent<PositionComponent>();
+    float px = posComp.pos.x;
+    float py = posComp.pos.y;
+    int tX = ((int)px) / TILE_SIZE;
+    int tY = ((int)py) / TILE_SIZE;
     ChunkBiome& chunk = getChunk(posComp.pos.x, posComp.pos.y);
     chunk.removeEntity(tileEnt);
 
+    //Create Drop
+    DropEntity drop = DropEntity(this, fPoint(px, py));
+
+
+    //Update surroundings
     if (withTilesUpdates){this->_updateTileSurroundings(tX, tY);}
 }
 

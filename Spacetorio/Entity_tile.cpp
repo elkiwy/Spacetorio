@@ -15,7 +15,7 @@ TileEntity::TileEntity(SceneBiome* s, fPoint pos, MaterialType matType) {
     this->enttHandle = this->scene->newEntity();
     addComponent<TagComponent>("Tile");
     auto& tileComp = addComponent<TileComponent>(s, this->enttHandle, matType);
-    auto& posComp = addComponent<StaticPositionComponent>(pos);
+    auto& posComp = addComponent<PositionComponent>(pos);
 
     const TextureRefInAtlas& textureRef = global_renderer->getTextureManager().getInfoAbout(tileComp.material.spritePath);
     auto& renderableRect = addComponent<RenderableTileComponent>(textureRef.offX, textureRef.offY);
@@ -51,7 +51,7 @@ void TileComponent::destroyTile(){
 void TileComponent::updateSprite(){
     Entity e = {this->enttHandle, this->scene};
     auto& renderableTile = e.getComponent<RenderableTileComponent>();
-    auto& pos = e.getComponent<StaticPositionComponent>();
+    auto& pos = e.getComponent<PositionComponent>();
     int surroundingVal = this->scene->getTileSurroundingValue((int)floor(pos.pos.x/TILE_SIZE), (int)floor(pos.pos.y/TILE_SIZE));
     float offx, offy;
     getSpriteOffsetFromTileSurroundingValue(surroundingVal, &offx, &offy);

@@ -35,7 +35,7 @@ struct PlayerSpaceshipComponent : public UpdatableComponent {
         if (ks[SDL_SCANCODE_A]) acc.x -= inc;
         if (ks[SDL_SCANCODE_S]) acc.y += inc;
         if (ks[SDL_SCANCODE_W]) acc.y -= inc;
-        auto& pos = e.getComponent<DynamicPositionComponent>();
+        auto& pos = e.getComponent<PositionComponent>();
         pos.spd += acc;
     }
 };

@@ -22,6 +22,7 @@
 #include "Components_clickables.hpp"
 
 #include "Entity_player.hpp"
+#include "Entity_drop.hpp"
 
 
 Scene::Scene(){}
@@ -40,9 +41,9 @@ void Scene::init(){
     registerGenericComponent<RenderableComponent, ClickableCircleComponent>();
     registerGenericComponent<RenderableComponent, ClickableRectangleComponent>();
 
-    registerGenericComponent<UpdatableComponent, DynamicPositionComponent>();
     registerGenericComponent<UpdatableComponent, PlayerSpaceshipComponent>();
     registerGenericComponent<UpdatableComponent, PlayerComponent>();
+    registerGenericComponent<UpdatableComponent, DropComponent>();
 
     registerGenericComponent<ColliderComponent, ColliderCircleComponent>();
     registerGenericComponent<ColliderComponent, ColliderRectangleComponent>();
@@ -50,11 +51,6 @@ void Scene::init(){
 
     registerGenericComponent<ClickableComponent, ClickableCircleComponent>();
     registerGenericComponent<ClickableComponent, ClickableRectangleComponent>();
-
-    registerMonoGenericComponent<PositionComponent, DynamicPositionComponent>();
-    registerMonoGenericComponent<PositionComponent, StaticPositionComponent>();
-
-
 
     cam.init();
 }
